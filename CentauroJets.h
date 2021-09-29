@@ -20,6 +20,7 @@ class RawTowerContainer;
 class RawTowerGeomContainer; 
 class TLorentzVector; 
 class RawCluster; 
+class TH1D; 
 
 namespace fastjet {
   class PseudoJet;
@@ -87,8 +88,12 @@ class CentauroJets: public SubsysReco
 		      TLorentzVector p_initial_breit, TLorentzVector virtual_photon_breit, bool true_frame); 
 
   // Build Calo Tracks (combine clusters across calorimeters)
-  void BuildCaloTracks(PHCompositeNode *topNode); 
+  void BuildCaloTracks(PHCompositeNode *topNode, std::string type, 
+		       std::vector<fastjet::PseudoJet> &pseudojets, 
+		       TLorentzRotation &breit, TRotation &breitRot, 
+		       std::string ecDet, int ecIdx );
 
+  bool VetoClusterWithTrack(double eta, double phi, std::string detName);
 
   // Event generator transform
   CLHEP::HepLorentzRotation EventToLab; 
@@ -168,6 +173,8 @@ class CentauroJets: public SubsysReco
   std::vector<int> tcjet_nc; 
   std::vector<double> tcjet_Q; 
   std::vector<double> tcjet_cf; 
+  std::vector<double> tcjet_neut_p; 
+  std::vector<double> tcjet_chgd_p; 
 
   std::vector<double> pjet_pT; 
   std::vector<double> pjet_p; 
@@ -182,6 +189,8 @@ class CentauroJets: public SubsysReco
   std::vector<double> pjet_cf; 
   std::vector<int> pjet_tcidx; 
   std::vector<double> pjet_tcdR; 
+  std::vector<double> pjet_neut_p; 
+  std::vector<double> pjet_chgd_p; 
 
   std::vector<double> tfpjet_pT; 
   std::vector<double> tfpjet_p; 
@@ -194,6 +203,8 @@ class CentauroJets: public SubsysReco
   std::vector<int> tfpjet_nc;   
   std::vector<double> tfpjet_Q; 
   std::vector<double> tfpjet_cf; 
+  std::vector<double> tfpjet_neut_p; 
+  std::vector<double> tfpjet_chgd_p; 
 
   // Scattered electron in event record:
   PHG4Particle* true_electron_headon; 
@@ -204,6 +215,13 @@ class CentauroJets: public SubsysReco
 
   //Random number generator
   TRandom *rand; 
+
+  //Diagnostic histograms
+  TH1D *_h_track_cluster_match; 
+  TH1D *_h_becal_ihcal_match; 
+  TH1D *_h_becal_ohcal_match; 
+  TH1D *_h_ihcal_ohcal_match; 
+  TH1D *_h_femc_lfhcal_match; 
 
 };
 

@@ -39,6 +39,7 @@
 #include <fastjet/contrib/Centauro.hh>
 
 #include <TTree.h>
+#include <TH1D.h>
 #include <TRandom3.h>
 #include <TLorentzVector.h>
 #include <TLorentzRotation.h>
@@ -133,6 +134,34 @@ double JetChargedFraction( std::vector<fastjet::PseudoJet> *tconstit, double jet
 
 }
 
+double JetNeutralMomentum( std::vector<fastjet::PseudoJet> *tconstit ){
+
+  TVector3 ptot(0.0,0.0,0.0); 
+
+  for(unsigned int i=0; i<tconstit->size(); i++){
+    if(tconstit->at(i).user_index()!=0) continue;
+    TVector3 constit(tconstit->at(i).px(),tconstit->at(i).py(),tconstit->at(i).pz());
+    ptot += constit; 
+  }
+
+  return ptot.Mag(); 
+
+}
+
+double JetChargedMomentum( std::vector<fastjet::PseudoJet> *tconstit ){
+
+  TVector3 ptot(0.0,0.0,0.0); 
+
+  for(unsigned int i=0; i<tconstit->size(); i++){
+    if(tconstit->at(i).user_index()==0) continue;
+    TVector3 constit(tconstit->at(i).px(),tconstit->at(i).py(),tconstit->at(i).pz());
+    ptot += constit; 
+  }
+
+  return ptot.Mag(); 
+
+}
+
 
 //----------------------------------------------------------------------------//
 //-- Constructor:
@@ -223,6 +252,8 @@ int CentauroJets::Init(PHCompositeNode *topNode) {
 	_eval_tree_event->Branch("tcjet_nc",&tcjet_nc);
 	_eval_tree_event->Branch("tcjet_Q",&tcjet_Q);
 	_eval_tree_event->Branch("tcjet_cf",&tcjet_cf);
+	_eval_tree_event->Branch("tcjet_neut_p",&tcjet_neut_p); 
+	_eval_tree_event->Branch("tcjet_chgd_p",&tcjet_chgd_p); 
 
 	_eval_tree_event->Branch("pjet_pT",&pjet_pT); 
 	_eval_tree_event->Branch("pjet_p",&pjet_p); 
@@ -237,6 +268,8 @@ int CentauroJets::Init(PHCompositeNode *topNode) {
 	_eval_tree_event->Branch("pjet_cf",&pjet_cf);
 	_eval_tree_event->Branch("pjet_tcidx",&pjet_tcidx);
 	_eval_tree_event->Branch("pjet_tcdR",&pjet_tcdR);
+	_eval_tree_event->Branch("pjet_neut_p",&pjet_neut_p); 
+	_eval_tree_event->Branch("pjet_chgd_p",&pjet_chgd_p); 
  
 	_eval_tree_event->Branch("tfpjet_pT",&tfpjet_pT); 
 	_eval_tree_event->Branch("tfpjet_p",&tfpjet_p); 
@@ -249,6 +282,17 @@ int CentauroJets::Init(PHCompositeNode *topNode) {
  	_eval_tree_event->Branch("tfpjet_nc",&tfpjet_nc);
 	_eval_tree_event->Branch("tfpjet_Q",&tfpjet_Q);
 	_eval_tree_event->Branch("tfpjet_cf",&tfpjet_cf);
+	_eval_tree_event->Branch("tfpjet_neut_p",&tfpjet_neut_p); 
+	_eval_tree_event->Branch("tfpjet_chgd_p",&tfpjet_chgd_p); 
+
+
+	// Diagnostic histograms
+
+	_h_track_cluster_match = new TH1D("_h_track_cluster_match","",100,0.0,20.0); 
+	_h_becal_ihcal_match = new TH1D("_h_becal_ihcal_match","",100,0.0,20.0); 
+	_h_becal_ohcal_match = new TH1D("_h_becal_ohcal_match","",100,0.0,20.0); 
+	_h_ihcal_ohcal_match = new TH1D("_h_ihcal_ohcal_match","",100,0.0,20.0); 
+	_h_femc_lfhcal_match = new TH1D("_h_femc_lfhcal_match","",100,0.0,20.0); 
 
 	return Fun4AllReturnCodes::EVENT_OK;
 }
@@ -418,8 +462,6 @@ void CentauroJets::fill_tree(PHCompositeNode *topNode) {
 
   double minQ2diff = 1.0; 
 
-  cout << "here!" << endl; 
-
   for (PHG4TruthInfoContainer::ConstIterator truth_itr = range.first;
        truth_itr != range.second; ++truth_itr) {
 
@@ -430,13 +472,11 @@ void CentauroJets::fill_tree(PHCompositeNode *topNode) {
     }
 
     if (g4particle->get_pid() != 11) continue;
-        
+ 
     TLorentzVector e_i(0.0,0.0,-e_p_initial,e_p_initial); 
     TLorentzVector e_f(g4particle->get_px(), g4particle->get_py(), g4particle->get_pz(), g4particle->get_e()); 
     TLorentzVector v_phot = (e_i - e_f); 
     double checkQ2 = -v_phot.Mag2();
-
-    cout << checkQ2 << " " << _hepmcp_Q2 << endl; 
 
     if(fabs(checkQ2-_hepmcp_Q2)<minQ2diff){
       // NOTE: This is in the head-on frame
@@ -524,6 +564,8 @@ void CentauroJets::fill_tree(PHCompositeNode *topNode) {
   tcjet_pdR.clear(); 
   tcjet_Q.clear(); 
   tcjet_cf.clear(); 
+  tcjet_neut_p.clear(); 
+  tcjet_chgd_p.clear(); 
 
   pjet_pT.clear(); 
   pjet_p.clear(); 
@@ -538,7 +580,9 @@ void CentauroJets::fill_tree(PHCompositeNode *topNode) {
   pjet_cf.clear(); 
   pjet_tcidx.clear(); 
   pjet_tcdR.clear(); 
-
+  pjet_neut_p.clear(); 
+  pjet_chgd_p.clear(); 
+  
   tfpjet_pT.clear(); 
   tfpjet_p.clear(); 
   tfpjet_E.clear(); 
@@ -550,6 +594,8 @@ void CentauroJets::fill_tree(PHCompositeNode *topNode) {
   tfpjet_nc.clear();
   tfpjet_Q.clear(); 
   tfpjet_cf.clear(); 
+  tfpjet_neut_p.clear(); 
+  tfpjet_neut_p.clear(); 
 
   if(electron!=NULL) {
 
@@ -811,10 +857,15 @@ void CentauroJets::fill_tree(PHCompositeNode *topNode) {
     // Add unassociated clusters to the track constituents and find jets again
 
     //if(use_cemc) FillClusterPseudoJets(topNode, "BECAL", tcpseudojets, breit, breitRotInv, 1.0, ECDetName, ECIdx, true); 
-    if(use_ihcal) FillClusterPseudoJets(topNode, "HCALIN", tcpseudojets, breit, breitRotInv, 1.0, "", -1, true); 
-    if(use_ohcal) FillClusterPseudoJets(topNode, "HCALOUT", tcpseudojets, breit, breitRotInv, 1.0, "", -1, true); 
-    if(use_femc) FillClusterPseudoJets(topNode, "FEMC", tcpseudojets, breit, breitRotInv, 1.0, "", -1, true); 
+    //if(use_ihcal) FillClusterPseudoJets(topNode, "HCALIN", tcpseudojets, breit, breitRotInv, 1.0, "", -1, true); 
+    //if(use_ohcal) FillClusterPseudoJets(topNode, "HCALOUT", tcpseudojets, breit, breitRotInv, 1.0, "", -1, true); 
+    //if(use_femc) FillClusterPseudoJets(topNode, "FEMC", tcpseudojets, breit, breitRotInv, 1.0, "", -1, true); 
     //if(use_fhcal) FillClusterPseudoJets(topNode, "LFHCAL", tcpseudojets, breit, breitRotInv, 1.0, "", -1, true); 
+
+    // Add Calo tracks to charged track constituents and find jets again
+
+    BuildCaloTracks(topNode, "CENT", tcpseudojets, breit, breitRotInv, ECDetName, ECIdx); 
+    BuildCaloTracks(topNode, "FWD", tcpseudojets, breit, breitRotInv, ECDetName, ECIdx); 
 
     fastjet::ClusterSequence tcjetFinder(tcpseudojets, *jetdef);
     // get jets sorted by energy
@@ -862,6 +913,9 @@ void CentauroJets::fill_tree(PHCompositeNode *topNode) {
 
       tcjet_cf.push_back(JetChargedFraction(&tconstit,jptot));
   
+      tcjet_neut_p.push_back(JetNeutralMomentum(&tconstit)); 
+      tcjet_chgd_p.push_back(JetChargedMomentum(&tconstit)); 
+
     }
 
     // Primary Jets
@@ -1181,11 +1235,355 @@ void CentauroJets::FillTowerPseudoJets( PHCompositeNode *topNode, std::string de
 
 #define CLUSTER_E_CUTOFF 0.300
 
+bool CentauroJets::VetoClusterWithTrack(double eta, double phi, std::string detName){
 
-void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode){
+  // Does this cluster have a track pointing to it? 
+      
+  double minDist = 9999.0; 
+
+  for (SvtxTrackMap::ConstIter track_itr = _trackmap->begin();
+       track_itr != _trackmap->end(); track_itr++) {
+
+    SvtxTrack* temp = dynamic_cast<SvtxTrack*>(track_itr->second);
+
+    for (SvtxTrack::ConstStateIter state_itr = temp->begin_states();
+	 state_itr != temp->end_states(); state_itr++) {
+
+      SvtxTrackState *tstate = dynamic_cast<SvtxTrackState*>(state_itr->second);			  
+
+      if( (tstate->get_pathlength()>0.0) && (tstate->get_name()==detName) ) {
+
+	double deta = eta -  tstate->get_eta(); 
+	double dPhi = DeltaPhi(phi, tstate->get_phi()); 
+
+	double dist = sqrt( pow(deta,2) + pow(dPhi,2) ); 
+	if(dist<minDist){
+	  minDist = dist; 
+	}
+
+      }
+
+    }
+
+  }
+
+  _h_track_cluster_match->Fill(minDist);
+
+  // Veto this cluster if a track points to it. 
+  if(minDist<0.1)
+    return true;
+  else
+    return false; 
+
+}
 
 
 
+void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type, 
+				   std::vector<fastjet::PseudoJet> &pseudojets, 
+				   TLorentzRotation &breit, TRotation &breitRot, 
+				   std::string ecDet, int ecIdx ){
+
+  std::string fwd_calos[3] = {"FEMC","LFHCAL",""}; 
+  std::string cent_calos[3] = {"BECAL","HCALIN","HCALOUT"}; 
+  std::string detName[3] = {"","",""}; 
+
+  // Collect the required cluster lists
+
+  RawClusterContainer *clusterList[3] = {NULL, NULL, NULL};
+
+  for(int i=0; i<3; i++){
+
+    if(type=="CENT") 
+      detName[i] = cent_calos[i]; 
+    else if(type=="FWD") 
+      detName[i] = fwd_calos[i]; 
+    else{
+      cout << " Unknown calo track type = " << type << endl; 
+      return; 
+    }
+    
+    if(detName[i]=="") continue; 
+    
+    string clusternodename = "CLUSTER_" + detName[i];
+    clusterList[i] = findNode::getClass<RawClusterContainer>(topNode,clusternodename.c_str());
+    if (!clusterList[i]) {
+      cerr << PHWHERE << " ERROR: Can't find node " << clusternodename << endl;
+      return;
+    }    
+
+  }
+
+  // Create the list to mark a cluster as used
+  
+  std::vector<bool> cused0(clusterList[0]->size(),false); 
+  std::vector<bool> cused1(clusterList[1]->size(),false);
+  
+  int size2; 
+  if(clusterList[2])
+    size2 = clusterList[2]->size(); 
+  else
+    size2 = 1; 
+  std::vector<bool> cused2(size2,false); 
+    
+  // First, seed with the EMCal and look for backing energy in the HCALs
+
+  for (unsigned int k = 0; k < clusterList[0]->size(); k++) {
+
+    // skip the electron cluster
+    // (the EMCal must always be the first in the list for this to work)
+    if( (ecDet==detName[0]) && (ecIdx==(int)k) ) continue; 
+
+    RawCluster *rcluster0 = clusterList[0]->getCluster(k);
+
+    double eta = getEta(rcluster0->get_r(),rcluster0->get_z()-vtx_z);
+    double phi = rcluster0->get_phi(); 
+
+    // eliminate noise clusters
+    // (should this be calo-dependent?)
+    if(rcluster0->get_energy()<CLUSTER_E_CUTOFF) continue; 
+ 
+    if(VetoClusterWithTrack(eta, phi, detName[0])) continue; 
+
+    double pt = rcluster0->get_energy() / cosh(eta);
+    double px = pt * cos(phi);
+    double py = pt * sin(phi);
+    double pz = pt * sinh(eta);
+
+    // Create the cluster
+    TLorentzVector cluster(px,py,pz,rcluster0->get_energy()); 
+    
+    cused0[k] = true; 
+
+    // Look for a match in the next detector w/in 0.2
+
+    for (unsigned int j = 0; j < clusterList[1]->size(); j++) {
+
+      if(cused1[j]) continue; 
+
+      RawCluster *rcluster1 = clusterList[1]->getCluster(j);
+
+      double eta1 = getEta(rcluster1->get_r(),rcluster1->get_z()-vtx_z);
+      double phi1 = rcluster1->get_phi(); 
+
+      // eliminate noise clusters
+      // (should this be calo-dependent?)
+      if(rcluster1->get_energy()<CLUSTER_E_CUTOFF) continue; 
+
+      double deta = eta -  eta1; 
+      double dPhi = DeltaPhi(phi, phi1); 
+
+      double dist = sqrt( pow(deta,2) + pow(dPhi,2) );
+
+      if(type=="CENT")
+	_h_becal_ihcal_match->Fill(dist); 
+      else
+	_h_femc_lfhcal_match->Fill(dist); 
+
+ 
+      if(dist>0.2) continue; 
+
+      if(VetoClusterWithTrack(eta1, phi1, detName[1])) continue; 
+
+      double pt1 = rcluster1->get_energy() / cosh(eta1);
+      double px1 = pt1 * cos(phi1);
+      double py1 = pt1 * sin(phi1);
+      double pz1 = pt1 * sinh(eta1);
+
+      // Create the cluster
+      TLorentzVector cluster1(px1,py1,pz1,rcluster1->get_energy()); 
+
+      // Add it to the existing cluster
+      
+      cluster += cluster1;
+
+      cused1[j] = true; 
+
+    }
+
+    // And the last detector (if it exists)
+
+    if(detName[2]!="") {
+
+      for (unsigned int j = 0; j < clusterList[2]->size(); j++) {
+
+	if(cused2[j]) continue; 
+
+	RawCluster *rcluster1 = clusterList[2]->getCluster(j);
+
+	double eta1 = getEta(rcluster1->get_r(),rcluster1->get_z()-vtx_z);
+	double phi1 = rcluster1->get_phi(); 
+
+	// eliminate noise clusters
+	// (should this be calo-dependent?)
+	if(rcluster1->get_energy()<CLUSTER_E_CUTOFF) continue; 
+
+	double deta = eta -  eta1; 
+	double dPhi = DeltaPhi(phi, phi1); 
+
+	double dist = sqrt( pow(deta,2) + pow(dPhi,2) ); 
+	
+	_h_becal_ohcal_match->Fill(dist); 
+
+	if(dist>0.2) continue; 
+
+	if(VetoClusterWithTrack(eta1, phi1, detName[2])) continue; 
+
+	double pt1 = rcluster1->get_energy() / cosh(eta1);
+	double px1 = pt1 * cos(phi1);
+	double py1 = pt1 * sin(phi1);
+	double pz1 = pt1 * sinh(eta1);
+
+	// Create the cluster
+	TLorentzVector cluster1(px1,py1,pz1,rcluster1->get_energy()); 
+
+	// Add it to the existing cluster
+      
+	cluster += cluster1; 
+
+	cused2[j] = true; 
+
+      }
+
+    }
+
+    // Finally - take the combined cluster and add it to the constituents
+    // Transform to Breit frame
+    TLorentzVector breit_cluster = (breit*cluster); 
+    breit_cluster.Transform(breitRot); 
+
+    fastjet::PseudoJet pseudojet (breit_cluster.Px(),breit_cluster.Py(),breit_cluster.Pz(),breit_cluster.E()); 
+    pseudojet.set_user_index(0); 
+    pseudojets.push_back(pseudojet);
+
+  }
+
+  // Next, seed with the HCAL and follow up with the second HCAL segment
+  // necessary to capture hadronic showers w/o cluster in EMCal
+
+  for (unsigned int k = 0; k < clusterList[1]->size(); k++) {
+
+    if(cused1[k]) continue;
+
+    RawCluster *rcluster = clusterList[1]->getCluster(k);
+
+    double eta = getEta(rcluster->get_r(),rcluster->get_z()-vtx_z);
+    double phi = rcluster->get_phi(); 
+
+    // eliminate noise clusters
+    // (should this be calo-dependent?)
+    if(rcluster->get_energy()<CLUSTER_E_CUTOFF) continue; 
+
+    if(VetoClusterWithTrack(eta, phi, detName[1])) continue; 
+
+    double pt = rcluster->get_energy() / cosh(eta);
+    double px = pt * cos(phi);
+    double py = pt * sin(phi);
+    double pz = pt * sinh(eta);
+
+    // Create the cluster
+    TLorentzVector cluster(px,py,pz,rcluster->get_energy()); 
+
+    cused1[k] = true; 
+
+    // And the last detector (if it exists)
+
+    if(detName[2]!="") {
+
+      for (unsigned int j = 0; j < clusterList[2]->size(); j++) {
+
+	if(cused2[j]) continue; 
+
+	RawCluster *rcluster1 = clusterList[2]->getCluster(j);
+
+	double eta1 = getEta(rcluster1->get_r(),rcluster1->get_z()-vtx_z);
+	double phi1 = rcluster1->get_phi(); 
+
+	// eliminate noise clusters
+	// (should this be calo-dependent?)
+	if(rcluster1->get_energy()<CLUSTER_E_CUTOFF) continue; 
+
+	double deta = eta -  eta1; 
+	double dPhi = DeltaPhi(phi, phi1); 
+
+	double dist = sqrt( pow(deta,2) + pow(dPhi,2) );
+
+	if(type=="CENT")
+	  _h_ihcal_ohcal_match->Fill(dist); 
+ 
+	if(dist>0.2) continue; 
+
+	if(VetoClusterWithTrack(eta1, phi1, detName[2])) continue; 
+
+	double pt1 = rcluster1->get_energy() / cosh(eta1);
+	double px1 = pt1 * cos(phi1);
+	double py1 = pt1 * sin(phi1);
+	double pz1 = pt1 * sinh(eta1);
+
+	// Create the cluster
+	TLorentzVector cluster1(px1,py1,pz1,rcluster1->get_energy()); 
+
+	// Add it to the existing cluster
+      
+	cluster += cluster1;
+
+	cused2[j] = true; 
+
+      }
+
+    }
+
+    // Finally - take the combined cluster and add it to the constituents
+    // Transform to Breit frame
+    TLorentzVector breit_cluster = (breit*cluster); 
+    breit_cluster.Transform(breitRot); 
+
+    fastjet::PseudoJet pseudojet (breit_cluster.Px(),breit_cluster.Py(),breit_cluster.Pz(),breit_cluster.E()); 
+    pseudojet.set_user_index(0); 
+    pseudojets.push_back(pseudojet);
+
+  }
+
+  // Finally - the last HCAL by itself (if it exists)
+
+  if(detName[2]!="") {
+
+    for (unsigned int j = 0; j < clusterList[2]->size(); j++) {
+
+      if(cused2[j]) continue; 
+
+      RawCluster *rcluster1 = clusterList[2]->getCluster(j);
+
+      double eta1 = getEta(rcluster1->get_r(),rcluster1->get_z()-vtx_z);
+      double phi1 = rcluster1->get_phi(); 
+
+      // eliminate noise clusters
+      // (should this be calo-dependent?)
+      if(rcluster1->get_energy()<CLUSTER_E_CUTOFF) continue; 
+
+      if(VetoClusterWithTrack(eta1, phi1, detName[2])) continue; 
+
+      double pt1 = rcluster1->get_energy() / cosh(eta1);
+      double px1 = pt1 * cos(phi1);
+      double py1 = pt1 * sin(phi1);
+      double pz1 = pt1 * sinh(eta1);
+
+      // Create the cluster
+      TLorentzVector cluster(px1,py1,pz1,rcluster1->get_energy()); 
+
+      cused2[j] = true; 
+
+      // Transform to Breit frame
+      TLorentzVector breit_cluster = (breit*cluster); 
+      breit_cluster.Transform(breitRot); 
+
+      fastjet::PseudoJet pseudojet (breit_cluster.Px(),breit_cluster.Py(),breit_cluster.Pz(),breit_cluster.E()); 
+      pseudojet.set_user_index(0); 
+      pseudojets.push_back(pseudojet);
+
+    }
+
+  }
 
   return; 
 
@@ -1289,6 +1687,8 @@ RawCluster *CentauroJets:: getCluster( PHCompositeNode *topNode, std::string det
     clIdx = -1;
     return NULL; 
   }    
+
+  //cout << detName << " " << clusterList->size() << endl; 
 
   // loop over all clusters and find nearest
   double min_r = 9999.0;
@@ -1477,6 +1877,9 @@ void CentauroJets::GetPrimaryJets(PHCompositeNode *topNode, fastjet::JetDefiniti
 
 	tfpjet_cf.push_back(JetChargedFraction(&tconstit,jptot));
 
+	tfpjet_neut_p.push_back(JetNeutralMomentum(&tconstit)); 
+	tfpjet_chgd_p.push_back(JetChargedMomentum(&tconstit)); 
+
       }
       else{
 
@@ -1512,6 +1915,9 @@ void CentauroJets::GetPrimaryJets(PHCompositeNode *topNode, fastjet::JetDefiniti
 	pjet_Q.push_back(JetCharge(&tconstit,jptot));
 
 	pjet_cf.push_back(JetChargedFraction(&tconstit,jptot));
+
+	pjet_neut_p.push_back(JetNeutralMomentum(&tconstit)); 
+	pjet_chgd_p.push_back(JetChargedMomentum(&tconstit)); 
 
       }
 
