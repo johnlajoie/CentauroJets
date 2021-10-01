@@ -21,6 +21,7 @@ class RawTowerGeomContainer;
 class TLorentzVector; 
 class RawCluster; 
 class TH1D; 
+class TH2D; 
 
 namespace fastjet {
   class PseudoJet;
@@ -218,10 +219,28 @@ class CentauroJets: public SubsysReco
 
   //Diagnostic histograms
   TH1D *_h_track_cluster_match; 
+  TH1D *_h_track_cluster_match_becal; 
+  TH1D *_h_track_cluster_match_ihcal; 
+  TH1D *_h_track_cluster_match_ohcal; 
+  TH1D *_h_track_cluster_match_femc; 
+  TH1D *_h_track_cluster_match_lfhcal; 
+
   TH1D *_h_becal_ihcal_match; 
   TH1D *_h_becal_ohcal_match; 
   TH1D *_h_ihcal_ohcal_match; 
-  TH1D *_h_femc_lfhcal_match; 
+  TH1D *_h_femc_lfhcal_match;
+
+  TH1D *_h_calotrack_prim_match_cent; 
+  TH1D *_h_calotrack_pid_prim_match_cent; 
+
+  TH1D *_h_calotrack_prim_match_fwd; 
+  TH1D *_h_calotrack_pid_prim_match_fwd; 
+
+  TH1D *_h_calotrack_cent_NES; 
+  TH1D *_h_calotrack_fwd_NES; 
+
+  TH2D *_h_calotrack_cent_NES_2D; 
+  TH2D *_h_calotrack_fwd_NES_2D; 
 
 };
 

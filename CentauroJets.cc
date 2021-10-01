@@ -40,6 +40,7 @@
 
 #include <TTree.h>
 #include <TH1D.h>
+#include <TH2D.h>
 #include <TRandom3.h>
 #include <TLorentzVector.h>
 #include <TLorentzRotation.h>
@@ -288,11 +289,29 @@ int CentauroJets::Init(PHCompositeNode *topNode) {
 
 	// Diagnostic histograms
 
-	_h_track_cluster_match = new TH1D("_h_track_cluster_match","",100,0.0,20.0); 
-	_h_becal_ihcal_match = new TH1D("_h_becal_ihcal_match","",100,0.0,20.0); 
-	_h_becal_ohcal_match = new TH1D("_h_becal_ohcal_match","",100,0.0,20.0); 
-	_h_ihcal_ohcal_match = new TH1D("_h_ihcal_ohcal_match","",100,0.0,20.0); 
-	_h_femc_lfhcal_match = new TH1D("_h_femc_lfhcal_match","",100,0.0,20.0); 
+	_h_track_cluster_match = new TH1D("_h_track_cluster_match","",200,0.0,1.0); 
+	_h_track_cluster_match_becal = new TH1D("_h_track_cluster_match_becal","",200,0.0,1.0); 
+	_h_track_cluster_match_ihcal = new TH1D("_h_track_cluster_match_ihcal","",200,0.0,1.0); 
+	_h_track_cluster_match_ohcal = new TH1D("_h_track_cluster_match_ohcal","",200,0.0,1.0); 
+	_h_track_cluster_match_femc = new TH1D("_h_track_cluster_match_femc","",200,0.0,1.0); 
+	_h_track_cluster_match_lfhcal = new TH1D("_h_track_cluster_match_lfhcal","",200,0.0,1.0); 
+
+	_h_becal_ihcal_match = new TH1D("_h_becal_ihcal_match","",200,0.0,1.0); 
+	_h_becal_ohcal_match = new TH1D("_h_becal_ohcal_match","",200,0.0,1.0); 
+	_h_ihcal_ohcal_match = new TH1D("_h_ihcal_ohcal_match","",200,0.0,1.0); 
+	_h_femc_lfhcal_match = new TH1D("_h_femc_lfhcal_match","",200,0.0,5.0); 
+
+	_h_calotrack_prim_match_cent = new TH1D("_h_calotrack_prim_match_cent","",400,0.0,2.0); 
+	_h_calotrack_pid_prim_match_cent = new TH1D("_h_calotrack_pid_prim_match_cent","",6001,-3000.5,3000.5);
+
+	_h_calotrack_prim_match_fwd = new TH1D("_h_calotrack_prim_match_fwd","",400,0.0,2.0); 
+	_h_calotrack_pid_prim_match_fwd = new TH1D("_h_calotrack_pid_prim_match_fwd","",6001,-3000.5,3000.5);
+
+	_h_calotrack_cent_NES = new TH1D("_h_calotrack_cent_NES","",200,0.0,2.0); 
+	_h_calotrack_fwd_NES = new TH1D("_h_calotrack_fwd_NES","",200,0.0,2.0); 
+
+	_h_calotrack_cent_NES_2D = new TH2D("_h_calotrack_cent_NES_2D","",80,0.0,40.0,200,0.0,2.0); 
+	_h_calotrack_fwd_NES_2D = new TH2D("_h_calotrack_fwd_NES_2D","",80,0.0,40.0,200,0.0,2.0); 
 
 	return Fun4AllReturnCodes::EVENT_OK;
 }
@@ -329,6 +348,30 @@ int CentauroJets::End(PHCompositeNode *topNode) {
 	PHTFileServer::get().cd(_outfile_name);
 
 	_eval_tree_event->Write();
+
+	_h_track_cluster_match->Write(); 
+	_h_track_cluster_match_becal->Write(); 
+	_h_track_cluster_match_ihcal->Write(); 
+	_h_track_cluster_match_ohcal->Write(); 
+	_h_track_cluster_match_femc->Write(); 
+	_h_track_cluster_match_lfhcal->Write(); 
+
+	_h_becal_ihcal_match->Write(); 
+	_h_becal_ohcal_match->Write(); 
+	_h_ihcal_ohcal_match->Write(); 
+	_h_femc_lfhcal_match->Write(); 
+
+	_h_calotrack_prim_match_cent->Write(); 
+	_h_calotrack_pid_prim_match_cent->Write(); 
+
+	_h_calotrack_prim_match_fwd->Write(); 
+	_h_calotrack_pid_prim_match_fwd->Write(); 
+
+	_h_calotrack_cent_NES->Write(); 
+	_h_calotrack_fwd_NES->Write(); 
+
+	_h_calotrack_cent_NES_2D->Write(); 
+	_h_calotrack_fwd_NES_2D->Write(); 
 
 	delete rand; 
 
@@ -1233,7 +1276,7 @@ void CentauroJets::FillTowerPseudoJets( PHCompositeNode *topNode, std::string de
 
 }
 
-#define CLUSTER_E_CUTOFF 0.300
+#define CLUSTER_E_CUTOFF 0.100
 
 bool CentauroJets::VetoClusterWithTrack(double eta, double phi, std::string detName){
 
@@ -1269,8 +1312,35 @@ bool CentauroJets::VetoClusterWithTrack(double eta, double phi, std::string detN
 
   _h_track_cluster_match->Fill(minDist);
 
+  double cutDist = 0.15; 
+
+  if(detName=="BECAL") {
+    _h_track_cluster_match_becal->Fill(minDist);
+    cutDist = 0.24; 
+  }
+
+  if(detName=="HCALIN") {
+    _h_track_cluster_match_ihcal->Fill(minDist);
+    cutDist = 0.25; 
+  }
+
+  if(detName=="HCALOUT") {
+    _h_track_cluster_match_ohcal->Fill(minDist);
+    cutDist = 0.25; 
+  }
+
+  if(detName=="FEMC") {
+    _h_track_cluster_match_femc->Fill(minDist);
+    cutDist = 0.15; 
+  }
+
+  if(detName=="LFHCAL") {
+    _h_track_cluster_match_lfhcal->Fill(minDist);
+    cutDist = 0.25; 
+  }
+
   // Veto this cluster if a track points to it. 
-  if(minDist<0.1)
+  if(minDist<cutDist)
     return true;
   else
     return false; 
@@ -1314,7 +1384,7 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
 
   }
 
-  // Create the list to mark a cluster as used
+  // Create the lists to mark a cluster as used
   
   std::vector<bool> cused0(clusterList[0]->size(),false); 
   std::vector<bool> cused1(clusterList[1]->size(),false);
@@ -1326,25 +1396,58 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
     size2 = 1; 
   std::vector<bool> cused2(size2,false); 
     
+  // Create and fill the track matching lists
+
+  std::vector<bool> tmatched0(clusterList[0]->size(),false); 
+  std::vector<bool> tmatched1(clusterList[1]->size(),false);
+  std::vector<bool> tmatched2(size2,false); 
+
+  for (unsigned int i = 0; i < 3; i++) {
+
+    if(!clusterList[i]) continue; 
+
+    for (unsigned int k = 0; k < clusterList[i]->size(); k++) {
+
+      RawCluster *rcluster = clusterList[i]->getCluster(k);
+
+      // eliminate noise clusters
+      if(rcluster->get_energy()<CLUSTER_E_CUTOFF) continue; 
+
+      double eta = getEta(rcluster->get_r(),rcluster->get_z()-vtx_z);
+      double phi = rcluster->get_phi(); 
+
+      if(i==0) tmatched0[k] = VetoClusterWithTrack(eta, phi, detName[i]); 
+      if(i==1) tmatched1[k] = VetoClusterWithTrack(eta, phi, detName[i]); 
+      if(i==2) tmatched2[k] = VetoClusterWithTrack(eta, phi, detName[i]); 
+
+    }
+
+  }
+
   // First, seed with the EMCal and look for backing energy in the HCALs
 
   for (unsigned int k = 0; k < clusterList[0]->size(); k++) {
 
     // skip the electron cluster
     // (the EMCal must always be the first in the list for this to work)
-    if( (ecDet==detName[0]) && (ecIdx==(int)k) ) continue; 
+    if( (ecDet==detName[0]) && (ecIdx==(int)k) ) {
+      cused0[k] = true; 
+      continue; 
+    }
+
+    if(tmatched0[k]) {
+      cused0[k] = true; 
+      continue; 
+    }
 
     RawCluster *rcluster0 = clusterList[0]->getCluster(k);
 
+    // eliminate noise clusters
+    if(rcluster0->get_energy()<CLUSTER_E_CUTOFF) continue; 
+
     double eta = getEta(rcluster0->get_r(),rcluster0->get_z()-vtx_z);
     double phi = rcluster0->get_phi(); 
-
-    // eliminate noise clusters
-    // (should this be calo-dependent?)
-    if(rcluster0->get_energy()<CLUSTER_E_CUTOFF) continue; 
  
-    if(VetoClusterWithTrack(eta, phi, detName[0])) continue; 
-
     double pt = rcluster0->get_energy() / cosh(eta);
     double px = pt * cos(phi);
     double py = pt * sin(phi);
@@ -1361,14 +1464,18 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
 
       if(cused1[j]) continue; 
 
+      if(tmatched1[j]) {
+	cused1[j] = true; 
+	continue; 
+      }
+
       RawCluster *rcluster1 = clusterList[1]->getCluster(j);
+
+      // eliminate noise clusters
+      if(rcluster1->get_energy()<CLUSTER_E_CUTOFF) continue; 
 
       double eta1 = getEta(rcluster1->get_r(),rcluster1->get_z()-vtx_z);
       double phi1 = rcluster1->get_phi(); 
-
-      // eliminate noise clusters
-      // (should this be calo-dependent?)
-      if(rcluster1->get_energy()<CLUSTER_E_CUTOFF) continue; 
 
       double deta = eta -  eta1; 
       double dPhi = DeltaPhi(phi, phi1); 
@@ -1379,11 +1486,8 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
 	_h_becal_ihcal_match->Fill(dist); 
       else
 	_h_femc_lfhcal_match->Fill(dist); 
-
  
       if(dist>0.2) continue; 
-
-      if(VetoClusterWithTrack(eta1, phi1, detName[1])) continue; 
 
       double pt1 = rcluster1->get_energy() / cosh(eta1);
       double px1 = pt1 * cos(phi1);
@@ -1409,14 +1513,18 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
 
 	if(cused2[j]) continue; 
 
+	if(tmatched2[j]) {
+	  cused2[j] = true; 
+	  continue; 
+	}
+
 	RawCluster *rcluster1 = clusterList[2]->getCluster(j);
+
+	// eliminate noise clusters
+	if(rcluster1->get_energy()<CLUSTER_E_CUTOFF) continue; 
 
 	double eta1 = getEta(rcluster1->get_r(),rcluster1->get_z()-vtx_z);
 	double phi1 = rcluster1->get_phi(); 
-
-	// eliminate noise clusters
-	// (should this be calo-dependent?)
-	if(rcluster1->get_energy()<CLUSTER_E_CUTOFF) continue; 
 
 	double deta = eta -  eta1; 
 	double dPhi = DeltaPhi(phi, phi1); 
@@ -1426,8 +1534,6 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
 	_h_becal_ohcal_match->Fill(dist); 
 
 	if(dist>0.2) continue; 
-
-	if(VetoClusterWithTrack(eta1, phi1, detName[2])) continue; 
 
 	double pt1 = rcluster1->get_energy() / cosh(eta1);
 	double px1 = pt1 * cos(phi1);
@@ -1465,16 +1571,18 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
 
     if(cused1[k]) continue;
 
+    if(tmatched1[k]) {
+      cused1[k] = true; 
+      continue; 
+    }
+
     RawCluster *rcluster = clusterList[1]->getCluster(k);
+
+    // eliminate noise clusters
+    if(rcluster->get_energy()<CLUSTER_E_CUTOFF) continue; 
 
     double eta = getEta(rcluster->get_r(),rcluster->get_z()-vtx_z);
     double phi = rcluster->get_phi(); 
-
-    // eliminate noise clusters
-    // (should this be calo-dependent?)
-    if(rcluster->get_energy()<CLUSTER_E_CUTOFF) continue; 
-
-    if(VetoClusterWithTrack(eta, phi, detName[1])) continue; 
 
     double pt = rcluster->get_energy() / cosh(eta);
     double px = pt * cos(phi);
@@ -1494,14 +1602,18 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
 
 	if(cused2[j]) continue; 
 
+	if(tmatched2[j]) {
+	  cused2[j] = true; 
+	  continue; 
+	}
+
 	RawCluster *rcluster1 = clusterList[2]->getCluster(j);
+
+	// eliminate noise clusters
+	if(rcluster1->get_energy()<CLUSTER_E_CUTOFF) continue; 
 
 	double eta1 = getEta(rcluster1->get_r(),rcluster1->get_z()-vtx_z);
 	double phi1 = rcluster1->get_phi(); 
-
-	// eliminate noise clusters
-	// (should this be calo-dependent?)
-	if(rcluster1->get_energy()<CLUSTER_E_CUTOFF) continue; 
 
 	double deta = eta -  eta1; 
 	double dPhi = DeltaPhi(phi, phi1); 
@@ -1512,8 +1624,6 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
 	  _h_ihcal_ohcal_match->Fill(dist); 
  
 	if(dist>0.2) continue; 
-
-	if(VetoClusterWithTrack(eta1, phi1, detName[2])) continue; 
 
 	double pt1 = rcluster1->get_energy() / cosh(eta1);
 	double px1 = pt1 * cos(phi1);
@@ -1552,16 +1662,18 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
 
       if(cused2[j]) continue; 
 
+      if(tmatched2[j]) {
+	cused2[j] = true; 
+	continue; 
+      }
+
       RawCluster *rcluster1 = clusterList[2]->getCluster(j);
+
+      // eliminate noise clusters
+      if(rcluster1->get_energy()<CLUSTER_E_CUTOFF) continue; 
 
       double eta1 = getEta(rcluster1->get_r(),rcluster1->get_z()-vtx_z);
       double phi1 = rcluster1->get_phi(); 
-
-      // eliminate noise clusters
-      // (should this be calo-dependent?)
-      if(rcluster1->get_energy()<CLUSTER_E_CUTOFF) continue; 
-
-      if(VetoClusterWithTrack(eta1, phi1, detName[2])) continue; 
 
       double pt1 = rcluster1->get_energy() / cosh(eta1);
       double px1 = pt1 * cos(phi1);
@@ -1584,6 +1696,78 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
     }
 
   }
+
+  // Diagnostics - connect the calo tracks to neutral primaries
+
+  G4ParticleTable* particleTable = G4ParticleTable::GetParticleTable();
+
+  for(unsigned int i=0; i<pseudojets.size(); i++){
+
+    if(pseudojets[i].user_index()==0){
+
+      TVector3 ctrack(pseudojets[i].px(),pseudojets[i].py(),pseudojets[i].pz());
+      
+      double minDist = 9999.0; 
+      int pid = -9999; 
+      double prim_p = 9999.0; 
+
+      // PRIMARIES ONLY
+      PHG4TruthInfoContainer::ConstRange range =
+	_truth_container->GetPrimaryParticleRange();
+
+      for (PHG4TruthInfoContainer::ConstIterator truth_itr = range.first;
+	   truth_itr != range.second; ++truth_itr) {
+
+	PHG4Particle* g4particle = truth_itr->second;
+	if(!g4particle) {
+	  LogDebug("");
+	  continue;
+	}
+
+	G4ParticleDefinition* particle = particleTable->FindParticle(g4particle->get_name());
+	int charge = 0; 
+	if(particle) charge = particle->GetPDGCharge();
+
+	if(charge!=0) continue; 
+
+	// NOTE: stored HepMC kinematics are in event generator (head-on) frame!
+	// Transform to the lab frame
+	CLHEP::HepLorentzVector efp(g4particle->get_px(),g4particle->get_py(),g4particle->get_pz(),g4particle->get_e());
+	efp = EventToLab * efp;  
+
+	TVector3 prim(efp.px(), efp.py(), efp.pz()); 
+
+	double deta = ctrack.Eta() - prim.Eta(); 
+	double dphi = DeltaPhi(ctrack.Phi(), prim.Phi()); 
+
+	double dist = sqrt(pow(deta,2) + pow(dphi,2)); 
+	if(dist<minDist){
+	  minDist = dist; 
+	  pid = g4particle->get_pid();
+	  prim_p = prim.Mag(); 
+	}
+
+      }
+
+      if(type=="CENT"){
+        _h_calotrack_prim_match_cent->Fill(minDist); 
+        _h_calotrack_pid_prim_match_cent->Fill(pid); 
+	_h_calotrack_cent_NES->Fill(ctrack.Mag()/prim_p); 
+	_h_calotrack_cent_NES_2D->Fill(prim_p,ctrack.Mag()/prim_p); 
+      }
+
+      if(type=="FWD"){
+        _h_calotrack_prim_match_fwd->Fill(minDist); 
+        _h_calotrack_pid_prim_match_fwd->Fill(pid); 
+	_h_calotrack_fwd_NES->Fill(ctrack.Mag()/prim_p); 
+	_h_calotrack_fwd_NES_2D->Fill(prim_p,ctrack.Mag()/prim_p); 
+      }
+
+
+    }
+
+  }
+
 
   return; 
 
@@ -1617,40 +1801,7 @@ void CentauroJets::FillClusterPseudoJets( PHCompositeNode *topNode, std::string 
     if(rcluster->get_energy()<CLUSTER_E_CUTOFF) continue; 
 
     if(TrackVeto){
-
-      // Does this cluster have a track pointing to it? 
-      
-      double minDist = 9999.0; 
-
-      for (SvtxTrackMap::ConstIter track_itr = _trackmap->begin();
-	   track_itr != _trackmap->end(); track_itr++) {
-
-	SvtxTrack* temp = dynamic_cast<SvtxTrack*>(track_itr->second);
-
-	for (SvtxTrack::ConstStateIter state_itr = temp->begin_states();
-	     state_itr != temp->end_states(); state_itr++) {
-
-	  SvtxTrackState *tstate = dynamic_cast<SvtxTrackState*>(state_itr->second);			  
-
-	  if( (tstate->get_pathlength()>0.0) && (tstate->get_name()==detName) ) {
-
-	    double deta = eta -  tstate->get_eta(); 
-	    double dPhi = DeltaPhi(phi, tstate->get_phi()); 
-
-	    double dist = sqrt( pow(deta,2) + pow(dPhi,2) ); 
-	    if(dist<minDist){
-	      minDist = dist; 
-	    }
-
-	  }
-
-	}
-
-      }
-
-      // Veto this cluster if a track points to it. 
-      if(minDist<0.1) continue;
-      
+      if(VetoClusterWithTrack(eta, phi, detName)) continue; 
     }
 
     double pt = scale_factor*rcluster->get_energy() / cosh(eta);
