@@ -11,6 +11,7 @@ class PHCompositeNode;
 class PHG4TruthInfoContainer;
 class PHG4Particle; 
 class SvtxTrackMap;
+class SvtxTrack; 
 class TFile;
 class TTree;
 class TRandom; 
@@ -94,7 +95,11 @@ class CentauroJets: public SubsysReco
 		       TLorentzRotation &breit, TRotation &breitRot, 
 		       std::string ecDet, int ecIdx );
 
+  void BuildChargedCaloTracks(PHCompositeNode *topNode, std::string type);
+
   bool VetoClusterWithTrack(double eta, double phi, std::string detName);
+
+  SvtxTrack *AttachClusterToTrack(double eta, double phi, std::string detName); 
 
   // Event generator transform
   CLHEP::HepLorentzRotation EventToLab; 
@@ -128,7 +133,7 @@ class CentauroJets: public SubsysReco
   double breit_vphot_pz; 
   double breit_vphot_pt;
   double breit_initial_proton_pz; 
-  double breit_initial_proton_pt; 
+  double breit_initial_proton_pt;
 
   std::vector<double> jet_pT; 
   std::vector<double> jet_p; 
@@ -207,6 +212,21 @@ class CentauroJets: public SubsysReco
   std::vector<double> tfpjet_neut_p; 
   std::vector<double> tfpjet_chgd_p; 
 
+  TTree *_eval_charged_tracks_cent; 
+  TTree *_eval_charged_tracks_fwd; 
+
+  std::vector<int> ct_pid; 
+  std::vector<double> ct_p_meas; 
+  std::vector<double> ct_p_true; 
+  std::vector<double> ct_eta_meas; 
+  std::vector<double> ct_eta_true; 
+  std::vector<double> ct_e_bemc; 
+  std::vector<double> ct_e_ihcal; 
+  std::vector<double> ct_e_ohcal; 
+  std::vector<double> ct_e_femc; 
+  std::vector<double> ct_e_lfhcal; 
+  std::vector<double> ct_e_tot; 
+
   // Scattered electron in event record:
   PHG4Particle* true_electron_headon; 
 
@@ -226,14 +246,26 @@ class CentauroJets: public SubsysReco
   TH1D *_h_track_cluster_match_lfhcal; 
 
   TH1D *_h_becal_ihcal_match; 
+  TH1D *_h_becal_ihcal_match_eta; 
+  TH1D *_h_becal_ihcal_match_phi; 
   TH1D *_h_becal_ohcal_match; 
+  TH1D *_h_becal_ohcal_match_eta; 
+  TH1D *_h_becal_ohcal_match_phi; 
   TH1D *_h_ihcal_ohcal_match; 
+  TH1D *_h_ihcal_ohcal_match_eta; 
+  TH1D *_h_ihcal_ohcal_match_phi; 
   TH1D *_h_femc_lfhcal_match;
+  TH1D *_h_femc_lfhcal_match_eta;
+  TH1D *_h_femc_lfhcal_match_phi;
 
   TH1D *_h_calotrack_prim_match_cent; 
+  TH1D *_h_calotrack_prim_match_cent_gamma; 
+  TH1D *_h_calotrack_prim_match_cent_neutron; 
   TH1D *_h_calotrack_pid_prim_match_cent; 
 
   TH1D *_h_calotrack_prim_match_fwd; 
+  TH1D *_h_calotrack_prim_match_fwd_gamma; 
+  TH1D *_h_calotrack_prim_match_fwd_neutron; 
   TH1D *_h_calotrack_pid_prim_match_fwd; 
 
   TH1D *_h_calotrack_cent_NES; 
@@ -241,6 +273,19 @@ class CentauroJets: public SubsysReco
 
   TH2D *_h_calotrack_cent_NES_2D; 
   TH2D *_h_calotrack_fwd_NES_2D; 
+
+  TH2D *_h_calotrack_cent_gamma_NES_2D; 
+  TH2D *_h_calotrack_fwd_gamma_NES_2D; 
+
+  TH2D *_h_calotrack_cent_neutron_NES_2D; 
+  TH2D *_h_calotrack_fwd_neutron_NES_2D; 
+
+  TH1D *_h_nclusters_becal; 
+  TH1D *_h_nclusters_ihcal; 
+  TH1D *_h_nclusters_ohcal; 
+  TH1D *_h_nclusters_femc; 
+  TH1D *_h_nclusters_lfhcal; 
+  
 
 };
 
