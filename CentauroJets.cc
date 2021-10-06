@@ -2183,6 +2183,8 @@ void CentauroJets::BuildChargedCaloTracks(PHCompositeNode *topNode, std::string 
 
     // Next calorimeter
 
+    double stage2_energy = 0.0; 
+
     if(detName[1]!=""){
 
       for (unsigned int j = 0; j < clusterList[1]->size(); j++) {
@@ -2193,13 +2195,7 @@ void CentauroJets::BuildChargedCaloTracks(PHCompositeNode *topNode, std::string 
 	  RawCluster *rcluster1 = clusterList[1]->getCluster(j);
 
 	  caloTot += rcluster1->get_energy(); 
-	  
-	  if(type=="CENT"){
-	    ct_e_ihcal.push_back(rcluster1->get_energy()); 
-	  }
-	  else if(type=="FWD"){
-	    ct_e_lfhcal.push_back(rcluster1->get_energy()); 
-	  }
+	  stage2_energy = rcluster1->get_energy(); 
 
 	  break; 
 
@@ -2209,7 +2205,17 @@ void CentauroJets::BuildChargedCaloTracks(PHCompositeNode *topNode, std::string 
 
     }
 
+    if(type=="CENT"){
+      ct_e_ihcal.push_back(stage2_energy); 
+    }
+    else if(type=="FWD"){
+      ct_e_lfhcal.push_back(stage2_energy); 
+    }
+
+
     // Last calorimeter
+
+    double stage3_energy = 0.0; 
 
     if(detName[2]!=""){
 
@@ -2220,18 +2226,19 @@ void CentauroJets::BuildChargedCaloTracks(PHCompositeNode *topNode, std::string 
 
 	  RawCluster *rcluster2 = clusterList[2]->getCluster(j);
 
-	  caloTot += rcluster2->get_energy(); 
+	  caloTot += rcluster2->get_energy();
+	  stage3_energy += rcluster2->get_energy();
 	  
-	  if(type=="CENT"){
-	    ct_e_ihcal.push_back(rcluster2->get_energy()); 
-	  }
-
 	  break; 
 
 	}
 
       }
 
+    }
+
+    if(type=="CENT"){
+      ct_e_ihcal.push_back(stage3_energy); 
     }
 
     // Fill the tree
