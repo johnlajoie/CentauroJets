@@ -61,7 +61,26 @@
 using namespace std;
 using namespace fastjet; 
 
+// Tower/cluster cutoffs
 #define TOWER_E_CUT 0.200 
+#define CLUSTER_E_CUTOFF 0.100
+
+// Cluster/track matching cuts
+#define BECAL_CLUST_TRACKMATCH 0.10
+#define IHCAL_CLUST_TRACKMATCH 0.25
+#define OHCAL_CLUST_TRACKMATCH 0.25
+#define FEMC_CLUST_TRACKMATCH 0.15
+#define LFHCAL_CLUST_TRACKMATCH 0.35
+
+//Cluster energy scaling 
+// (This is actually applied in the macros but 
+// a list is kept here as documentation in case
+// the macros are updated.)
+#define BECAL_CLUST_SCALE 0.8
+#define IHCAL_CLUST_SCALE 0.4
+#define OHCAL_CLUST_SCALE 0.4
+#define FEMC_CLUST_SCALE 1.0
+#define LFHCAL_CLUST_SCALE 0.4
 
 double XYtoPhi(double x, double y)
 {
@@ -312,6 +331,25 @@ int CentauroJets::Init(PHCompositeNode *topNode) {
 	_eval_charged_tracks_fwd->Branch("e_lfhcal",&ct_e_lfhcal); 
 	_eval_charged_tracks_fwd->Branch("e_tot",&ct_e_tot); 
 
+	// evaluation for calo tracks
+	_eval_calo_tracks_cent = new TTree("calotrackeval_cent", "Calotrack Evaluation (central)");
+	_eval_calo_tracks_cent->Branch("event", &event, "event/I");
+	_eval_calo_tracks_cent->Branch("pid",&cat_pid); 
+	_eval_calo_tracks_cent->Branch("p_true",&cat_p_true); 
+	_eval_calo_tracks_cent->Branch("eta_meas",&cat_eta_meas); 
+	_eval_calo_tracks_cent->Branch("eta_true",&cat_eta_true); 
+	_eval_calo_tracks_cent->Branch("match",&cat_match); 
+	_eval_calo_tracks_cent->Branch("e_tot",&cat_e_tot); 
+
+	_eval_calo_tracks_fwd = new TTree("calotrackeval_fwd", "Calotrack Evaluation (fwd)");
+	_eval_calo_tracks_fwd->Branch("event", &event, "event/I");
+	_eval_calo_tracks_fwd->Branch("pid",&cat_pid); 
+	_eval_calo_tracks_fwd->Branch("p_true",&cat_p_true); 
+	_eval_calo_tracks_fwd->Branch("eta_meas",&cat_eta_meas); 
+	_eval_calo_tracks_fwd->Branch("eta_true",&cat_eta_true); 
+	_eval_calo_tracks_fwd->Branch("match",&cat_match); 
+	_eval_calo_tracks_fwd->Branch("e_tot",&cat_e_tot); 
+
 	// Diagnostic histograms
 
 	_h_track_cluster_match = new TH1D("_h_track_cluster_match","",200,0.0,1.0); 
@@ -400,6 +438,9 @@ int CentauroJets::End(PHCompositeNode *topNode) {
 
 	_eval_charged_tracks_cent->Write(); 
 	_eval_charged_tracks_fwd->Write(); 
+
+	_eval_calo_tracks_cent->Write(); 
+	_eval_calo_tracks_fwd->Write(); 
 
 	_h_track_cluster_match->Write(); 
 	_h_track_cluster_match_becal->Write(); 
@@ -1359,8 +1400,6 @@ void CentauroJets::FillTowerPseudoJets( PHCompositeNode *topNode, std::string de
 
 }
 
-#define CLUSTER_E_CUTOFF 0.100
-
 bool CentauroJets::VetoClusterWithTrack(double eta, double phi, std::string detName){
 
   // Does this cluster have a track pointing to it? 
@@ -1393,33 +1432,33 @@ bool CentauroJets::VetoClusterWithTrack(double eta, double phi, std::string detN
 
   }
 
-  _h_track_cluster_match->Fill(minDist);
+  //_h_track_cluster_match->Fill(minDist);
 
   double cutDist = 0.15; 
 
   if(detName=="BECAL") {
-    _h_track_cluster_match_becal->Fill(minDist);
-    cutDist = 0.05; 
+    //_h_track_cluster_match_becal->Fill(minDist);
+    cutDist = BECAL_CLUST_TRACKMATCH; 
   }
 
   if(detName=="HCALIN") {
-    _h_track_cluster_match_ihcal->Fill(minDist);
-    cutDist = 0.25; 
+    //_h_track_cluster_match_ihcal->Fill(minDist);
+    cutDist = IHCAL_CLUST_TRACKMATCH; 
   }
 
   if(detName=="HCALOUT") {
-    _h_track_cluster_match_ohcal->Fill(minDist);
-    cutDist = 0.25; 
+    //_h_track_cluster_match_ohcal->Fill(minDist);
+    cutDist = OHCAL_CLUST_TRACKMATCH; 
   }
 
   if(detName=="FEMC") {
-    _h_track_cluster_match_femc->Fill(minDist);
-    cutDist = 0.15; 
+    //_h_track_cluster_match_femc->Fill(minDist);
+    cutDist = FEMC_CLUST_TRACKMATCH; 
   }
 
   if(detName=="LFHCAL") {
-    _h_track_cluster_match_lfhcal->Fill(minDist);
-    cutDist = 0.35; 
+    //_h_track_cluster_match_lfhcal->Fill(minDist);
+    cutDist = LFHCAL_CLUST_TRACKMATCH; 
   }
 
   // Veto this cluster if a track points to it. 
@@ -1868,6 +1907,13 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
 
   // Diagnostics - connect the calo tracks to neutral primaries
 
+  cat_pid.clear();  
+  cat_p_true.clear(); 
+  cat_eta_meas.clear(); 
+  cat_eta_true.clear(); 
+  cat_match.clear(); 
+  cat_e_tot.clear(); 
+
   G4ParticleTable* particleTable = G4ParticleTable::GetParticleTable();
 
   for(unsigned int i=0; i<pseudojets.size(); i++){
@@ -1879,6 +1925,7 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
       double minDist = 9999.0; 
       int pid = -9999; 
       double prim_p = 9999.0; 
+      double prim_Eta = 9999.0; 
 
       // PRIMARIES ONLY
       PHG4TruthInfoContainer::ConstRange range =
@@ -1920,11 +1967,19 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
 	  minDist = dist; 
 	  pid = g4particle->get_pid();
 	  prim_p = partMom_breit.Vect().Mag(); 
+	  prim_Eta = partMom_breit.Vect().Eta(); 
 	}
 
       }
 
       if(minDist<9999.0){
+
+	cat_pid.push_back(pid);
+	cat_p_true.push_back(prim_p); 
+        cat_e_tot.push_back(ctrack.Mag());
+	cat_match.push_back(minDist); 
+	cat_eta_meas.push_back(ctrack.Eta()); 
+	cat_eta_true.push_back(prim_Eta); 
 
 	if(type=="CENT"){
 	  _h_calotrack_prim_match_cent->Fill(minDist); 
@@ -1962,6 +2017,8 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
 
   }
 
+  if(type=="CENT") _eval_calo_tracks_cent->Fill(); 
+  if(type=="FWD") _eval_calo_tracks_fwd->Fill(); 
 
   return; 
 
@@ -2001,31 +2058,33 @@ SvtxTrack *CentauroJets::AttachClusterToTrack(double eta, double phi, std::strin
 
   }
 
+  _h_track_cluster_match->Fill(minDist);
+
   double cutDist = 0.15; 
 
   if(detName=="BECAL") {
     _h_track_cluster_match_becal->Fill(minDist);
-    cutDist = 0.05; 
+    cutDist = BECAL_CLUST_TRACKMATCH; 
   }
 
   if(detName=="HCALIN") {
     _h_track_cluster_match_ihcal->Fill(minDist);
-    cutDist = 0.25; 
+    cutDist = IHCAL_CLUST_TRACKMATCH; 
   }
 
   if(detName=="HCALOUT") {
     _h_track_cluster_match_ohcal->Fill(minDist);
-    cutDist = 0.25; 
+    cutDist = OHCAL_CLUST_TRACKMATCH; 
   }
 
   if(detName=="FEMC") {
     _h_track_cluster_match_femc->Fill(minDist);
-    cutDist = 0.15; 
+    cutDist = FEMC_CLUST_TRACKMATCH; 
   }
 
   if(detName=="LFHCAL") {
     _h_track_cluster_match_lfhcal->Fill(minDist);
-    cutDist = 0.35; 
+    cutDist = LFHCAL_CLUST_TRACKMATCH; 
   }
 
   // Return the track the cluster is closest to 
@@ -2088,6 +2147,10 @@ void CentauroJets::BuildChargedCaloTracks(PHCompositeNode *topNode, std::string 
   std::vector<SvtxTrack *> tmatched1(size1,NULL);
   std::vector<SvtxTrack *> tmatched2(size2,NULL); 
 
+  std::vector<bool> cused0(clusterList[0]->size(),false); 
+  std::vector<bool> cused1(size1,false);
+  std::vector<bool> cused2(size2,false); 
+
   for (unsigned int i = 0; i < 3; i++) {
 
     if(!clusterList[i]) continue; 
@@ -2125,10 +2188,12 @@ void CentauroJets::BuildChargedCaloTracks(PHCompositeNode *topNode, std::string 
   ct_e_tot.clear(); 
 
   // Attach the clusters to the tracks and fill the tree
+  // start seeded with the first calorimeter (EMCAL)
 
   for (unsigned int k = 0; k < clusterList[0]->size(); k++) {
 
     if(!tmatched0[k]) continue; 
+    if(cused0[k]) continue; 
 
     RawCluster *rcluster = clusterList[0]->getCluster(k);
 
@@ -2180,6 +2245,7 @@ void CentauroJets::BuildChargedCaloTracks(PHCompositeNode *topNode, std::string 
       ct_e_femc.push_back(rcluster->get_energy()); 
     }
 
+    cused0[k] = true; 
 
     // Next calorimeter
 
@@ -2197,6 +2263,8 @@ void CentauroJets::BuildChargedCaloTracks(PHCompositeNode *topNode, std::string 
 	  caloTot += rcluster1->get_energy(); 
 	  stage2_energy = rcluster1->get_energy(); 
 
+	  cused1[j] = true; 
+
 	  break; 
 
 	}
@@ -2211,7 +2279,6 @@ void CentauroJets::BuildChargedCaloTracks(PHCompositeNode *topNode, std::string 
     else if(type=="FWD"){
       ct_e_lfhcal.push_back(stage2_energy); 
     }
-
 
     // Last calorimeter
 
@@ -2229,6 +2296,8 @@ void CentauroJets::BuildChargedCaloTracks(PHCompositeNode *topNode, std::string 
 	  caloTot += rcluster2->get_energy();
 	  stage3_energy += rcluster2->get_energy();
 	  
+	  cused2[j] = true; 
+
 	  break; 
 
 	}
@@ -2238,21 +2307,188 @@ void CentauroJets::BuildChargedCaloTracks(PHCompositeNode *topNode, std::string 
     }
 
     if(type=="CENT"){
-      ct_e_ihcal.push_back(stage3_energy); 
+      ct_e_ohcal.push_back(stage3_energy); 
     }
 
-    // Fill the tree
-
+    // record the combined energy
     ct_e_tot.push_back(caloTot); 
-
-    if(type=="CENT"){
-      _eval_charged_tracks_cent->Fill(); 
-    }
-    else if(type=="FWD"){
-      _eval_charged_tracks_fwd->Fill();  
-    }
-
    
+  }
+
+  // Now look for tracks seeded by the first HCAL (no EMCAL cluster)
+
+  if(detName[1]!=""){
+
+    for (unsigned int k = 0; k < clusterList[1]->size(); k++) {
+
+      if(!tmatched1[k]) continue;
+      if(cused1[k]) continue; 
+
+      RawCluster *rcluster = clusterList[1]->getCluster(k);
+
+      // Get the truth information for this track
+
+      bool found = false; 
+      PHG4TruthInfoContainer::ConstRange range = _truth_container->GetPrimaryParticleRange();
+      for (PHG4TruthInfoContainer::ConstIterator truth_itr = range.first;
+	   truth_itr != range.second; ++truth_itr) {
+
+	PHG4Particle* g4particle = truth_itr->second;
+	if(!g4particle) {
+	  LogDebug("");
+	  continue;
+	}
+
+	if ((tmatched1[k]->get_truth_track_id() - g4particle->get_track_id()) == 0) {
+
+	  found = true;
+
+	  ct_pid.push_back(g4particle->get_pid()); 
+
+	  // Get the final particle in the lab frame
+	  CLHEP::HepLorentzVector efp(g4particle->get_px(),g4particle->get_py(),
+				      g4particle->get_pz(),g4particle->get_e());
+	  efp = EventToLab * efp;  
+	  TLorentzVector match_lf(efp.px(), efp.py(), efp.pz(), efp.e());
+
+	  ct_p_meas.push_back(tmatched1[k]->get_p()); 
+	  ct_p_true.push_back(match_lf.Vect().Mag()); 
+	
+	  ct_eta_meas.push_back(tmatched1[k]->get_eta()); 
+	  ct_eta_true.push_back(match_lf.Vect().Eta()); 
+
+	  break; 
+
+	}
+	
+      }
+    
+      if(!found) continue; 
+
+      double caloTot = rcluster->get_energy(); 
+ 
+      if(type=="CENT"){
+	ct_e_bemc.push_back(0.0); 
+	ct_e_ihcal.push_back(rcluster->get_energy()); 
+      }
+      else if(type=="FWD"){
+	ct_e_femc.push_back(0.0); 
+	ct_e_lfhcal.push_back(rcluster->get_energy()); 
+      }
+
+      cused1[k] = true; 
+
+      // Last calorimeter
+
+      double stage3_energy = 0.0; 
+
+      if(detName[2]!=""){
+
+	for (unsigned int j = 0; j < clusterList[2]->size(); j++) {
+
+	  if(cused2[j]) continue; 
+
+	  // Look for same track match
+	  if(tmatched2[j]==tmatched0[k]){
+
+	    RawCluster *rcluster2 = clusterList[2]->getCluster(j);
+
+	    caloTot += rcluster2->get_energy();
+	    stage3_energy += rcluster2->get_energy();
+	  
+	    cused2[j] = true; 
+
+	    break; 
+
+	  }
+
+	}
+
+      }
+
+      if(type=="CENT"){
+	ct_e_ohcal.push_back(stage3_energy); 
+      }
+
+      // record the combined energy
+      ct_e_tot.push_back(caloTot); 
+
+    }
+
+  }
+ 
+  // Now look for tracks seeded by the last HCAL (no EMCAL/first HCAL cluster)
+
+  if(detName[2]!=""){
+
+    for (unsigned int k = 0; k < clusterList[2]->size(); k++) {
+
+      if(!tmatched2[k]) continue;
+      if(cused2[k]) continue; 
+
+      RawCluster *rcluster = clusterList[2]->getCluster(k);
+
+      // Get the truth information for this track
+
+      bool found = false; 
+      PHG4TruthInfoContainer::ConstRange range = _truth_container->GetPrimaryParticleRange();
+      for (PHG4TruthInfoContainer::ConstIterator truth_itr = range.first;
+	   truth_itr != range.second; ++truth_itr) {
+
+	PHG4Particle* g4particle = truth_itr->second;
+	if(!g4particle) {
+	  LogDebug("");
+	  continue;
+	}
+
+	if ((tmatched2[k]->get_truth_track_id() - g4particle->get_track_id()) == 0) {
+
+	  found = true;
+
+	  ct_pid.push_back(g4particle->get_pid()); 
+
+	  // Get the final particle in the lab frame
+	  CLHEP::HepLorentzVector efp(g4particle->get_px(),g4particle->get_py(),
+				      g4particle->get_pz(),g4particle->get_e());
+	  efp = EventToLab * efp;  
+	  TLorentzVector match_lf(efp.px(), efp.py(), efp.pz(), efp.e());
+
+	  ct_p_meas.push_back(tmatched2[k]->get_p()); 
+	  ct_p_true.push_back(match_lf.Vect().Mag()); 
+	
+	  ct_eta_meas.push_back(tmatched2[k]->get_eta()); 
+	  ct_eta_true.push_back(match_lf.Vect().Eta()); 
+
+	  break; 
+
+	}
+	
+      }
+    
+      if(!found) continue; 
+
+      double caloTot = rcluster->get_energy(); 
+ 
+      if(type=="CENT"){
+	ct_e_bemc.push_back(0.0); 
+	ct_e_ihcal.push_back(0.0); 
+	ct_e_ohcal.push_back(rcluster->get_energy()); 
+      }
+
+      // record the combined energy
+      ct_e_tot.push_back(caloTot); 
+
+      cused2[k] = true; 
+
+    }
+
+  }
+
+  if(type=="CENT"){
+    _eval_charged_tracks_cent->Fill(); 
+  }
+  else if(type=="FWD"){
+    _eval_charged_tracks_fwd->Fill();  
   }
 
   return; 

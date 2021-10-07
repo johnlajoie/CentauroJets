@@ -227,6 +227,15 @@ class CentauroJets: public SubsysReco
   std::vector<double> ct_e_lfhcal; 
   std::vector<double> ct_e_tot; 
 
+  TTree *_eval_calo_tracks_cent; 
+  TTree *_eval_calo_tracks_fwd; 
+  std::vector<int> cat_pid;  
+  std::vector<double> cat_p_true; 
+  std::vector<double> cat_eta_meas; 
+  std::vector<double> cat_eta_true; 
+  std::vector<double> cat_e_tot; 
+  std::vector<double> cat_match; 
+
   // Scattered electron in event record:
   PHG4Particle* true_electron_headon; 
 
