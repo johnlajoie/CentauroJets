@@ -2254,6 +2254,9 @@ void CentauroJets::BuildChargedCaloTracks(PHCompositeNode *topNode, std::string 
     if(detName[1]!=""){
 
       for (unsigned int j = 0; j < clusterList[1]->size(); j++) {
+	
+	if(!tmatched1[j]) continue;
+	if(cused1[j]) continue; 
 
 	// Look for same track match
 	if(tmatched1[j]==tmatched0[k]){
@@ -2287,6 +2290,9 @@ void CentauroJets::BuildChargedCaloTracks(PHCompositeNode *topNode, std::string 
     if(detName[2]!=""){
 
       for (unsigned int j = 0; j < clusterList[2]->size(); j++) {
+
+	if(!tmatched2[j]) continue;
+	if(cused2[j]) continue; 
 
 	// Look for same track match
 	if(tmatched2[j]==tmatched0[k]){
@@ -2386,10 +2392,11 @@ void CentauroJets::BuildChargedCaloTracks(PHCompositeNode *topNode, std::string 
 
 	for (unsigned int j = 0; j < clusterList[2]->size(); j++) {
 
+	  if(!tmatched2[k]) continue;
 	  if(cused2[j]) continue; 
 
 	  // Look for same track match
-	  if(tmatched2[j]==tmatched0[k]){
+	  if(tmatched2[j]==tmatched1[k]){
 
 	    RawCluster *rcluster2 = clusterList[2]->getCluster(j);
 
