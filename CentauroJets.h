@@ -101,6 +101,8 @@ class CentauroJets: public SubsysReco
 
   SvtxTrack *AttachClusterToTrack(double eta, double phi, std::string detName); 
 
+  bool isThisAnElectron(SvtxTrack *temp); 
+
   // Event generator transform
   CLHEP::HepLorentzRotation EventToLab; 
 
@@ -181,6 +183,7 @@ class CentauroJets: public SubsysReco
   std::vector<double> tcjet_cf; 
   std::vector<double> tcjet_neut_p; 
   std::vector<double> tcjet_chgd_p; 
+  std::vector<double> tcjet_em_p; 
 
   std::vector<double> pjet_pT; 
   std::vector<double> pjet_p; 
@@ -197,6 +200,7 @@ class CentauroJets: public SubsysReco
   std::vector<double> pjet_tcdR; 
   std::vector<double> pjet_neut_p; 
   std::vector<double> pjet_chgd_p; 
+  std::vector<double> pjet_em_p; 
 
   std::vector<double> tfpjet_pT; 
   std::vector<double> tfpjet_p; 
@@ -211,6 +215,7 @@ class CentauroJets: public SubsysReco
   std::vector<double> tfpjet_cf; 
   std::vector<double> tfpjet_neut_p; 
   std::vector<double> tfpjet_chgd_p; 
+  std::vector<double> tfpjet_em_p; 
 
   TTree *_eval_charged_tracks_cent; 
   TTree *_eval_charged_tracks_fwd; 
@@ -220,6 +225,7 @@ class CentauroJets: public SubsysReco
   std::vector<double> ct_p_true; 
   std::vector<double> ct_eta_meas; 
   std::vector<double> ct_eta_true; 
+  std::vector<double> ct_dist; 
   std::vector<double> ct_e_bemc; 
   std::vector<double> ct_e_ihcal; 
   std::vector<double> ct_e_ohcal; 

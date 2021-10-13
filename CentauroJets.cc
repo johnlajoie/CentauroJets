@@ -72,16 +72,6 @@ using namespace fastjet;
 #define FEMC_CLUST_TRACKMATCH 0.15
 #define LFHCAL_CLUST_TRACKMATCH 0.35
 
-//Cluster energy scaling 
-// (This is actually applied in the macros but 
-// a list is kept here as documentation in case
-// the macros are updated.)
-#define BECAL_CLUST_SCALE 0.8
-#define IHCAL_CLUST_SCALE 0.4
-#define OHCAL_CLUST_SCALE 0.4
-#define FEMC_CLUST_SCALE 1.0
-#define LFHCAL_CLUST_SCALE 0.4
-
 double XYtoPhi(double x, double y)
 {
   // -Pi to +Pi
@@ -114,6 +104,42 @@ double DeltaPhi(double phi1, double phi2){
   return dphi;
 }
 
+int EncodeUserIndex(int charge, bool emPart)
+{
+
+  int uidx = 0;
+  if(charge>=1) 
+    uidx = 1; 
+  else if(charge<=-1) 
+    uidx = 2; 
+
+  if(emPart) uidx += 10; 
+
+  return uidx; 
+ 
+}
+
+int GetChargeFromUserIndex(int uidx)
+{
+
+  int  charge = uidx; 
+  if(charge >=10) charge -= 10;
+  if(charge == 2) charge = -1; 
+
+  return charge; 
+ 
+}
+
+bool isEMParticle(int uidx)
+{
+
+  if(uidx>=10) 
+    return true;
+  else
+    return false; 
+
+}
+
 double JetCharge( std::vector<fastjet::PseudoJet> *tconstit, double jetP ){
 
   // Calculate jet charge - arXiv:1209.2421v2
@@ -124,11 +150,14 @@ double JetCharge( std::vector<fastjet::PseudoJet> *tconstit, double jetP ){
   double jc = 0; 
 
   for(unsigned int i=0; i<tconstit->size(); i++){
-    if(tconstit->at(i).user_index()==0) continue;
+
+    int charge = GetChargeFromUserIndex(tconstit->at(i).user_index()); 
+
+    if(charge==0) continue;
     double cptot = sqrt( pow(tconstit->at(i).px(),2) + 
 			 pow(tconstit->at(i).py(),2) +
 			 pow(tconstit->at(i).pz(),2) ); 
-    jc += (tconstit->at(i).user_index())*pow(cptot, kappa); 
+    jc += (charge)*pow(cptot, kappa); 
   }
 
   jc /= pow(jetP,kappa); 
@@ -144,7 +173,10 @@ double JetChargedFraction( std::vector<fastjet::PseudoJet> *tconstit, double jet
   double cpz = 0.0; 
 
   for(unsigned int i=0; i<tconstit->size(); i++){
-    if(tconstit->at(i).user_index()==0) continue;   
+    // eliminate neutrals
+    if(GetChargeFromUserIndex(tconstit->at(i).user_index())==0) continue;   
+    // eliminate electrons
+    if( (tconstit->at(i).user_index()==11) || (tconstit->at(i).user_index()==12) ) continue; 
     cpx += tconstit->at(i).px(); 
     cpy += tconstit->at(i).py(); 
     cpz += tconstit->at(i).pz(); 
@@ -159,7 +191,10 @@ double JetNeutralMomentum( std::vector<fastjet::PseudoJet> *tconstit ){
   TVector3 ptot(0.0,0.0,0.0); 
 
   for(unsigned int i=0; i<tconstit->size(); i++){
-    if(tconstit->at(i).user_index()!=0) continue;
+    // eliminate charged
+    if(GetChargeFromUserIndex(tconstit->at(i).user_index())!=0) continue;
+    // eliminate photons
+    if(tconstit->at(i).user_index()==10) continue;
     TVector3 constit(tconstit->at(i).px(),tconstit->at(i).py(),tconstit->at(i).pz());
     ptot += constit; 
   }
@@ -173,7 +208,21 @@ double JetChargedMomentum( std::vector<fastjet::PseudoJet> *tconstit ){
   TVector3 ptot(0.0,0.0,0.0); 
 
   for(unsigned int i=0; i<tconstit->size(); i++){
-    if(tconstit->at(i).user_index()==0) continue;
+    if(GetChargeFromUserIndex(tconstit->at(i).user_index())==0) continue;
+    TVector3 constit(tconstit->at(i).px(),tconstit->at(i).py(),tconstit->at(i).pz());
+    ptot += constit; 
+  }
+
+  return ptot.Mag(); 
+
+}
+
+double JetEMMomentum( std::vector<fastjet::PseudoJet> *tconstit ){
+
+  TVector3 ptot(0.0,0.0,0.0); 
+
+  for(unsigned int i=0; i<tconstit->size(); i++){
+    if(isEMParticle(tconstit->at(i).user_index())) continue;
     TVector3 constit(tconstit->at(i).px(),tconstit->at(i).py(),tconstit->at(i).pz());
     ptot += constit; 
   }
@@ -276,6 +325,7 @@ int CentauroJets::Init(PHCompositeNode *topNode) {
 	_eval_tree_event->Branch("tcjet_cf",&tcjet_cf);
 	_eval_tree_event->Branch("tcjet_neut_p",&tcjet_neut_p); 
 	_eval_tree_event->Branch("tcjet_chgd_p",&tcjet_chgd_p); 
+	_eval_tree_event->Branch("tcjet_em_p",&tcjet_em_p); 
 
 	_eval_tree_event->Branch("pjet_pT",&pjet_pT); 
 	_eval_tree_event->Branch("pjet_p",&pjet_p); 
@@ -292,6 +342,7 @@ int CentauroJets::Init(PHCompositeNode *topNode) {
 	_eval_tree_event->Branch("pjet_tcdR",&pjet_tcdR);
 	_eval_tree_event->Branch("pjet_neut_p",&pjet_neut_p); 
 	_eval_tree_event->Branch("pjet_chgd_p",&pjet_chgd_p); 
+	_eval_tree_event->Branch("pjet_em_p",&pjet_em_p); 
  
 	_eval_tree_event->Branch("tfpjet_pT",&tfpjet_pT); 
 	_eval_tree_event->Branch("tfpjet_p",&tfpjet_p); 
@@ -306,6 +357,7 @@ int CentauroJets::Init(PHCompositeNode *topNode) {
 	_eval_tree_event->Branch("tfpjet_cf",&tfpjet_cf);
 	_eval_tree_event->Branch("tfpjet_neut_p",&tfpjet_neut_p); 
 	_eval_tree_event->Branch("tfpjet_chgd_p",&tfpjet_chgd_p); 
+	_eval_tree_event->Branch("tfpjet_em_p",&tfpjet_em_p); 
 
 	// cluster evaluation for charged tracks
 	_eval_charged_tracks_cent = new TTree("clusteval_cent", "Charged track clusters (central)");
@@ -315,6 +367,7 @@ int CentauroJets::Init(PHCompositeNode *topNode) {
 	_eval_charged_tracks_cent->Branch("p_true",&ct_p_true); 
 	_eval_charged_tracks_cent->Branch("eta_meas",&ct_eta_meas); 
 	_eval_charged_tracks_cent->Branch("eta_true",&ct_eta_true); 
+	_eval_charged_tracks_cent->Branch("dist",&ct_dist); 
 	_eval_charged_tracks_cent->Branch("e_bemc",&ct_e_bemc); 
 	_eval_charged_tracks_cent->Branch("e_ihcal",&ct_e_ihcal); 
 	_eval_charged_tracks_cent->Branch("e_ohcal",&ct_e_ohcal); 
@@ -327,6 +380,7 @@ int CentauroJets::Init(PHCompositeNode *topNode) {
 	_eval_charged_tracks_fwd->Branch("p_true",&ct_p_true); 
 	_eval_charged_tracks_fwd->Branch("eta_meas",&ct_eta_meas); 
 	_eval_charged_tracks_fwd->Branch("eta_true",&ct_eta_true); 
+	_eval_charged_tracks_fwd->Branch("dist",&ct_dist); 
 	_eval_charged_tracks_fwd->Branch("e_femc",&ct_e_femc); 
 	_eval_charged_tracks_fwd->Branch("e_lfhcal",&ct_e_lfhcal); 
 	_eval_charged_tracks_fwd->Branch("e_tot",&ct_e_tot); 
@@ -733,6 +787,7 @@ void CentauroJets::fill_tree(PHCompositeNode *topNode) {
   tcjet_cf.clear(); 
   tcjet_neut_p.clear(); 
   tcjet_chgd_p.clear(); 
+  tcjet_em_p.clear(); 
 
   pjet_pT.clear(); 
   pjet_p.clear(); 
@@ -749,6 +804,7 @@ void CentauroJets::fill_tree(PHCompositeNode *topNode) {
   pjet_tcdR.clear(); 
   pjet_neut_p.clear(); 
   pjet_chgd_p.clear(); 
+  pjet_em_p.clear(); 
   
   tfpjet_pT.clear(); 
   tfpjet_p.clear(); 
@@ -763,6 +819,7 @@ void CentauroJets::fill_tree(PHCompositeNode *topNode) {
   tfpjet_cf.clear(); 
   tfpjet_neut_p.clear(); 
   tfpjet_neut_p.clear(); 
+  tfpjet_em_p.clear(); 
 
   if(electron!=NULL) {
 
@@ -971,8 +1028,12 @@ void CentauroJets::fill_tree(PHCompositeNode *topNode) {
 
       breit_track.Transform(breitRotInv); 
 
-      fastjet::PseudoJet pseudojet (breit_track.Px(),breit_track.Py(),breit_track.Pz(),breit_track.E()); 
-      pseudojet.set_user_index(temp->get_charge()); // use for charge; 
+      fastjet::PseudoJet pseudojet (breit_track.Px(),breit_track.Py(),breit_track.Pz(),breit_track.E());
+
+      // Need to flag electrons/positrons to seperate EM fraction
+      bool em_part = isThisAnElectron(temp); 
+
+      pseudojet.set_user_index(EncodeUserIndex(temp->get_charge(),em_part)); 
       pseudojets.push_back(pseudojet);
       tcpseudojets.push_back(pseudojet);
   	   
@@ -1079,9 +1140,10 @@ void CentauroJets::fill_tree(PHCompositeNode *topNode) {
       tcjet_Q.push_back(JetCharge(&tconstit,jptot));
 
       tcjet_cf.push_back(JetChargedFraction(&tconstit,jptot));
-  
+
       tcjet_neut_p.push_back(JetNeutralMomentum(&tconstit)); 
       tcjet_chgd_p.push_back(JetChargedMomentum(&tconstit)); 
+      tcjet_em_p.push_back(JetEMMomentum(&tconstit)); 
 
     }
 
@@ -1390,7 +1452,6 @@ void CentauroJets::FillTowerPseudoJets( PHCompositeNode *topNode, std::string de
     breit_tower.Transform(breitRot); 
 
     fastjet::PseudoJet pseudojet (breit_tower.Px(),breit_tower.Py(),breit_tower.Pz(),breit_tower.E()); 
-    // this only works because user_index and RawTowerDefs::keytype are int's (signed and unsigned)
     pseudojet.set_user_index(0); 
     pseudojets.push_back(pseudojet);
     
@@ -1595,6 +1656,8 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
     double pt1 = 0.0, px1 = 0.0, py1 = 0.0, pz1 = 0.0, e1 = 0.0; 
     double dist1 = 9999.0; 
 
+    bool photon_candidate = true; 
+
     //cout << detName[1] << " " << clusterList[1]->size() << endl; 
 
     if(detName[1]!=""){
@@ -1665,6 +1728,8 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
 
 	  // Add it to the existing cluster
 	  cluster += cluster1;
+
+	  photon_candidate = false; 
 
 	  cused1[idx1_match] = true; 
 	}
@@ -1737,6 +1802,8 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
 	  // Add it to the existing cluster
 	  cluster += cluster2;
 
+	  photon_candidate = false; 
+
 	  cused2[idx2_match] = true; 
 	}
 
@@ -1750,7 +1817,7 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
     breit_cluster.Transform(breitRot); 
 
     fastjet::PseudoJet pseudojet (breit_cluster.Px(),breit_cluster.Py(),breit_cluster.Pz(),breit_cluster.E()); 
-    pseudojet.set_user_index(0); 
+    pseudojet.set_user_index(EncodeUserIndex(0,photon_candidate)); 
     pseudojets.push_back(pseudojet);
 
   }
@@ -2180,6 +2247,7 @@ void CentauroJets::BuildChargedCaloTracks(PHCompositeNode *topNode, std::string 
   ct_p_true.clear(); 
   ct_eta_meas.clear(); 
   ct_eta_true.clear(); 
+  ct_dist.clear(); 
   ct_e_bemc.clear(); 
   ct_e_ihcal.clear(); 
   ct_e_ohcal.clear(); 
@@ -2228,6 +2296,13 @@ void CentauroJets::BuildChargedCaloTracks(PHCompositeNode *topNode, std::string 
 	ct_eta_meas.push_back(tmatched0[k]->get_eta()); 
         ct_eta_true.push_back(match_lf.Vect().Eta()); 
 
+	double deta = tmatched0[k]->get_eta() - match_lf.Vect().Eta(); 
+	double dphi = DeltaPhi(tmatched0[k]->get_phi(),match_lf.Vect().Phi()); 
+
+	ct_dist.push_back(sqrt(pow(dphi,2)+ pow(deta,2))); 
+
+	cused0[k] = true; 
+
 	break; 
 
       }
@@ -2244,10 +2319,6 @@ void CentauroJets::BuildChargedCaloTracks(PHCompositeNode *topNode, std::string 
     else if(type=="FWD"){
       ct_e_femc.push_back(rcluster->get_energy()); 
     }
-
-    cused0[k] = true; 
-
-    // Next calorimeter
 
     double stage2_energy = 0.0; 
 
@@ -2363,6 +2434,13 @@ void CentauroJets::BuildChargedCaloTracks(PHCompositeNode *topNode, std::string 
 	  ct_eta_meas.push_back(tmatched1[k]->get_eta()); 
 	  ct_eta_true.push_back(match_lf.Vect().Eta()); 
 
+	  double deta = tmatched1[k]->get_eta() - match_lf.Vect().Eta(); 
+	  double dphi = DeltaPhi(tmatched1[k]->get_phi(),match_lf.Vect().Phi());
+
+	  ct_dist.push_back(sqrt(pow(dphi,2)+ pow(deta,2))); 
+
+	  cused1[k] = true; 
+
 	  break; 
 
 	}
@@ -2381,8 +2459,6 @@ void CentauroJets::BuildChargedCaloTracks(PHCompositeNode *topNode, std::string 
 	ct_e_femc.push_back(0.0); 
 	ct_e_lfhcal.push_back(rcluster->get_energy()); 
       }
-
-      cused1[k] = true; 
 
       // Last calorimeter
 
@@ -2466,6 +2542,13 @@ void CentauroJets::BuildChargedCaloTracks(PHCompositeNode *topNode, std::string 
 	  ct_eta_meas.push_back(tmatched2[k]->get_eta()); 
 	  ct_eta_true.push_back(match_lf.Vect().Eta()); 
 
+	  double deta = tmatched2[k]->get_eta() - match_lf.Vect().Eta(); 
+	  double dphi = DeltaPhi(tmatched2[k]->get_phi(),match_lf.Vect().Phi()); 
+
+	  ct_dist.push_back(sqrt(pow(dphi,2)+ pow(deta,2))); 
+
+	  cused2[k] = true; 
+
 	  break; 
 
 	}
@@ -2484,8 +2567,6 @@ void CentauroJets::BuildChargedCaloTracks(PHCompositeNode *topNode, std::string 
 
       // record the combined energy
       ct_e_tot.push_back(caloTot); 
-
-      cused2[k] = true; 
 
     }
 
@@ -2712,7 +2793,12 @@ void CentauroJets::GetPrimaryJets(PHCompositeNode *topNode, fastjet::JetDefiniti
     else
       continue; 
 
-    pseudojet.set_user_index(charge);
+    // build the user index
+
+    bool em_part = false; 
+    if((abs(g4particle->get_pid())==11) || (g4particle->get_pid()==22)) em_part = true; 
+
+    pseudojet.set_user_index(EncodeUserIndex(charge,em_part));
     pseudojets.push_back(pseudojet);
 
   }
@@ -2762,6 +2848,7 @@ void CentauroJets::GetPrimaryJets(PHCompositeNode *topNode, fastjet::JetDefiniti
 
 	tfpjet_neut_p.push_back(JetNeutralMomentum(&tconstit)); 
 	tfpjet_chgd_p.push_back(JetChargedMomentum(&tconstit)); 
+	tfpjet_em_p.push_back(JetEMMomentum(&tconstit)); 
 
       }
       else{
@@ -2801,6 +2888,7 @@ void CentauroJets::GetPrimaryJets(PHCompositeNode *topNode, fastjet::JetDefiniti
 
 	pjet_neut_p.push_back(JetNeutralMomentum(&tconstit)); 
 	pjet_chgd_p.push_back(JetChargedMomentum(&tconstit)); 
+	pjet_em_p.push_back(JetEMMomentum(&tconstit)); 
 
       }
 
@@ -2811,3 +2899,32 @@ void CentauroJets::GetPrimaryJets(PHCompositeNode *topNode, fastjet::JetDefiniti
 
 }
 
+bool CentauroJets::isThisAnElectron(SvtxTrack *temp)
+{
+
+  // Get the truth information for this track
+
+  bool isElectron = false; 
+ 
+  PHG4TruthInfoContainer::ConstRange range = _truth_container->GetPrimaryParticleRange();
+  for (PHG4TruthInfoContainer::ConstIterator truth_itr = range.first;
+       truth_itr != range.second; ++truth_itr) {
+
+    PHG4Particle* g4particle = truth_itr->second;
+    if(!g4particle) {
+      LogDebug("");
+      continue;
+    }
+
+    if ((temp->get_truth_track_id() - g4particle->get_track_id()) == 0) {
+
+      if(abs(g4particle->get_pid())==11) isElectron = true; 
+      break; 
+
+    }
+
+  }
+
+  return isElectron; 
+
+}
