@@ -67,8 +67,8 @@ using namespace fastjet;
 
 // Cluster/track matching cuts
 #define BECAL_CLUST_TRACKMATCH 0.10
-#define IHCAL_CLUST_TRACKMATCH 0.25
-#define OHCAL_CLUST_TRACKMATCH 0.25
+#define IHCAL_CLUST_TRACKMATCH 0.35
+#define OHCAL_CLUST_TRACKMATCH 0.35
 #define FEMC_CLUST_TRACKMATCH 0.15
 #define LFHCAL_CLUST_TRACKMATCH 0.35
 
@@ -567,11 +567,6 @@ void CentauroJets::fill_tree(PHCompositeNode *topNode) {
 
   event = _event;
 
-  // First - cluster/track evaluation
-
-  BuildChargedCaloTracks(topNode,"CENT"); 
-  BuildChargedCaloTracks(topNode,"FWD"); 
-
   // DIS kinematics and jet reconstruction
 
   _hepmcp_x1 = -9999.0; 
@@ -709,6 +704,23 @@ void CentauroJets::fill_tree(PHCompositeNode *topNode) {
 
   if(!true_electron_headon){
     LogWarning("scattered electron not found in primaries!"); 
+
+    // Diagnostic for single particle events - cluster/track evaluation
+
+    BuildChargedCaloTracks(topNode,"CENT"); 
+    BuildChargedCaloTracks(topNode,"FWD"); 
+
+    // Do the CaloTracks - diagnostic for single particle events
+    // note that these will be in the lab frame
+
+    std::vector<fastjet::PseudoJet> tcpseudojets;
+
+    TLorentzRotation breit; // initialized as identity
+    TRotation breitRotInv;  // initialized as identity
+
+    BuildCaloTracks(topNode, "CENT", tcpseudojets, breit, breitRotInv, "", -1); 
+    BuildCaloTracks(topNode, "FWD", tcpseudojets, breit, breitRotInv, "", -1); 
+
     return; 
   }
 
@@ -1091,7 +1103,7 @@ void CentauroJets::fill_tree(PHCompositeNode *topNode) {
     //if(use_fhcal) FillClusterPseudoJets(topNode, "LFHCAL", tcpseudojets, breit, breitRotInv, 1.0, "", -1, true); 
 
     // Add Calo tracks to charged track constituents and find jets again
-
+    
     BuildCaloTracks(topNode, "CENT", tcpseudojets, breit, breitRotInv, ECDetName, ECIdx); 
     BuildCaloTracks(topNode, "FWD", tcpseudojets, breit, breitRotInv, ECDetName, ECIdx); 
 
@@ -1537,9 +1549,11 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
 
   std::string fwd_calos[3] = {"FEMC","LFHCAL",""}; 
   std::string cent_calos[3] = {"BECAL","HCALIN","HCALOUT"}; 
-  //std::string fwd_calos[3] = {"FEMC","",""}; 
-  //std::string cent_calos[3] = {"BECAL","",""}; 
   std::string detName[3] = {"","",""}; 
+
+  // Store the starting index so we don't double-count 
+  // when filling the diagnostic output
+  int startIdx = pseudojets.size(); 
 
   // Collect the required cluster lists
 
@@ -1626,8 +1640,6 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
 
   // First, seed with the EMCal and look for backing energy in the HCALs
 
-  //cout << detName[0] << " " << clusterList[0]->size() << endl; 
-
   for (unsigned int k = 0; k < clusterList[0]->size(); k++) {
 
     if(cused0[k]) continue; 
@@ -1650,17 +1662,19 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
     
     cused0[k] = true; 
 
-    // Look for the closest match in the next detector 
-
-    int idx1_match = -999; 
-    double pt1 = 0.0, px1 = 0.0, py1 = 0.0, pz1 = 0.0, e1 = 0.0; 
-    double dist1 = 9999.0; 
+    // mark as a photon candidate - will be set to false if we 
+    // find hadronic energy further down
 
     bool photon_candidate = true; 
 
-    //cout << detName[1] << " " << clusterList[1]->size() << endl; 
+    // Look for the closest match in the next detector 
 
+    // For the HCALs we need to collect all the clusters
+    // that are within the window (collect split clusters)
+    
     if(detName[1]!=""){
+
+      TLorentzVector cluster1(0.0,0.0,0.0,0.0);
 
       for (unsigned int j = 0; j < clusterList[1]->size(); j++) {
 
@@ -1679,75 +1693,48 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
 
 	double dist = sqrt( pow(deta,2) + pow(dPhi,2) );
      
-	//cout << eta << " " << eta1 << " " << phi << " " << phi1 << " " << dist << endl; 
-
+	double mDist = 0.0; 
 	if(type=="CENT"){
+	  _h_becal_ihcal_match->Fill(dist);
 	  _h_becal_ihcal_match_eta->Fill(deta); 
 	  _h_becal_ihcal_match_phi->Fill(dPhi); 
+	  mDist = IHCAL_CLUST_TRACKMATCH;
 	}
 	else if(type=="FWD"){
+	  _h_femc_lfhcal_match->Fill(dist);
 	  _h_femc_lfhcal_match_eta->Fill(deta);
 	  _h_femc_lfhcal_match_phi->Fill(dPhi);
+	  mDist = LFHCAL_CLUST_TRACKMATCH; 
 	}
 
-	if(dist<dist1){ 
+	if(dist<mDist){ 
 
-	  dist1 = dist; 
-	  idx1_match = j; 
+	  double pt1 = rcluster1->get_energy() / cosh(eta1);
+	  double px1 = pt1 * cos(phi1);
+	  double py1 = pt1 * sin(phi1);
+	  double pz1 = pt1 * sinh(eta1);
 
-	  pt1 = rcluster1->get_energy() / cosh(eta1);
-	  px1 = pt1 * cos(phi1);
-	  py1 = pt1 * sin(phi1);
-	  pz1 = pt1 * sinh(eta1);
-	  e1  = rcluster1->get_energy();
-
-	}
-
-      }
-
-      // Do we have a good match? 
-
-      if(idx1_match>=0){
-
-	double mDist = 0.7; 
-	if(type=="CENT"){
-	  _h_becal_ihcal_match->Fill(dist1);
-	  mDist = 0.7; 
-	}
-	else if(type=="FWD"){
-	  _h_femc_lfhcal_match->Fill(dist1);
-	  mDist = 0.7; 
-	}
-
-	if(dist1<mDist){
-
-	  //cout << "selected " << dist1 << endl; 
-
-	  // Create the cluster
-	  TLorentzVector cluster1(px1,py1,pz1,e1); 
-
-	  // Add it to the existing cluster
-	  cluster += cluster1;
+	  TLorentzVector clusterAdd(px1,py1,pz1,rcluster1->get_energy()); 
+	  cluster1 += clusterAdd; 
 
 	  photon_candidate = false; 
 
-	  cused1[idx1_match] = true; 
+	  cused1[j] = true; 
+
 	}
 
       }
 
-    }
+      // Add what we found to the existing cluster
+      cluster += cluster1;
 
+    }
 
     // And the last detector (if it exists)
 
     if(detName[2]!="") {
 
-      //cout << detName[2] << " " << clusterList[2]->size() << endl; 
-
-      int idx2_match = -999; 
-      double pt2 = 0.0, px2 = 0.0, py2 = 0.0, pz2 = 0.0, e2 = 0.0; 
-      double dist2 = 9999.0; 
+      TLorentzVector cluster2(0.0,0.0,0.0,0.0); 
 
       for (unsigned int j = 0; j < clusterList[2]->size(); j++) {
 
@@ -1766,48 +1753,30 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
 
 	double dist = sqrt( pow(deta,2) + pow(dPhi,2) ); 
 	
-	//cout << eta << " " << eta2 << " " << phi << " " << phi2 << " " << dist << endl; 
-
+	_h_becal_ohcal_match->Fill(dist); 
 	_h_becal_ohcal_match_eta->Fill(deta); 
 	_h_becal_ohcal_match_phi->Fill(dPhi); 
 
-	if(dist<dist2){ 
+	if(dist<OHCAL_CLUST_TRACKMATCH){ 
 
-	  dist2 = dist; 
-	  idx2_match = j; 
+	  double pt2 = rcluster2->get_energy() / cosh(eta2);
+	  double px2 = pt2 * cos(phi2);
+	  double py2 = pt2 * sin(phi2);
+	  double pz2 = pt2 * sinh(eta2);
 
-	  pt2 = rcluster2->get_energy() / cosh(eta2);
-	  px2 = pt2 * cos(phi2);
-	  py2 = pt2 * sin(phi2);
-	  pz2 = pt2 * sinh(eta2);
-	  e2 = rcluster2->get_energy();
-
-	}
-
-      }
-
-      // Do we have a good match?
-
-      if(idx2_match>=0){
-
-	_h_becal_ohcal_match->Fill(dist2); 
-
-	if(dist2<0.7){
-	  
-	  //cout << "selected " << dist2 << endl; 
-
-	  // Create the cluster
-	  TLorentzVector cluster2(px2,py2,pz2,e2); 
-
-	  // Add it to the existing cluster
-	  cluster += cluster2;
+	  TLorentzVector clusterAdd(px2,py2,pz2,rcluster2->get_energy()); 
+	  cluster2 += clusterAdd; 
 
 	  photon_candidate = false; 
 
-	  cused2[idx2_match] = true; 
+	  cused2[j] = true; 
+
 	}
 
       }
+
+      // Add what we found to the existing cluster
+      cluster += cluster2;
 
     }
 
@@ -1824,6 +1793,7 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
 
   // Next, seed with the HCAL and follow up with the second HCAL segment
   // necessary to capture hadronic showers w/o cluster in EMCal
+  // we need a double-loop to aggregate the split clusters
 
   if(detName[1]!=""){
 
@@ -1849,22 +1819,58 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
 
       cused1[k] = true; 
 
+      // Aggregate split clusters
+
+      for (unsigned int j = 0; j < clusterList[1]->size(); j++) {
+      
+	if(cused1[j]) continue;
+
+	RawCluster *rcluster2 = clusterList[1]->getCluster(j);
+
+	// eliminate noise clusters
+        if(rcluster2->get_energy()<CLUSTER_E_CUTOFF) continue; 
+
+	double eta2 = getEta(rcluster2->get_r(),rcluster2->get_z()-vtx_z);
+	double phi2 = rcluster2->get_phi(); 
+
+	double deta = eta -  eta2; 
+	double dPhi = DeltaPhi(phi, phi2); 
+
+	double dist = sqrt( pow(deta,2) + pow(dPhi,2) );
+
+	double mDist = 0.0; 
+	if(type=="CENT"){
+	  mDist = IHCAL_CLUST_TRACKMATCH;
+	}
+	else if(type=="FWD"){
+	  mDist = LFHCAL_CLUST_TRACKMATCH; 
+	}
+
+	if(dist<mDist){ 
+
+	  double pt2 = rcluster2->get_energy() / cosh(eta2);
+	  double px2 = pt2 * cos(phi2);
+	  double py2 = pt2 * sin(phi2);
+	  double pz2 = pt2 * sinh(eta2);
+
+	  TLorentzVector clusterAdd(px2,py2,pz2,rcluster2->get_energy()); 
+	  cluster += clusterAdd; 
+
+	  cused1[j] = true; 
+
+	}
+
+      }
+
       // And the last detector (if it exists)
 
       if(detName[2]!="") {
 
-	int idx2_match = -999; 
-	double pt2, px2, py2, pz2, e2; 
-	double dist2 = 9999.0; 
+	TLorentzVector cluster2(0.0,0.0,0.0,0.0); 
 
-	for (unsigned int j = 0; j < clusterList[2]->size(); j++) {
+ 	for (unsigned int j = 0; j < clusterList[2]->size(); j++) {
 
 	  if(cused2[j]) continue; 
-
-	  if(tmatched2[j]) {
-	    cused2[j] = true; 
-	    continue; 
-	  }
 
 	  RawCluster *rcluster2 = clusterList[2]->getCluster(j);
 
@@ -1880,45 +1886,30 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
 	  double dist = sqrt( pow(deta,2) + pow(dPhi,2) );
 
 	  if(type=="CENT"){
+	    _h_ihcal_ohcal_match->Fill(dist); 
 	    _h_ihcal_ohcal_match_eta->Fill(deta); 
 	    _h_ihcal_ohcal_match_phi->Fill(dPhi); 
 	  }
 
-	  if(dist<dist2){ 
+	  if(dist<OHCAL_CLUST_TRACKMATCH){ 
 
-	    dist2 = dist; 
-	    idx2_match = j; 
+	    double pt2 = rcluster2->get_energy() / cosh(eta2);
+	    double px2 = pt2 * cos(phi2);
+	    double py2 = pt2 * sin(phi2);
+	    double pz2 = pt2 * sinh(eta2);
 
-	    pt2 = rcluster2->get_energy() / cosh(eta2);
-	    px2 = pt2 * cos(phi2);
-	    py2 = pt2 * sin(phi2);
-	    pz2 = pt2 * sinh(eta2);
-	    e2 = rcluster2->get_energy();
+	    TLorentzVector clusterAdd(px2,py2,pz2,rcluster2->get_energy()); 
+	    cluster2 += clusterAdd; 
+
+	    cused2[j] = true; 
 
 	  }
 
 	}
 
-	// Do we have a good match?
+	// Add what we found to the existing cluster
+	cluster += cluster2;
 
-	if(idx2_match>=0){
-
-	  if(type=="CENT")
-	    _h_ihcal_ohcal_match->Fill(dist2); 
- 
-	  if(dist2<0.7){
-
-	    // Create the cluster
-	    TLorentzVector cluster2(px2,py2,pz2,e2); 
-
-	    // Add it to the existing cluster
-	    cluster += cluster2;
-
-	    cused2[idx2_match] = true; 
-	  }
-
-	}
-      
       }
 
       // Finally - take the combined cluster and add it to the constituents
@@ -1938,11 +1929,11 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
 
   if(detName[2]!="") {
 
-    for (unsigned int j = 0; j < clusterList[2]->size(); j++) {
+    for (unsigned int k = 0; k < clusterList[2]->size(); k++) {
 
-      if(cused2[j]) continue; 
+      if(cused2[k]) continue; 
 
-      RawCluster *rcluster1 = clusterList[2]->getCluster(j);
+      RawCluster *rcluster1 = clusterList[2]->getCluster(k);
 
       // eliminate noise clusters
       if(rcluster1->get_energy()<CLUSTER_E_CUTOFF) continue; 
@@ -1958,7 +1949,47 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
       // Create the cluster
       TLorentzVector cluster(px1,py1,pz1,rcluster1->get_energy()); 
 
-      cused2[j] = true; 
+      cused2[k] = true; 
+
+      // Aggregate the split clusters
+
+      for (unsigned int j = 0; j < clusterList[2]->size(); j++) {
+      
+	if(cused2[j]) continue;
+
+	RawCluster *rcluster2 = clusterList[2]->getCluster(j);
+
+	// eliminate noise clusters
+        if(rcluster2->get_energy()<CLUSTER_E_CUTOFF) continue; 
+
+	double eta2 = getEta(rcluster2->get_r(),rcluster2->get_z()-vtx_z);
+	double phi2 = rcluster2->get_phi(); 
+
+	double deta = eta1 -  eta2; 
+	double dPhi = DeltaPhi(phi1, phi2); 
+
+	double dist = sqrt( pow(deta,2) + pow(dPhi,2) );
+
+	double mDist = 0.0; 
+	if(type=="CENT"){
+	  mDist = OHCAL_CLUST_TRACKMATCH;
+	}
+
+	if(dist<mDist){ 
+
+	  double pt2 = rcluster2->get_energy() / cosh(eta2);
+	  double px2 = pt2 * cos(phi2);
+	  double py2 = pt2 * sin(phi2);
+	  double pz2 = pt2 * sinh(eta2);
+
+	  TLorentzVector clusterAdd(px2,py2,pz2,rcluster2->get_energy()); 
+	  cluster += clusterAdd; 
+
+	  cused2[j] = true; 
+
+	}
+
+      }
 
       // Transform to Breit frame
       TLorentzVector breit_cluster = (breit*cluster); 
@@ -1983,7 +2014,7 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
 
   G4ParticleTable* particleTable = G4ParticleTable::GetParticleTable();
 
-  for(unsigned int i=0; i<pseudojets.size(); i++){
+  for(unsigned int i=startIdx; i<pseudojets.size(); i++){
 
     if(pseudojets[i].user_index()==0){
 
@@ -2166,8 +2197,6 @@ void CentauroJets::BuildChargedCaloTracks(PHCompositeNode *topNode, std::string 
 
   std::string fwd_calos[3] = {"FEMC","LFHCAL",""}; 
   std::string cent_calos[3] = {"BECAL","HCALIN","HCALOUT"}; 
-  //std::string fwd_calos[3] = {"FEMC","",""}; 
-  //std::string cent_calos[3] = {"BECAL","",""}; 
   std::string detName[3] = {"","",""}; 
 
   // Collect the required cluster lists
@@ -2339,7 +2368,7 @@ void CentauroJets::BuildChargedCaloTracks(PHCompositeNode *topNode, std::string 
 
 	  cused1[j] = true; 
 
-	  break; 
+	  //break; 
 
 	}
 
@@ -2375,7 +2404,7 @@ void CentauroJets::BuildChargedCaloTracks(PHCompositeNode *topNode, std::string 
 	  
 	  cused2[j] = true; 
 
-	  break; 
+	  //break; 
 
 	}
 
@@ -2406,6 +2435,8 @@ void CentauroJets::BuildChargedCaloTracks(PHCompositeNode *topNode, std::string 
       // Get the truth information for this track
 
       bool found = false; 
+      double stage1_energy = 0.0; 
+
       PHG4TruthInfoContainer::ConstRange range = _truth_container->GetPrimaryParticleRange();
       for (PHG4TruthInfoContainer::ConstIterator truth_itr = range.first;
 	   truth_itr != range.second; ++truth_itr) {
@@ -2418,30 +2449,36 @@ void CentauroJets::BuildChargedCaloTracks(PHCompositeNode *topNode, std::string 
 
 	if ((tmatched1[k]->get_truth_track_id() - g4particle->get_track_id()) == 0) {
 
-	  found = true;
+	  if(!found){
 
-	  ct_pid.push_back(g4particle->get_pid()); 
+	    ct_pid.push_back(g4particle->get_pid()); 
 
-	  // Get the final particle in the lab frame
-	  CLHEP::HepLorentzVector efp(g4particle->get_px(),g4particle->get_py(),
-				      g4particle->get_pz(),g4particle->get_e());
-	  efp = EventToLab * efp;  
-	  TLorentzVector match_lf(efp.px(), efp.py(), efp.pz(), efp.e());
+	    // Get the final particle in the lab frame
+	    CLHEP::HepLorentzVector efp(g4particle->get_px(),g4particle->get_py(),
+					g4particle->get_pz(),g4particle->get_e());
+	    efp = EventToLab * efp;  
+	    TLorentzVector match_lf(efp.px(), efp.py(), efp.pz(), efp.e());
 
-	  ct_p_meas.push_back(tmatched1[k]->get_p()); 
-	  ct_p_true.push_back(match_lf.Vect().Mag()); 
+	    ct_p_meas.push_back(tmatched1[k]->get_p()); 
+	    ct_p_true.push_back(match_lf.Vect().Mag()); 
 	
-	  ct_eta_meas.push_back(tmatched1[k]->get_eta()); 
-	  ct_eta_true.push_back(match_lf.Vect().Eta()); 
+	    ct_eta_meas.push_back(tmatched1[k]->get_eta()); 
+	    ct_eta_true.push_back(match_lf.Vect().Eta()); 
 
-	  double deta = tmatched1[k]->get_eta() - match_lf.Vect().Eta(); 
-	  double dphi = DeltaPhi(tmatched1[k]->get_phi(),match_lf.Vect().Phi());
+	    double deta = tmatched1[k]->get_eta() - match_lf.Vect().Eta(); 
+	    double dphi = DeltaPhi(tmatched1[k]->get_phi(),match_lf.Vect().Phi());
 
-	  ct_dist.push_back(sqrt(pow(dphi,2)+ pow(deta,2))); 
+	    ct_dist.push_back(sqrt(pow(dphi,2)+ pow(deta,2))); 
+
+	  }
+
+	  found = true;
 
 	  cused1[k] = true; 
 
-	  break; 
+	  stage1_energy += rcluster->get_energy(); 
+
+	  //break; 
 
 	}
 	
@@ -2449,15 +2486,15 @@ void CentauroJets::BuildChargedCaloTracks(PHCompositeNode *topNode, std::string 
     
       if(!found) continue; 
 
-      double caloTot = rcluster->get_energy(); 
+      double caloTot = stage1_energy; 
  
       if(type=="CENT"){
 	ct_e_bemc.push_back(0.0); 
-	ct_e_ihcal.push_back(rcluster->get_energy()); 
+	ct_e_ihcal.push_back(stage1_energy); 
       }
       else if(type=="FWD"){
 	ct_e_femc.push_back(0.0); 
-	ct_e_lfhcal.push_back(rcluster->get_energy()); 
+	ct_e_lfhcal.push_back(stage1_energy); 
       }
 
       // Last calorimeter
@@ -2481,7 +2518,7 @@ void CentauroJets::BuildChargedCaloTracks(PHCompositeNode *topNode, std::string 
 	  
 	    cused2[j] = true; 
 
-	    break; 
+	    //break; 
 
 	  }
 
@@ -2648,8 +2685,6 @@ RawCluster *CentauroJets:: getCluster( PHCompositeNode *topNode, std::string det
     clIdx = -1;
     return NULL; 
   }    
-
-  //cout << detName << " " << clusterList->size() << endl; 
 
   // loop over all clusters and find nearest
   double min_r = 9999.0;
