@@ -72,6 +72,10 @@ using namespace fastjet;
 #define FEMC_CLUST_TRACKMATCH 0.15
 #define LFHCAL_CLUST_TRACKMATCH 0.35
 
+// HCAL neutral energy scales
+#define BARREL_HCAL_NEUT_SCALE (1.0/0.46)
+#define FWD_HCAL_NEUT_SCALE (1.0/0.77)
+
 double XYtoPhi(double x, double y)
 {
   // -Pi to +Pi
@@ -1693,18 +1697,21 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
 
 	double dist = sqrt( pow(deta,2) + pow(dPhi,2) );
      
-	double mDist = 0.0; 
+	double mDist = 0.0;
+	double scale = 1.0; 
 	if(type=="CENT"){
 	  _h_becal_ihcal_match->Fill(dist);
 	  _h_becal_ihcal_match_eta->Fill(deta); 
 	  _h_becal_ihcal_match_phi->Fill(dPhi); 
 	  mDist = IHCAL_CLUST_TRACKMATCH;
+	  scale = BARREL_HCAL_NEUT_SCALE; 
 	}
 	else if(type=="FWD"){
 	  _h_femc_lfhcal_match->Fill(dist);
 	  _h_femc_lfhcal_match_eta->Fill(deta);
 	  _h_femc_lfhcal_match_phi->Fill(dPhi);
-	  mDist = LFHCAL_CLUST_TRACKMATCH; 
+	  mDist = LFHCAL_CLUST_TRACKMATCH;
+	  scale = FWD_HCAL_NEUT_SCALE; 
 	}
 
 	if(dist<mDist){ 
@@ -1715,7 +1722,7 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
 	  double pz1 = pt1 * sinh(eta1);
 
 	  TLorentzVector clusterAdd(px1,py1,pz1,rcluster1->get_energy()); 
-	  cluster1 += clusterAdd; 
+	  cluster1 += (clusterAdd*scale); 
 
 	  photon_candidate = false; 
 
@@ -1765,7 +1772,7 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
 	  double pz2 = pt2 * sinh(eta2);
 
 	  TLorentzVector clusterAdd(px2,py2,pz2,rcluster2->get_energy()); 
-	  cluster2 += clusterAdd; 
+	  cluster2 += (clusterAdd*BARREL_HCAL_NEUT_SCALE); 
 
 	  photon_candidate = false; 
 
@@ -1814,8 +1821,17 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
       double py = pt * sin(phi);
       double pz = pt * sinh(eta);
 
+      double scale = 1.0; 
+      if(type=="CENT"){
+	scale = BARREL_HCAL_NEUT_SCALE; 
+      }
+      else if(type=="FWD"){
+	scale = FWD_HCAL_NEUT_SCALE; 
+      }
+
       // Create the cluster
       TLorentzVector cluster(px,py,pz,rcluster->get_energy()); 
+      cluster *= scale; 
 
       cused1[k] = true; 
 
@@ -1854,7 +1870,7 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
 	  double pz2 = pt2 * sinh(eta2);
 
 	  TLorentzVector clusterAdd(px2,py2,pz2,rcluster2->get_energy()); 
-	  cluster += clusterAdd; 
+	  cluster += (clusterAdd*scale); 
 
 	  cused1[j] = true; 
 
@@ -1899,7 +1915,7 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
 	    double pz2 = pt2 * sinh(eta2);
 
 	    TLorentzVector clusterAdd(px2,py2,pz2,rcluster2->get_energy()); 
-	    cluster2 += clusterAdd; 
+	    cluster2 +=(clusterAdd*BARREL_HCAL_NEUT_SCALE); 
 
 	    cused2[j] = true; 
 
