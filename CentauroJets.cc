@@ -1999,7 +1999,7 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
 	  double pz2 = pt2 * sinh(eta2);
 
 	  TLorentzVector clusterAdd(px2,py2,pz2,rcluster2->get_energy()); 
-	  cluster += clusterAdd; 
+	  cluster += (clusterAdd*BARREL_HCAL_NEUT_SCALE); 
 
 	  cused2[j] = true; 
 
