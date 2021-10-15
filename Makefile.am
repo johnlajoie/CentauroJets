@@ -30,6 +30,7 @@ libCentauroJets_la_LIBADD = \
   -lphg4hit \
   -lg4eval  \
   -lphool   \
+  -leicpidbase \
   -lfastjet \
   -lfastjettools \
   -lCentauro

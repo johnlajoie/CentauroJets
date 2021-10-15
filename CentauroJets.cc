@@ -45,6 +45,12 @@
 #include <TLorentzVector.h>
 #include <TLorentzRotation.h>
 
+// PID includes
+#include <eicpidbase/EICPIDParticle.h>
+#include <eicpidbase/EICPIDParticleContainer.h>
+#include <g4eval/JetEvalStack.h>
+#include <g4eval/SvtxEvalStack.h>
+
 // GEANT
 #include <Geant4/G4ParticleTable.hh>
 #include <Geant4/G4ParticleDefinition.hh>
@@ -1025,6 +1031,9 @@ void CentauroJets::fill_tree(PHCompositeNode *topNode) {
     // Track Jets
 
     pseudojets.clear(); 
+    tcpseudojets.clear(); 
+
+    EICPIDParticleContainer *pidcontainer = findNode::getClass<EICPIDParticleContainer>(topNode, "EICPIDParticleMap");
 
     for (SvtxTrackMap::ConstIter track_itr = _trackmap->begin();
 	 track_itr != _trackmap->end(); track_itr++) {
@@ -1038,8 +1047,40 @@ void CentauroJets::fill_tree(PHCompositeNode *topNode) {
       double py = temp->get_py();
       double pz = temp->get_pz();
 
+      double mass = 0.13957039; // assume pion
+
+      // Check the particle ID hypothesis
+
+      if (pidcontainer){
+
+	// EICPIDParticle are index the same as the tracks
+	const EICPIDParticle *pid_particle = pidcontainer->findEICPIDParticle(temp->get_id());
+
+	if (pid_particle)
+	  {
+	    // top level log likelihood sums.
+	    // More detailed per-detector information also available at  EICPIDParticle::get_LogLikelyhood(EICPIDDefs::PIDCandidate, EICPIDDefs::PIDDetector)
+	    float m_tr_electron_loglikelihood = pid_particle->get_SumLogLikelyhood(EICPIDDefs::ElectronCandiate);
+	    float m_tr_pion_loglikelihood = pid_particle->get_SumLogLikelyhood(EICPIDDefs::PionCandiate);
+	    float m_tr_kaon_loglikelihood = pid_particle->get_SumLogLikelyhood(EICPIDDefs::KaonCandiate);
+	    float m_tr_proton_loglikelihood = pid_particle->get_SumLogLikelyhood(EICPIDDefs::ProtonCandiate);
+
+	    if((m_tr_electron_loglikelihood-m_tr_pion_loglikelihood)>0.0) mass = 0.000510998950; 
+	    if((m_tr_kaon_loglikelihood-m_tr_pion_loglikelihood)>0.0) {
+	      mass = 0.493677; 
+	      if((m_tr_proton_loglikelihood-m_tr_kaon_loglikelihood)>0.0) mass = 0.938272; 
+	    }
+
+	  }
+
+      } 
+      else{
+	cout << "EICPIDParticle missing! Assuming massless." << endl; 
+	mass = 0.0; 
+      }
+
       // Transform to Breit frame
-      TLorentzVector track(px,py,pz,temp->get_p()); 
+      TLorentzVector track(px,py,pz,sqrt(pow(temp->get_p(),2) + pow(mass,2))); 
       TLorentzVector breit_track = (breit*track); 
 
       breit_track.Transform(breitRotInv); 
@@ -1964,6 +2005,7 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
 
       // Create the cluster
       TLorentzVector cluster(px1,py1,pz1,rcluster1->get_energy()); 
+      cluster *= BARREL_HCAL_NEUT_SCALE; 
 
       cused2[k] = true; 
 
