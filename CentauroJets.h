@@ -148,6 +148,7 @@ class CentauroJets: public SubsysReco
   std::vector<int> jet_pidx; 
   std::vector<double> jet_lab_eta; 
   std::vector<double> jet_lab_phi; 
+  std::vector<double> jet_lab_p; 
   std::vector<double> jet_pdR; 
   std::vector<int> jet_nc; 
 
@@ -162,6 +163,7 @@ class CentauroJets: public SubsysReco
   std::vector<int> tjet_pidx; 
   std::vector<double> tjet_lab_eta; 
   std::vector<double> tjet_lab_phi; 
+  std::vector<double> tjet_lab_p; 
   std::vector<double> tjet_pdR; 
   std::vector<int> tjet_nc; 
   std::vector<double> tjet_Q; 
@@ -177,6 +179,7 @@ class CentauroJets: public SubsysReco
   std::vector<int> tcjet_pidx; 
   std::vector<double> tcjet_lab_eta; 
   std::vector<double> tcjet_lab_phi; 
+  std::vector<double> tcjet_lab_p; 
   std::vector<double> tcjet_pdR; 
   std::vector<int> tcjet_nc; 
   std::vector<double> tcjet_Q; 
@@ -223,6 +226,7 @@ class CentauroJets: public SubsysReco
   std::vector<int> ct_pid; 
   std::vector<double> ct_p_meas; 
   std::vector<double> ct_p_true; 
+  std::vector<double> ct_p_true_lab; 
   std::vector<double> ct_eta_meas; 
   std::vector<double> ct_eta_true; 
   std::vector<double> ct_dist; 
@@ -237,6 +241,7 @@ class CentauroJets: public SubsysReco
   TTree *_eval_calo_tracks_fwd; 
   std::vector<int> cat_pid;  
   std::vector<double> cat_p_true; 
+  std::vector<double> cat_p_true_lab; 
   std::vector<double> cat_eta_meas; 
   std::vector<double> cat_eta_true; 
   std::vector<double> cat_e_tot; 

@@ -82,6 +82,9 @@ using namespace fastjet;
 #define BARREL_HCAL_NEUT_SCALE (1.0/0.46)
 #define FWD_HCAL_NEUT_SCALE (1.0/0.77)
 
+// Use PID?
+#define USE_PID 0
+
 double XYtoPhi(double x, double y)
 {
   // -Pi to +Pi
@@ -301,6 +304,7 @@ int CentauroJets::Init(PHCompositeNode *topNode) {
 	_eval_tree_event->Branch("jet_pdR",&jet_pdR);
 	_eval_tree_event->Branch("jet_lab_eta",&jet_lab_eta); 
 	_eval_tree_event->Branch("jet_lab_phi",&jet_lab_phi); 
+	_eval_tree_event->Branch("jet_lab_p",&jet_lab_p); 
 	_eval_tree_event->Branch("jet_nc",&jet_nc);
 
 	_eval_tree_event->Branch("tjet_pT",&tjet_pT); 
@@ -315,6 +319,7 @@ int CentauroJets::Init(PHCompositeNode *topNode) {
 	_eval_tree_event->Branch("tjet_pdR",&tjet_pdR);
 	_eval_tree_event->Branch("tjet_lab_eta",&tjet_lab_eta); 
 	_eval_tree_event->Branch("tjet_lab_phi",&tjet_lab_phi); 
+	_eval_tree_event->Branch("tjet_lab_p",&tjet_lab_p); 
 	_eval_tree_event->Branch("tjet_nc",&tjet_nc);
 	_eval_tree_event->Branch("tjet_Q",&tjet_Q);
 
@@ -330,6 +335,7 @@ int CentauroJets::Init(PHCompositeNode *topNode) {
 	_eval_tree_event->Branch("tcjet_pdR",&tcjet_pdR);
 	_eval_tree_event->Branch("tcjet_lab_eta",&tcjet_lab_eta); 
 	_eval_tree_event->Branch("tcjet_lab_phi",&tcjet_lab_phi); 
+	_eval_tree_event->Branch("tcjet_lab_p",&tcjet_lab_p); 
 	_eval_tree_event->Branch("tcjet_nc",&tcjet_nc);
 	_eval_tree_event->Branch("tcjet_Q",&tcjet_Q);
 	_eval_tree_event->Branch("tcjet_cf",&tcjet_cf);
@@ -375,6 +381,7 @@ int CentauroJets::Init(PHCompositeNode *topNode) {
 	_eval_charged_tracks_cent->Branch("pid",&ct_pid); 
 	_eval_charged_tracks_cent->Branch("p_meas",&ct_p_meas); 
 	_eval_charged_tracks_cent->Branch("p_true",&ct_p_true); 
+	_eval_charged_tracks_cent->Branch("p_true_lab",&ct_p_true_lab); 
 	_eval_charged_tracks_cent->Branch("eta_meas",&ct_eta_meas); 
 	_eval_charged_tracks_cent->Branch("eta_true",&ct_eta_true); 
 	_eval_charged_tracks_cent->Branch("dist",&ct_dist); 
@@ -388,6 +395,7 @@ int CentauroJets::Init(PHCompositeNode *topNode) {
 	_eval_charged_tracks_fwd->Branch("pid",&ct_pid); 
 	_eval_charged_tracks_fwd->Branch("p_meas",&ct_p_meas); 
 	_eval_charged_tracks_fwd->Branch("p_true",&ct_p_true); 
+	_eval_charged_tracks_fwd->Branch("p_true_lab",&ct_p_true_lab); 
 	_eval_charged_tracks_fwd->Branch("eta_meas",&ct_eta_meas); 
 	_eval_charged_tracks_fwd->Branch("eta_true",&ct_eta_true); 
 	_eval_charged_tracks_fwd->Branch("dist",&ct_dist); 
@@ -400,6 +408,7 @@ int CentauroJets::Init(PHCompositeNode *topNode) {
 	_eval_calo_tracks_cent->Branch("event", &event, "event/I");
 	_eval_calo_tracks_cent->Branch("pid",&cat_pid); 
 	_eval_calo_tracks_cent->Branch("p_true",&cat_p_true); 
+	_eval_calo_tracks_cent->Branch("p_true_lab",&cat_p_true_lab); 
 	_eval_calo_tracks_cent->Branch("eta_meas",&cat_eta_meas); 
 	_eval_calo_tracks_cent->Branch("eta_true",&cat_eta_true); 
 	_eval_calo_tracks_cent->Branch("match",&cat_match); 
@@ -409,6 +418,7 @@ int CentauroJets::Init(PHCompositeNode *topNode) {
 	_eval_calo_tracks_fwd->Branch("event", &event, "event/I");
 	_eval_calo_tracks_fwd->Branch("pid",&cat_pid); 
 	_eval_calo_tracks_fwd->Branch("p_true",&cat_p_true); 
+	_eval_calo_tracks_fwd->Branch("p_true_lab",&cat_p_true_lab); 
 	_eval_calo_tracks_fwd->Branch("eta_meas",&cat_eta_meas); 
 	_eval_calo_tracks_fwd->Branch("eta_true",&cat_eta_true); 
 	_eval_calo_tracks_fwd->Branch("match",&cat_match); 
@@ -773,6 +783,7 @@ void CentauroJets::fill_tree(PHCompositeNode *topNode) {
   jet_largest.clear(); 
   jet_lab_eta.clear(); 
   jet_lab_phi.clear(); 
+  jet_lab_p.clear(); 
   jet_nc.clear();
   jet_pidx.clear(); 
   jet_pdR.clear(); 
@@ -787,6 +798,7 @@ void CentauroJets::fill_tree(PHCompositeNode *topNode) {
   tjet_largest.clear(); 
   tjet_lab_eta.clear(); 
   tjet_lab_phi.clear(); 
+  tjet_lab_p.clear(); 
   tjet_nc.clear();
   tjet_pidx.clear(); 
   tjet_pdR.clear(); 
@@ -802,6 +814,7 @@ void CentauroJets::fill_tree(PHCompositeNode *topNode) {
   tcjet_largest.clear(); 
   tcjet_lab_eta.clear(); 
   tcjet_lab_phi.clear(); 
+  tcjet_lab_p.clear(); 
   tcjet_nc.clear();
   tcjet_pidx.clear(); 
   tcjet_pdR.clear(); 
@@ -1023,6 +1036,7 @@ void CentauroJets::fill_tree(PHCompositeNode *topNode) {
 
       jet_lab_eta.push_back(pjet.Eta());  
       jet_lab_phi.push_back(pjet.Phi()); 
+      jet_lab_p.push_back(pjet.Vect().Mag()); 
 
       jet_nc.push_back(fastjets[ijet].constituents().size());
 	   
@@ -1051,7 +1065,7 @@ void CentauroJets::fill_tree(PHCompositeNode *topNode) {
 
       // Check the particle ID hypothesis
 
-      if (pidcontainer){
+      if (pidcontainer && USE_PID ){
 
 	// EICPIDParticle are index the same as the tracks
 	const EICPIDParticle *pid_particle = pidcontainer->findEICPIDParticle(temp->get_id());
@@ -1075,7 +1089,7 @@ void CentauroJets::fill_tree(PHCompositeNode *topNode) {
 
       } 
       else{
-	cout << "EICPIDParticle missing! Assuming massless." << endl; 
+	if(USE_PID) cout << "EICPIDParticle missing! Assuming massless." << endl; 
 	mass = 0.0; 
       }
 
@@ -1128,6 +1142,7 @@ void CentauroJets::fill_tree(PHCompositeNode *topNode) {
 
       tjet_lab_eta.push_back(pjet.Eta());  
       tjet_lab_phi.push_back(pjet.Phi()); 
+      tjet_lab_p.push_back(pjet.Vect().Mag()); 
 
       tjet_nc.push_back(tfastjets[ijet].constituents().size());
 
@@ -1184,6 +1199,7 @@ void CentauroJets::fill_tree(PHCompositeNode *topNode) {
 
       tcjet_lab_eta.push_back(pjet.Eta());  
       tcjet_lab_phi.push_back(pjet.Phi()); 
+      tcjet_lab_p.push_back(pjet.Vect().Mag()); 
 
       tcjet_nc.push_back(tcfastjets[ijet].constituents().size());
 	 
@@ -2065,6 +2081,7 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
 
   cat_pid.clear();  
   cat_p_true.clear(); 
+  cat_p_true_lab.clear(); 
   cat_eta_meas.clear(); 
   cat_eta_true.clear(); 
   cat_match.clear(); 
@@ -2081,6 +2098,7 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
       double minDist = 9999.0; 
       int pid = -9999; 
       double prim_p = 9999.0; 
+      double prim_p_lab = 9999.0; 
       double prim_Eta = 9999.0; 
 
       // PRIMARIES ONLY
@@ -2122,7 +2140,8 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
 	if(dist<minDist){
 	  minDist = dist; 
 	  pid = g4particle->get_pid();
-	  prim_p = partMom_breit.Vect().Mag(); 
+	  prim_p = partMom_breit.Vect().Mag();
+	  prim_p_lab = efp.vect().r(); 
 	  prim_Eta = partMom_breit.Vect().Eta(); 
 	}
 
@@ -2132,6 +2151,7 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
 
 	cat_pid.push_back(pid);
 	cat_p_true.push_back(prim_p); 
+	cat_p_true_lab.push_back(prim_p_lab); 
         cat_e_tot.push_back(ctrack.Mag());
 	cat_match.push_back(minDist); 
 	cat_eta_meas.push_back(ctrack.Eta()); 
@@ -2379,6 +2399,8 @@ void CentauroJets::BuildChargedCaloTracks(PHCompositeNode *topNode, std::string 
 
 	ct_p_meas.push_back(tmatched0[k]->get_p()); 
 	ct_p_true.push_back(match_lf.Vect().Mag()); 
+	
+	ct_p_true_lab.push_back(efp.vect().r()); 
 	
 	ct_eta_meas.push_back(tmatched0[k]->get_eta()); 
         ct_eta_true.push_back(match_lf.Vect().Eta()); 
