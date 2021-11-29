@@ -283,6 +283,7 @@ int CentauroJets::Init(PHCompositeNode *topNode) {
 	_eval_tree_event->Branch("meas_x", &meas_x, "meas_x/D");
 	_eval_tree_event->Branch("meas_E_p", &meas_E_p, "meas_E_p/D"); 
 	_eval_tree_event->Branch("electron_eta",&electron_eta,"electron_eta/D"); 
+	_eval_tree_event->Branch("electron_phi",&electron_eta,"electron_phi/D"); 
 	_eval_tree_event->Branch("electron_cluster_dR",&electron_cluster_dR,"electron_cluster_dR/D"); 
 
 	_eval_tree_event->Branch("breit_vphot_e",&breit_vphot_e,"breit_vphot_e/D"); 
@@ -371,6 +372,8 @@ int CentauroJets::Init(PHCompositeNode *topNode) {
  	_eval_tree_event->Branch("tfpjet_nc",&tfpjet_nc);
 	_eval_tree_event->Branch("tfpjet_Q",&tfpjet_Q);
 	_eval_tree_event->Branch("tfpjet_cf",&tfpjet_cf);
+	_eval_tree_event->Branch("tfpjet_tcidx",&tfpjet_tcidx);
+	_eval_tree_event->Branch("tfpjet_tcdR",&tfpjet_tcdR);
 	_eval_tree_event->Branch("tfpjet_neut_p",&tfpjet_neut_p); 
 	_eval_tree_event->Branch("tfpjet_chgd_p",&tfpjet_chgd_p); 
 	_eval_tree_event->Branch("tfpjet_em_p",&tfpjet_em_p); 
@@ -805,6 +808,7 @@ void CentauroJets::fill_tree(PHCompositeNode *topNode) {
   measQ2 = -9999.0; 
   meas_E_p = -9999.0;
   electron_eta = -9999.0; 
+  electron_phi = -9999.0; 
   electron_cluster_dR = -9999.0; 
 	
   breit_vphot_e = -9999.0; 
@@ -893,6 +897,8 @@ void CentauroJets::fill_tree(PHCompositeNode *topNode) {
   tfpjet_nc.clear();
   tfpjet_Q.clear(); 
   tfpjet_cf.clear(); 
+  tfpjet_tcidx.clear(); 
+  tfpjet_tcdR.clear(); 
   tfpjet_neut_p.clear(); 
   tfpjet_neut_p.clear(); 
   tfpjet_em_p.clear(); 
@@ -931,6 +937,7 @@ void CentauroJets::fill_tree(PHCompositeNode *topNode) {
 
     meas_E_p = ElectronClusterEnergy/electron->get_p(); 
     electron_eta = electron->get_eta();
+    electron_phi = electron->get_phi();
     electron_cluster_dR = ElectronClusterDistance; 
 
     // Calculate the event kinematics
@@ -1468,6 +1475,41 @@ void CentauroJets::fill_tree(PHCompositeNode *topNode) {
       pjet_tcdR.push_back(closest_dR); 
 
     }
+
+
+    for(unsigned int pjet=0; pjet<tfpfastjets.size(); pjet++){
+
+
+      int closest_idx = -1; 
+      double closest_dR = 9999.0; 
+
+      for(unsigned int ijet=0; ijet<tcfastjets.size(); ijet++){
+
+	TVector3 v1(tcfastjets[ijet].px(),tcfastjets[ijet].py(),tcfastjets[ijet].pz()); 
+	TVector3 v2(tfpfastjets[pjet].px(),tfpfastjets[pjet].py(),tfpfastjets[pjet].pz());
+
+	double tc_p = sqrt(pow(tcfastjets[ijet].px(),2) + 
+			   pow(tcfastjets[ijet].py(),2) +
+			   pow(tcfastjets[ijet].pz(),2));
+
+	double p_p = sqrt(pow(tfpfastjets[pjet].px(),2) + 
+			  pow(tfpfastjets[pjet].py(),2) + 
+			  pow(tfpfastjets[pjet].pz(),2)); 
+
+	double dR = acos(v1.Dot(v2)/(tc_p*p_p)); 
+
+	if(dR<closest_dR){
+	  closest_idx = pjet; 
+	  closest_dR = dR; 
+	}
+
+      }
+
+      tfpjet_tcidx.push_back(closest_idx); 
+      tfpjet_tcdR.push_back(closest_dR); 
+
+    }
+
 
   }
   else{
@@ -2180,7 +2222,8 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
 	// NOTE: stored HepMC kinematics are in event generator (head-on) frame!
 	// Transform to the lab frame
 	CLHEP::HepLorentzVector efp(g4particle->get_px(),g4particle->get_py(),g4particle->get_pz(),g4particle->get_e());
-	efp = EventToLab * efp;  
+	// Not needed per Jin
+	//efp = EventToLab * efp;  
 
 	// Now transform to the Breit frame
 	TLorentzVector partMom(efp.px(), efp.py(), efp.pz(), efp.e()); 
@@ -2456,7 +2499,8 @@ void CentauroJets::BuildChargedCaloTracks(PHCompositeNode *topNode, std::string 
 	// Get the final particle in the lab frame
 	CLHEP::HepLorentzVector efp(g4particle->get_px(),g4particle->get_py(),
 				g4particle->get_pz(),g4particle->get_e());
-	efp = EventToLab * efp;  
+	// Not needed per Jin
+	//efp = EventToLab * efp;  
 	TLorentzVector match_lf(efp.px(), efp.py(), efp.pz(), efp.e());
 
 	ct_p_meas.push_back(tmatched0[k]->get_p()); 
@@ -2607,7 +2651,8 @@ void CentauroJets::BuildChargedCaloTracks(PHCompositeNode *topNode, std::string 
 	    // Get the final particle in the lab frame
 	    CLHEP::HepLorentzVector efp(g4particle->get_px(),g4particle->get_py(),
 					g4particle->get_pz(),g4particle->get_e());
-	    efp = EventToLab * efp;  
+	    // Not needed per Jin 
+	    //efp = EventToLab * efp;  
 	    TLorentzVector match_lf(efp.px(), efp.py(), efp.pz(), efp.e());
 
 	    ct_p_meas.push_back(tmatched1[k]->get_p()); 
@@ -2730,7 +2775,8 @@ void CentauroJets::BuildChargedCaloTracks(PHCompositeNode *topNode, std::string 
 	  // Get the final particle in the lab frame
 	  CLHEP::HepLorentzVector efp(g4particle->get_px(),g4particle->get_py(),
 				      g4particle->get_pz(),g4particle->get_e());
-	  efp = EventToLab * efp;  
+	  // Not needed per Jin
+	  //efp = EventToLab * efp;  
 	  TLorentzVector match_lf(efp.px(), efp.py(), efp.pz(), efp.e());
 
 	  ct_p_meas.push_back(tmatched2[k]->get_p()); 
@@ -2966,12 +3012,13 @@ void CentauroJets::GetPrimaryJets(PHCompositeNode *topNode, fastjet::JetDefiniti
     // NOTE: stored HepMC kinematics are in event generator (head-on) frame!
     // Transform to the lab frame
     CLHEP::HepLorentzVector efp(g4particle->get_px(),g4particle->get_py(),g4particle->get_pz(),g4particle->get_e());
-    efp = EventToLab * efp;  
+    // No transform needed per Jin!
+    //efp = EventToLab * efp;  
 
     TLorentzVector partMom(efp.px(), efp.py(), efp.pz(), efp.e()); 
 
     // lab frame cuts
-    if((partMom.Pt()<0.200)||(fabs(partMom.Eta())>4.0)) continue;
+    //if((partMom.Pt()<0.200)||(fabs(partMom.Eta())>4.0)) continue;
 
     TLorentzVector partMom_breit = (breit*partMom); 
     partMom_breit.Transform(breitRot); 

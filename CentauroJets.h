@@ -123,6 +123,7 @@ class CentauroJets: public SubsysReco
   double meas_x; 
   double meas_E_p; 
   double electron_eta; 
+  double electron_phi; 
   double electron_cluster_dR; 
 
   double vtx_x; 
@@ -216,6 +217,8 @@ class CentauroJets: public SubsysReco
   std::vector<int> tfpjet_nc;   
   std::vector<double> tfpjet_Q; 
   std::vector<double> tfpjet_cf; 
+  std::vector<int> tfpjet_tcidx; 
+  std::vector<double> tfpjet_tcdR; 
   std::vector<double> tfpjet_neut_p; 
   std::vector<double> tfpjet_chgd_p; 
   std::vector<double> tfpjet_em_p; 
