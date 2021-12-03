@@ -268,6 +268,7 @@ class CentauroJets: public SubsysReco
   double _tm_dphi;
   double _tm_dist;
   double _tm_eta;
+  double _tm_phi;
   double _tm_p;
 
   TTree *_eval_tmatch_becal;
