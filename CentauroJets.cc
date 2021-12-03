@@ -501,17 +501,13 @@ int CentauroJets::Init(PHCompositeNode *topNode) {
 	// Diagnostic histograms
 
 	_h_becal_ihcal_match = new TH1D("_h_becal_ihcal_match","",200,0.0,5.0); 
-	_h_becal_ihcal_match_eta = new TH1D("_h_becal_ihcal_match_eta","",200,0.0,6.5); 
-	_h_becal_ihcal_match_phi = new TH1D("_h_becal_ihcal_match_phi","",200,0.0,6.5); 
+	_h_becal_ihcal_match_eta_phi = new TH2D("_h_becal_ihcal_match_eta_phi","",100,0.0,1.0,100,0.0,TMath::Pi()); 
 	_h_becal_ohcal_match = new TH1D("_h_becal_ohcal_match","",200,0.0,5.0); 
-	_h_becal_ohcal_match_eta = new TH1D("_h_becal_ohcal_match_eta","",200,0.0,5.0); 
-	_h_becal_ohcal_match_phi = new TH1D("_h_becal_ohcal_match_phi","",200,0.0,5.0); 
+	_h_becal_ohcal_match_eta_phi = new TH2D("_h_becal_ohcal_match_eta_phi","",100,0.0,1.0,100,0.0,TMath::Pi()); 
 	_h_ihcal_ohcal_match = new TH1D("_h_ihcal_ohcal_match","",200,0.0,5.0); 
-	_h_ihcal_ohcal_match_eta = new TH1D("_h_ihcal_ohcal_match_eta","",200,0.0,5.0); 
-	_h_ihcal_ohcal_match_phi = new TH1D("_h_ihcal_ohcal_match_phi","",200,0.0,5.0); 
+	_h_ihcal_ohcal_match_eta_phi = new TH2D("_h_ihcal_ohcal_match_eta_phi","",100,0.0,1.0,100,0.0,TMath::Pi()); 
 	_h_femc_lfhcal_match = new TH1D("_h_femc_lfhcal_match","",200,0.0,5.0); 
-	_h_femc_lfhcal_match_eta = new TH1D("_h_femc_lfhcal_match_eta","",200,0.0,5.0); 
-	_h_femc_lfhcal_match_phi = new TH1D("_h_femc_lfhcal_match_phi","",200,0.0,5.0); 
+	_h_femc_lfhcal_match_eta_phi = new TH2D("_h_femc_lfhcal_match_eta_phi","",100,0.0,1.0,100,0.0,TMath::Pi()); 
 
 	_h_calotrack_prim_match_cent = new TH1D("_h_calotrack_prim_match_cent","",400,0.0,2.0); 
 	_h_calotrack_prim_match_cent_gamma = new TH1D("_h_calotrack_prim_match_cent_gamma","",400,0.0,2.0); 
@@ -590,17 +586,13 @@ int CentauroJets::End(PHCompositeNode *topNode) {
 	_eval_calo_tracks_fwd->Write(); 
 
 	_h_becal_ihcal_match->Write(); 
-	_h_becal_ihcal_match_eta->Write(); 
-	_h_becal_ihcal_match_phi->Write(); 
+	_h_becal_ihcal_match_eta_phi->Write(); 
 	_h_becal_ohcal_match->Write(); 
-	_h_becal_ohcal_match_eta->Write(); 
-	_h_becal_ohcal_match_phi->Write(); 
+	_h_becal_ohcal_match_eta_phi->Write(); 
 	_h_ihcal_ohcal_match->Write(); 
-	_h_ihcal_ohcal_match_eta->Write(); 
-	_h_ihcal_ohcal_match_phi->Write(); 
+	_h_ihcal_ohcal_match_eta_phi->Write(); 
 	_h_femc_lfhcal_match->Write(); 
-	_h_femc_lfhcal_match_eta->Write(); 
-	_h_femc_lfhcal_match_phi->Write(); 
+	_h_femc_lfhcal_match_eta_phi->Write(); 
 
 	_h_calotrack_prim_match_cent->Write(); 
 	_h_calotrack_prim_match_cent_gamma->Write(); 
@@ -1639,6 +1631,56 @@ void CentauroJets::FillTowerPseudoJets( PHCompositeNode *topNode, std::string de
 
 }
 
+void CentauroJets::ApplyTrackClusterMatchOffsets( double eta, double &dPhi, double &deta, std::string detName ){
+
+  // Apply matching offsets 
+
+  if(detName=="BECAL") {
+    if(eta>=0.0){
+      deta -= becal_deta_offset[0]; 
+      dPhi -= becal_dphi_offset[0];
+    }
+    else{
+      deta -= becal_deta_offset[1]; 
+      dPhi -= becal_dphi_offset[1];
+    }
+  }
+
+  if(detName=="HCALIN") {
+    if(eta>=0.0){
+      deta -= ihcal_deta_offset[0]; 
+      dPhi -= ihcal_dphi_offset[0];
+    }
+    else{
+      deta -= ihcal_deta_offset[1]; 
+      dPhi -= ihcal_dphi_offset[1];
+    }
+  }
+
+  if(detName=="HCALOUT") {
+    if(eta>=0.0){
+      deta -= ohcal_deta_offset[0]; 
+      dPhi -= ohcal_dphi_offset[0];
+    }
+    else{
+      deta -= ohcal_deta_offset[1]; 
+      dPhi -= ohcal_dphi_offset[1];
+    }
+  }
+
+  if(detName=="FEMC") {
+    deta -= femc_deta_offset; 
+    dPhi -= femc_dphi_offset;
+  }
+
+  if(detName=="LFHCAL") {
+    deta -= lfhcal_deta_offset; 
+    dPhi -= lfhcal_dphi_offset;
+  }
+
+}
+
+
 bool CentauroJets::VetoClusterWithTrack(double eta, double phi, std::string detName){
 
   // Does this cluster have a track pointing to it? 
@@ -1666,50 +1708,7 @@ bool CentauroJets::VetoClusterWithTrack(double eta, double phi, std::string detN
 	double dPhi = DeltaPhi(phi, tstate->get_phi()); 
 	double ptot = tstate->get_p(); 
 
-	// Apply matching offsets 
-
-	if(detName=="BECAL") {
-	  if(eta>=0.0){
-	    deta -= becal_deta_offset[0]; 
-	    dPhi -= becal_dphi_offset[0];
-	  }
-	  else{
-	    deta -= becal_deta_offset[1]; 
-	    dPhi -= becal_dphi_offset[1];
-	  }
-	}
-
-	if(detName=="HCALIN") {
-	  if(eta>=0.0){
-	    deta -= ihcal_deta_offset[0]; 
-	    dPhi -= ihcal_dphi_offset[0];
-	  }
-	  else{
-	    deta -= ihcal_deta_offset[1]; 
-	    dPhi -= ihcal_dphi_offset[1];
-	  }
-	}
-
-	if(detName=="HCALOUT") {
-	  if(eta>=0.0){
-	    deta -= ohcal_deta_offset[0]; 
-	    dPhi -= ohcal_dphi_offset[0];
-	  }
-	  else{
-	    deta -= ohcal_deta_offset[1]; 
-	    dPhi -= ohcal_dphi_offset[1];
-	  }
-	}
-
-	if(detName=="FEMC") {
-	  deta -= femc_deta_offset; 
-	  dPhi -= femc_dphi_offset;
-	}
-
-	if(detName=="LFHCAL") {
-	  deta -= lfhcal_deta_offset; 
-	  dPhi -= lfhcal_dphi_offset;
-	}
+	ApplyTrackClusterMatchOffsets( eta, dPhi, deta, detName ); 
 
 	double dist = sqrt( pow(deta,2) + pow(dPhi,2) ); 
 	if(dist<minDist){
@@ -1924,15 +1923,13 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
 	double scale = 1.0; 
 	if(type=="CENT"){
 	  _h_becal_ihcal_match->Fill(dist);
-	  _h_becal_ihcal_match_eta->Fill(deta); 
-	  _h_becal_ihcal_match_phi->Fill(dPhi); 
+	  _h_becal_ihcal_match_eta_phi->Fill(deta,dPhi); 
 	  mDist = IHCAL_CLUST_TRACKMATCH;
 	  scale = BARREL_HCAL_NEUT_SCALE; 
 	}
 	else if(type=="FWD"){
 	  _h_femc_lfhcal_match->Fill(dist);
-	  _h_femc_lfhcal_match_eta->Fill(deta);
-	  _h_femc_lfhcal_match_phi->Fill(dPhi);
+	  _h_femc_lfhcal_match_eta_phi->Fill(deta,dPhi);
 	  mDist = LFHCAL_CLUST_TRACKMATCH;
 	  scale = FWD_HCAL_NEUT_SCALE; 
 	}
@@ -1984,8 +1981,7 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
 	double dist = sqrt( pow(deta,2) + pow(dPhi,2) ); 
 	
 	_h_becal_ohcal_match->Fill(dist); 
-	_h_becal_ohcal_match_eta->Fill(deta); 
-	_h_becal_ohcal_match_phi->Fill(dPhi); 
+	_h_becal_ohcal_match_eta_phi->Fill(deta,dPhi); 
 
 	if(dist<OHCAL_CLUST_TRACKMATCH){ 
 
@@ -2126,8 +2122,7 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
 
 	  if(type=="CENT"){
 	    _h_ihcal_ohcal_match->Fill(dist); 
-	    _h_ihcal_ohcal_match_eta->Fill(deta); 
-	    _h_ihcal_ohcal_match_phi->Fill(dPhi); 
+	    _h_ihcal_ohcal_match_eta_phi->Fill(deta,dPhi); 
 	  }
 
 	  if(dist<OHCAL_CLUST_TRACKMATCH){ 
@@ -2389,50 +2384,7 @@ SvtxTrack *CentauroJets::AttachClusterToTrack(double eta, double phi, std::strin
 	double deta = eta -  tstate->get_eta(); 
 	double dPhi = DeltaPhi(phi, tstate->get_phi()); 
 
-	// Apply matching offsets 
-
-	if(detName=="BECAL") {
-	  if(eta>=0.0){
-	    deta -= becal_deta_offset[0]; 
-	    dPhi -= becal_dphi_offset[0];
-	  }
-	  else{
-	    deta -= becal_deta_offset[1]; 
-	    dPhi -= becal_dphi_offset[1];
-	  }
-	}
-
-	if(detName=="HCALIN") {
-	  if(eta>=0.0){
-	    deta -= ihcal_deta_offset[0]; 
-	    dPhi -= ihcal_dphi_offset[0];
-	  }
-	  else{
-	    deta -= ihcal_deta_offset[1]; 
-	    dPhi -= ihcal_dphi_offset[1];
-	  }
-	}
-
-	if(detName=="HCALOUT") {
-	  if(eta>=0.0){
-	    deta -= ohcal_deta_offset[0]; 
-	    dPhi -= ohcal_dphi_offset[0];
-	  }
-	  else{
-	    deta -= ohcal_deta_offset[1]; 
-	    dPhi -= ohcal_dphi_offset[1];
-	  }
-	}
-
-	if(detName=="FEMC") {
-	  deta -= femc_deta_offset; 
-	  dPhi -= femc_dphi_offset;
-	}
-
-	if(detName=="LFHCAL") {
-	  deta -= lfhcal_deta_offset; 
-	  dPhi -= lfhcal_dphi_offset;
-	}
+	ApplyTrackClusterMatchOffsets( eta, dPhi, deta, detName ); 
 
 	double dist = sqrt( pow(deta,2) + pow(dPhi,2) ); 
 	if(dist<minDist){

@@ -103,6 +103,8 @@ class CentauroJets: public SubsysReco
 
   bool isThisAnElectron(SvtxTrack *temp); 
 
+  void ApplyTrackClusterMatchOffsets( double eta, double &dPhi, double &deta, std::string detName ); 
+
   // Event generator transform
   CLHEP::HepLorentzRotation EventToLab; 
 
@@ -290,17 +292,13 @@ class CentauroJets: public SubsysReco
   //Diagnostic histograms
 
   TH1D *_h_becal_ihcal_match; 
-  TH1D *_h_becal_ihcal_match_eta; 
-  TH1D *_h_becal_ihcal_match_phi; 
+  TH2D *_h_becal_ihcal_match_eta_phi; 
   TH1D *_h_becal_ohcal_match; 
-  TH1D *_h_becal_ohcal_match_eta; 
-  TH1D *_h_becal_ohcal_match_phi; 
+  TH2D *_h_becal_ohcal_match_eta_phi; 
   TH1D *_h_ihcal_ohcal_match; 
-  TH1D *_h_ihcal_ohcal_match_eta; 
-  TH1D *_h_ihcal_ohcal_match_phi; 
+  TH2D *_h_ihcal_ohcal_match_eta_phi; 
   TH1D *_h_femc_lfhcal_match;
-  TH1D *_h_femc_lfhcal_match_eta;
-  TH1D *_h_femc_lfhcal_match_phi;
+  TH2D *_h_femc_lfhcal_match_eta_phi;
 
   TH1D *_h_calotrack_prim_match_cent; 
   TH1D *_h_calotrack_prim_match_cent_gamma; 
