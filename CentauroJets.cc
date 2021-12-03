@@ -72,9 +72,15 @@ using namespace fastjet;
 #define CLUSTER_E_CUTOFF 0.100
 
 // Cluster/track matching cuts
-#define BECAL_CLUST_TRACKMATCH 0.10
-#define IHCAL_CLUST_TRACKMATCH 0.35
-#define OHCAL_CLUST_TRACKMATCH 0.35
+//#define BECAL_CLUST_TRACKMATCH 0.10
+//#define IHCAL_CLUST_TRACKMATCH 0.35
+//#define OHCAL_CLUST_TRACKMATCH 0.35
+//#define FEMC_CLUST_TRACKMATCH 0.15
+//#define LFHCAL_CLUST_TRACKMATCH 0.35
+
+#define BECAL_CLUST_TRACKMATCH 0.02
+#define IHCAL_CLUST_TRACKMATCH 0.20
+#define OHCAL_CLUST_TRACKMATCH 0.25
 #define FEMC_CLUST_TRACKMATCH 0.15
 #define LFHCAL_CLUST_TRACKMATCH 0.35
 
@@ -90,8 +96,14 @@ double becal_deta_offset[2] = {0.0,0.0};
 double ihcal_dphi_offset[2] = {-0.0186,-0.0241}; 
 double ihcal_deta_offset[2] = {0.1833,0.094}; 
 
+double ihcal_dphi_offset_phase2[2] = {0.0,0.0}; 
+double ihcal_deta_offset_phase2[2] = {0.091,-0.1099}; 
+
 double ohcal_dphi_offset[2] = {-0.0921,-0.0921}; 
 double ohcal_deta_offset[2] = {0.0,0.0}; 
+
+double ohcal_dphi_offset_phase2[2] = {0.0,0.033}; 
+double ohcal_deta_offset_phase2[2] = {0.0,0.0}; 
 
 double femc_dphi_offset = 0.0; 
 double femc_deta_offset = 0.0; 
@@ -1650,10 +1662,14 @@ void CentauroJets::ApplyTrackClusterMatchOffsets( double eta, double &dPhi, doub
     if(eta>=0.0){
       deta -= ihcal_deta_offset[0]; 
       dPhi -= ihcal_dphi_offset[0];
+      deta -= ihcal_deta_offset_phase2[0]; 
+      dPhi -= ihcal_dphi_offset_phase2[0];
     }
     else{
       deta -= ihcal_deta_offset[1]; 
       dPhi -= ihcal_dphi_offset[1];
+      deta -= ihcal_deta_offset_phase2[1]; 
+      dPhi -= ihcal_dphi_offset_phase2[1];
     }
   }
 
@@ -1661,10 +1677,14 @@ void CentauroJets::ApplyTrackClusterMatchOffsets( double eta, double &dPhi, doub
     if(eta>=0.0){
       deta -= ohcal_deta_offset[0]; 
       dPhi -= ohcal_dphi_offset[0];
+      deta -= ohcal_deta_offset_phase2[0]; 
+      dPhi -= ohcal_dphi_offset_phase2[0];
     }
     else{
       deta -= ohcal_deta_offset[1]; 
       dPhi -= ohcal_dphi_offset[1];
+      deta -= ohcal_deta_offset_phase2[1]; 
+      dPhi -= ohcal_dphi_offset_phase2[1];
     }
   }
 
@@ -2972,6 +2992,9 @@ RawCluster *CentauroJets:: getCluster( PHCompositeNode *topNode, std::string det
     double dphi = DeltaPhi(phi,cluster->get_phi());
     double cluster_eta = getEta(cluster->get_r(),cluster->get_z()); 
     double deta = eta-cluster_eta;
+    
+    ApplyTrackClusterMatchOffsets( eta, dphi, deta, detName ); 
+
     double r = sqrt(pow(dphi,2)+pow(deta,2));
 
     if (r < min_r) {
