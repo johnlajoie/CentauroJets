@@ -93,17 +93,14 @@ using namespace fastjet;
 double becal_dphi_offset[2] = {-0.02194,-0.02194}; 
 double becal_deta_offset[2] = {0.0,0.0}; 
 
-double ihcal_dphi_offset[2] = {-0.0186,-0.0241}; 
-double ihcal_deta_offset[2] = {0.1833,0.094}; 
+double ihcal_dphi_offset = -0.011; 
+double ihcal_dphi_offset_phase2 = -0.011; 
+double ihcal_deta_offset_m = -0.177916; 
+double ihcal_deta_offset_b = 0.150; 
 
-double ihcal_dphi_offset_phase2[2] = {0.0,0.0}; 
-double ihcal_deta_offset_phase2[2] = {0.091,-0.1099}; 
-
-double ohcal_dphi_offset[2] = {-0.0921,-0.0921}; 
-double ohcal_deta_offset[2] = {0.0,0.0}; 
-
-double ohcal_dphi_offset_phase2[2] = {0.0,0.033}; 
-double ohcal_deta_offset_phase2[2] = {0.0,0.0}; 
+double ohcal_dphi_offset = -0.083607;  
+double ohcal_dphi_offset_phase2 = -0.0084;  
+double ohcal_deta_offset = 0.0; 
 
 double femc_dphi_offset = 0.0; 
 double femc_deta_offset = 0.0; 
@@ -513,13 +510,13 @@ int CentauroJets::Init(PHCompositeNode *topNode) {
 	// Diagnostic histograms
 
 	_h_becal_ihcal_match = new TH1D("_h_becal_ihcal_match","",200,0.0,5.0); 
-	_h_becal_ihcal_match_eta_phi = new TH2D("_h_becal_ihcal_match_eta_phi","",100,0.0,1.0,100,0.0,TMath::Pi()); 
+	_h_becal_ihcal_match_eta_phi = new TH2D("_h_becal_ihcal_match_eta_phi","",100,-0.5,0.5,100,-TMath::Pi(),TMath::Pi()); 
 	_h_becal_ohcal_match = new TH1D("_h_becal_ohcal_match","",200,0.0,5.0); 
-	_h_becal_ohcal_match_eta_phi = new TH2D("_h_becal_ohcal_match_eta_phi","",100,0.0,1.0,100,0.0,TMath::Pi()); 
+	_h_becal_ohcal_match_eta_phi = new TH2D("_h_becal_ohcal_match_eta_phi","",100,-0.5,0.5,100,-TMath::Pi(),TMath::Pi()); 
 	_h_ihcal_ohcal_match = new TH1D("_h_ihcal_ohcal_match","",200,0.0,5.0); 
-	_h_ihcal_ohcal_match_eta_phi = new TH2D("_h_ihcal_ohcal_match_eta_phi","",100,0.0,1.0,100,0.0,TMath::Pi()); 
+	_h_ihcal_ohcal_match_eta_phi = new TH2D("_h_ihcal_ohcal_match_eta_phi","",100,-0.5,0.5,100,-TMath::Pi(),TMath::Pi()); 
 	_h_femc_lfhcal_match = new TH1D("_h_femc_lfhcal_match","",200,0.0,5.0); 
-	_h_femc_lfhcal_match_eta_phi = new TH2D("_h_femc_lfhcal_match_eta_phi","",100,0.0,1.0,100,0.0,TMath::Pi()); 
+	_h_femc_lfhcal_match_eta_phi = new TH2D("_h_femc_lfhcal_match_eta_phi","",100,-0.5,0.5,100,-TMath::Pi(),TMath::Pi()); 
 
 	_h_calotrack_prim_match_cent = new TH1D("_h_calotrack_prim_match_cent","",400,0.0,2.0); 
 	_h_calotrack_prim_match_cent_gamma = new TH1D("_h_calotrack_prim_match_cent_gamma","",400,0.0,2.0); 
@@ -1659,33 +1656,15 @@ void CentauroJets::ApplyTrackClusterMatchOffsets( double eta, double &dPhi, doub
   }
 
   if(detName=="HCALIN") {
-    if(eta>=0.0){
-      deta -= ihcal_deta_offset[0]; 
-      dPhi -= ihcal_dphi_offset[0];
-      deta -= ihcal_deta_offset_phase2[0]; 
-      dPhi -= ihcal_dphi_offset_phase2[0];
-    }
-    else{
-      deta -= ihcal_deta_offset[1]; 
-      dPhi -= ihcal_dphi_offset[1];
-      deta -= ihcal_deta_offset_phase2[1]; 
-      dPhi -= ihcal_dphi_offset_phase2[1];
-    }
+    dPhi -= ihcal_dphi_offset;
+    dPhi -= ihcal_dphi_offset_phase2;
+    deta -= ihcal_deta_offset_m*eta + ihcal_deta_offset_b; 
   }
 
   if(detName=="HCALOUT") {
-    if(eta>=0.0){
-      deta -= ohcal_deta_offset[0]; 
-      dPhi -= ohcal_dphi_offset[0];
-      deta -= ohcal_deta_offset_phase2[0]; 
-      dPhi -= ohcal_dphi_offset_phase2[0];
-    }
-    else{
-      deta -= ohcal_deta_offset[1]; 
-      dPhi -= ohcal_dphi_offset[1];
-      deta -= ohcal_deta_offset_phase2[1]; 
-      dPhi -= ohcal_dphi_offset_phase2[1];
-    }
+    deta -= ohcal_deta_offset;
+    if(eta<0.5) dPhi -= ohcal_dphi_offset;
+    dPhi -= ohcal_dphi_offset_phase2;
   }
 
   if(detName=="FEMC") {
@@ -1898,6 +1877,9 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
     double eta = getEta(rcluster0->get_r(),rcluster0->get_z()-vtx_z);
     double phi = rcluster0->get_phi(); 
  
+    // Apply the track/cluster matching offsets to the eta/phi
+    ApplyTrackClusterMatchOffsets( eta, phi, eta, detName[0] ); 
+
     double pt = rcluster0->get_energy() / cosh(eta);
     double px = pt * cos(phi);
     double py = pt * sin(phi);
@@ -1915,12 +1897,13 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
 
     // Look for the closest match in the next detector 
 
-    // For the HCALs we need to collect all the clusters
-    // that are within the window (collect split clusters)
-    
     if(detName[1]!=""){
 
       TLorentzVector cluster1(0.0,0.0,0.0,0.0);
+      double mDist = 9999.0;
+      double c_dist = 9999.0; 
+      double c_deta = 9999.0; 
+      double c_dPhi = 9999.0; 
 
       for (unsigned int j = 0; j < clusterList[1]->size(); j++) {
 
@@ -1934,23 +1917,20 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
 	double eta1 = getEta(rcluster1->get_r(),rcluster1->get_z()-vtx_z);
 	double phi1 = rcluster1->get_phi(); 
 
+	// Apply the track/cluster offsets
+	// using the eta of the first cluster
+	ApplyTrackClusterMatchOffsets( eta, phi1, eta1, detName[1] ); 
+
 	double deta = eta -  eta1; 
 	double dPhi = DeltaPhi(phi, phi1); 
 
 	double dist = sqrt( pow(deta,2) + pow(dPhi,2) );
      
-	double mDist = 0.0;
 	double scale = 1.0; 
 	if(type=="CENT"){
-	  _h_becal_ihcal_match->Fill(dist);
-	  _h_becal_ihcal_match_eta_phi->Fill(deta,dPhi); 
-	  mDist = IHCAL_CLUST_TRACKMATCH;
 	  scale = BARREL_HCAL_NEUT_SCALE; 
 	}
 	else if(type=="FWD"){
-	  _h_femc_lfhcal_match->Fill(dist);
-	  _h_femc_lfhcal_match_eta_phi->Fill(deta,dPhi);
-	  mDist = LFHCAL_CLUST_TRACKMATCH;
 	  scale = FWD_HCAL_NEUT_SCALE; 
 	}
 
@@ -1962,7 +1942,12 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
 	  double pz1 = pt1 * sinh(eta1);
 
 	  TLorentzVector clusterAdd(px1,py1,pz1,rcluster1->get_energy()); 
-	  cluster1 += (clusterAdd*scale); 
+	  cluster1 = (clusterAdd*scale); 
+	  
+	  mDist = dist; 
+	  c_dist = dist;
+	  c_deta = deta;
+	  c_dPhi = dPhi; 
 
 	  photon_candidate = false; 
 
@@ -1972,8 +1957,21 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
 
       }
 
-      // Add what we found to the existing cluster
-      cluster += cluster1;
+      if(cluster1.E()>0.0){
+
+	if(type=="CENT"){
+	  _h_becal_ihcal_match->Fill(c_dist);
+	  _h_becal_ihcal_match_eta_phi->Fill(c_deta,c_dPhi); 
+	}
+	else if(type=="FWD"){
+	  _h_femc_lfhcal_match->Fill(c_dist);
+	  _h_femc_lfhcal_match_eta_phi->Fill(c_deta,c_dPhi);
+	}
+
+	// Add what we found to the existing cluster
+	cluster += cluster1;
+
+      }
 
     }
 
@@ -1982,6 +1980,10 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
     if(detName[2]!="") {
 
       TLorentzVector cluster2(0.0,0.0,0.0,0.0); 
+      double mDist = 9999.0;
+      double c_dist = 9999.0; 
+      double c_deta = 9999.0; 
+      double c_dPhi = 9999.0; 
 
       for (unsigned int j = 0; j < clusterList[2]->size(); j++) {
 
@@ -1995,15 +1997,16 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
 	double eta2 = getEta(rcluster2->get_r(),rcluster2->get_z()-vtx_z);
 	double phi2 = rcluster2->get_phi(); 
 
+	// Apply the track/cluster offsets
+	// using the eta of the first cluster
+	ApplyTrackClusterMatchOffsets( eta, phi2, eta2, detName[2] ); 
+
 	double deta = eta -  eta2; 
 	double dPhi = DeltaPhi(phi, phi2); 
 
 	double dist = sqrt( pow(deta,2) + pow(dPhi,2) ); 
 	
-	_h_becal_ohcal_match->Fill(dist); 
-	_h_becal_ohcal_match_eta_phi->Fill(deta,dPhi); 
-
-	if(dist<OHCAL_CLUST_TRACKMATCH){ 
+	if(dist<mDist){ 
 
 	  double pt2 = rcluster2->get_energy() / cosh(eta2);
 	  double px2 = pt2 * cos(phi2);
@@ -2011,7 +2014,12 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
 	  double pz2 = pt2 * sinh(eta2);
 
 	  TLorentzVector clusterAdd(px2,py2,pz2,rcluster2->get_energy()); 
-	  cluster2 += (clusterAdd*BARREL_HCAL_NEUT_SCALE); 
+	  cluster2 = (clusterAdd*BARREL_HCAL_NEUT_SCALE); 
+
+	  mDist = dist; 
+	  c_dist = dist;
+	  c_deta = deta;
+	  c_dPhi = dPhi; 
 
 	  photon_candidate = false; 
 
@@ -2021,8 +2029,15 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
 
       }
 
-      // Add what we found to the existing cluster
-      cluster += cluster2;
+      if(cluster2.E()>0.0){
+
+	_h_becal_ohcal_match->Fill(c_dist); 
+	_h_becal_ohcal_match_eta_phi->Fill(c_deta,c_dPhi); 
+
+	// Add what we found to the existing cluster
+	cluster += cluster2;
+
+      }
 
     }
 
@@ -2039,7 +2054,6 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
 
   // Next, seed with the HCAL and follow up with the second HCAL segment
   // necessary to capture hadronic showers w/o cluster in EMCal
-  // we need a double-loop to aggregate the split clusters
 
   if(detName[1]!=""){
 
@@ -2054,6 +2068,9 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
 
       double eta = getEta(rcluster->get_r(),rcluster->get_z()-vtx_z);
       double phi = rcluster->get_phi(); 
+
+      // Apply the track/cluster offsets
+      ApplyTrackClusterMatchOffsets( eta, phi, eta, detName[1] ); 
 
       double pt = rcluster->get_energy() / cosh(eta);
       double px = pt * cos(phi);
@@ -2074,54 +2091,15 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
 
       cused1[k] = true; 
 
-      // Aggregate split clusters
-
-      for (unsigned int j = 0; j < clusterList[1]->size(); j++) {
-      
-	if(cused1[j]) continue;
-
-	RawCluster *rcluster2 = clusterList[1]->getCluster(j);
-
-	// eliminate noise clusters
-        if(rcluster2->get_energy()<CLUSTER_E_CUTOFF) continue; 
-
-	double eta2 = getEta(rcluster2->get_r(),rcluster2->get_z()-vtx_z);
-	double phi2 = rcluster2->get_phi(); 
-
-	double deta = eta -  eta2; 
-	double dPhi = DeltaPhi(phi, phi2); 
-
-	double dist = sqrt( pow(deta,2) + pow(dPhi,2) );
-
-	double mDist = 0.0; 
-	if(type=="CENT"){
-	  mDist = IHCAL_CLUST_TRACKMATCH;
-	}
-	else if(type=="FWD"){
-	  mDist = LFHCAL_CLUST_TRACKMATCH; 
-	}
-
-	if(dist<mDist){ 
-
-	  double pt2 = rcluster2->get_energy() / cosh(eta2);
-	  double px2 = pt2 * cos(phi2);
-	  double py2 = pt2 * sin(phi2);
-	  double pz2 = pt2 * sinh(eta2);
-
-	  TLorentzVector clusterAdd(px2,py2,pz2,rcluster2->get_energy()); 
-	  cluster += (clusterAdd*scale); 
-
-	  cused1[j] = true; 
-
-	}
-
-      }
-
       // And the last detector (if it exists)
 
       if(detName[2]!="") {
 
 	TLorentzVector cluster2(0.0,0.0,0.0,0.0); 
+	double mDist = 9999.0;
+	double c_dist = 9999.0; 
+	double c_deta = 9999.0; 
+	double c_dPhi = 9999.0; 
 
  	for (unsigned int j = 0; j < clusterList[2]->size(); j++) {
 
@@ -2135,17 +2113,15 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
 	  double eta2 = getEta(rcluster2->get_r(),rcluster2->get_z()-vtx_z);
 	  double phi2 = rcluster2->get_phi(); 
 
+	  // Apply the track/cluster offsets
+	  ApplyTrackClusterMatchOffsets( eta, phi2, eta2, detName[2] ); 
+
 	  double deta = eta -  eta2; 
 	  double dPhi = DeltaPhi(phi, phi2); 
 
 	  double dist = sqrt( pow(deta,2) + pow(dPhi,2) );
 
-	  if(type=="CENT"){
-	    _h_ihcal_ohcal_match->Fill(dist); 
-	    _h_ihcal_ohcal_match_eta_phi->Fill(deta,dPhi); 
-	  }
-
-	  if(dist<OHCAL_CLUST_TRACKMATCH){ 
+	  if(dist<mDist){ 
 
 	    double pt2 = rcluster2->get_energy() / cosh(eta2);
 	    double px2 = pt2 * cos(phi2);
@@ -2153,7 +2129,12 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
 	    double pz2 = pt2 * sinh(eta2);
 
 	    TLorentzVector clusterAdd(px2,py2,pz2,rcluster2->get_energy()); 
-	    cluster2 +=(clusterAdd*BARREL_HCAL_NEUT_SCALE); 
+	    cluster2 =(clusterAdd*BARREL_HCAL_NEUT_SCALE); 
+
+	    mDist = dist; 
+	    c_dist = dist;
+	    c_deta = deta;
+	    c_dPhi = dPhi; 
 
 	    cused2[j] = true; 
 
@@ -2161,8 +2142,17 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
 
 	}
 
-	// Add what we found to the existing cluster
-	cluster += cluster2;
+	if(cluster2.E()>0.0){
+
+	  if(type=="CENT"){
+	    _h_ihcal_ohcal_match->Fill(c_dist); 
+	    _h_ihcal_ohcal_match_eta_phi->Fill(c_deta,c_dPhi); 
+	  }
+
+	  // Add what we found to the existing cluster
+	  cluster += cluster2;
+
+	}
 
       }
 
@@ -2195,6 +2185,9 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
       double eta1 = getEta(rcluster1->get_r(),rcluster1->get_z()-vtx_z);
       double phi1 = rcluster1->get_phi(); 
 
+      // Apply the track/cluster offsets
+      ApplyTrackClusterMatchOffsets( eta1, phi1, eta1, detName[2] ); 
+
       double pt1 = rcluster1->get_energy() / cosh(eta1);
       double px1 = pt1 * cos(phi1);
       double py1 = pt1 * sin(phi1);
@@ -2205,46 +2198,6 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
       cluster *= BARREL_HCAL_NEUT_SCALE; 
 
       cused2[k] = true; 
-
-      // Aggregate the split clusters
-
-      for (unsigned int j = 0; j < clusterList[2]->size(); j++) {
-      
-	if(cused2[j]) continue;
-
-	RawCluster *rcluster2 = clusterList[2]->getCluster(j);
-
-	// eliminate noise clusters
-        if(rcluster2->get_energy()<CLUSTER_E_CUTOFF) continue; 
-
-	double eta2 = getEta(rcluster2->get_r(),rcluster2->get_z()-vtx_z);
-	double phi2 = rcluster2->get_phi(); 
-
-	double deta = eta1 -  eta2; 
-	double dPhi = DeltaPhi(phi1, phi2); 
-
-	double dist = sqrt( pow(deta,2) + pow(dPhi,2) );
-
-	double mDist = 0.0; 
-	if(type=="CENT"){
-	  mDist = OHCAL_CLUST_TRACKMATCH;
-	}
-
-	if(dist<mDist){ 
-
-	  double pt2 = rcluster2->get_energy() / cosh(eta2);
-	  double px2 = pt2 * cos(phi2);
-	  double py2 = pt2 * sin(phi2);
-	  double pz2 = pt2 * sinh(eta2);
-
-	  TLorentzVector clusterAdd(px2,py2,pz2,rcluster2->get_energy()); 
-	  cluster += (clusterAdd*BARREL_HCAL_NEUT_SCALE); 
-
-	  cused2[j] = true; 
-
-	}
-
-      }
 
       // Transform to Breit frame
       TLorentzVector breit_cluster = (breit*cluster); 
