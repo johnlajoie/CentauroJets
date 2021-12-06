@@ -231,9 +231,10 @@ class CentauroJets: public SubsysReco
   std::vector<int> ct_pid; 
   std::vector<double> ct_p_meas; 
   std::vector<double> ct_p_true; 
-  std::vector<double> ct_p_true_lab; 
   std::vector<double> ct_eta_meas; 
   std::vector<double> ct_eta_true; 
+  std::vector<double> ct_phi_meas; 
+  std::vector<double> ct_phi_true; 
   std::vector<double> ct_e_bemc; 
   std::vector<double> ct_e_ihcal; 
   std::vector<double> ct_e_ohcal; 
@@ -260,9 +261,10 @@ class CentauroJets: public SubsysReco
   TTree *_eval_calo_tracks_fwd; 
   std::vector<int> cat_pid;  
   std::vector<double> cat_p_true; 
-  std::vector<double> cat_p_true_lab; 
   std::vector<double> cat_eta_meas; 
   std::vector<double> cat_eta_true; 
+  std::vector<double> cat_phi_meas; 
+  std::vector<double> cat_phi_true; 
   std::vector<double> cat_e_tot; 
   std::vector<double> cat_match; 
 
@@ -279,6 +281,18 @@ class CentauroJets: public SubsysReco
   TTree *_eval_tmatch_femc;
   TTree *_eval_tmatch_lfhcal;
 
+  double _cm_deta;
+  double _cm_dphi;
+  double _cm_dist;
+  double _cm_eta;
+  double _cm_phi;
+  double _cm_E;
+
+  TTree *_eval_cmatch_becal_ihcal; 
+  TTree *_eval_cmatch_becal_ohcal; 
+  TTree *_eval_cmatch_ihcal_ohcal; 
+  TTree *_eval_cmatch_femc_lfhcal; 
+
   // Scattered electron in event record:
   PHG4Particle* true_electron_headon; 
 
@@ -290,15 +304,6 @@ class CentauroJets: public SubsysReco
   TRandom *rand; 
 
   //Diagnostic histograms
-
-  TH1D *_h_becal_ihcal_match; 
-  TH2D *_h_becal_ihcal_match_eta_phi; 
-  TH1D *_h_becal_ohcal_match; 
-  TH2D *_h_becal_ohcal_match_eta_phi; 
-  TH1D *_h_ihcal_ohcal_match; 
-  TH2D *_h_ihcal_ohcal_match_eta_phi; 
-  TH1D *_h_femc_lfhcal_match;
-  TH2D *_h_femc_lfhcal_match_eta_phi;
 
   TH1D *_h_calotrack_prim_match_cent; 
   TH1D *_h_calotrack_prim_match_cent_gamma; 
