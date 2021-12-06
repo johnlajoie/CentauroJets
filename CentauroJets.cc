@@ -450,25 +450,26 @@ int CentauroJets::Init(PHCompositeNode *topNode) {
 	// evaluation for calo tracks
 	_eval_calo_tracks_cent = new TTree("calotrackeval_cent", "Calotrack Evaluation (central)");
 	_eval_calo_tracks_cent->Branch("event", &event, "event/I");
-	_eval_calo_tracks_cent->Branch("pid",&cat_pid); 
-	_eval_calo_tracks_cent->Branch("p_true",&cat_p_true); 
-	_eval_calo_tracks_cent->Branch("eta_meas",&cat_eta_meas); 
-	_eval_calo_tracks_cent->Branch("eta_true",&cat_eta_true); 
-	_eval_calo_tracks_cent->Branch("phi_meas",&cat_phi_meas); 
-	_eval_calo_tracks_cent->Branch("phi_true",&cat_phi_true); 
-	_eval_calo_tracks_cent->Branch("match",&cat_match); 
-	_eval_calo_tracks_cent->Branch("e_tot",&cat_e_tot); 
+	_eval_calo_tracks_cent->Branch("pid",&cat_pid,"cat_pid/I"); 
+	_eval_calo_tracks_cent->Branch("p_true",&cat_p_true, "cat_p_true/D"); 
+	_eval_calo_tracks_cent->Branch("eta_meas",&cat_eta_meas, "cat_eta_meas/D"); 
+	_eval_calo_tracks_cent->Branch("eta_true",&cat_eta_true, "cat_eta_true/D"); 
+	_eval_calo_tracks_cent->Branch("phi_meas",&cat_phi_meas, "cat_phi_meas/D"); 
+	_eval_calo_tracks_cent->Branch("phi_true",&cat_phi_true, "cat_phi_true/D"); 
+	_eval_calo_tracks_cent->Branch("match",&cat_match, "cat_match/D"); 
+	_eval_calo_tracks_cent->Branch("e_tot",&cat_e_tot, "cat_e_tot"); 
 
 	_eval_calo_tracks_fwd = new TTree("calotrackeval_fwd", "Calotrack Evaluation (fwd)");
 	_eval_calo_tracks_fwd->Branch("event", &event, "event/I");
 	_eval_calo_tracks_fwd->Branch("pid",&cat_pid); 
-	_eval_calo_tracks_fwd->Branch("p_true",&cat_p_true); 
-	_eval_calo_tracks_fwd->Branch("eta_meas",&cat_eta_meas); 
-	_eval_calo_tracks_fwd->Branch("eta_true",&cat_eta_true); 
-	_eval_calo_tracks_fwd->Branch("phi_meas",&cat_phi_meas); 
-	_eval_calo_tracks_fwd->Branch("phi_true",&cat_phi_true); 
-	_eval_calo_tracks_fwd->Branch("match",&cat_match); 
-	_eval_calo_tracks_fwd->Branch("e_tot",&cat_e_tot); 
+	_eval_calo_tracks_fwd->Branch("pid",&cat_pid,"cat_pid/I"); 
+	_eval_calo_tracks_fwd->Branch("p_true",&cat_p_true, "cat_p_true/D"); 
+	_eval_calo_tracks_fwd->Branch("eta_meas",&cat_eta_meas, "cat_eta_meas/D"); 
+	_eval_calo_tracks_fwd->Branch("eta_true",&cat_eta_true, "cat_eta_true/D"); 
+	_eval_calo_tracks_fwd->Branch("phi_meas",&cat_phi_meas, "cat_phi_meas/D"); 
+	_eval_calo_tracks_fwd->Branch("phi_true",&cat_phi_true, "cat_phi_true/D"); 
+	_eval_calo_tracks_fwd->Branch("match",&cat_match, "cat_match/D"); 
+	_eval_calo_tracks_fwd->Branch("e_tot",&cat_e_tot, "cat_e_tot"); 
 
 	// charged track matching 
 	_eval_tmatch_becal = new TTree("tmatch_becal", "BECAL Track Match");
@@ -2207,15 +2208,6 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
 
   // Diagnostics - connect the calo tracks to neutral primaries
 
-  cat_pid.clear();  
-  cat_p_true.clear(); 
-  cat_eta_meas.clear(); 
-  cat_eta_true.clear(); 
-  cat_phi_meas.clear(); 
-  cat_phi_true.clear(); 
-  cat_match.clear(); 
-  cat_e_tot.clear(); 
-
   G4ParticleTable* particleTable = G4ParticleTable::GetParticleTable();
 
   for(unsigned int i=startIdx; i<pseudojets.size(); i++){
@@ -2279,14 +2271,17 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
 
       if(minDist<9999.0){
 
-	cat_pid.push_back(pid);
-	cat_p_true.push_back(prim_p); 
-        cat_e_tot.push_back(ctrack.Mag());
-	cat_match.push_back(minDist); 
-	cat_eta_meas.push_back(ctrack.Eta()); 
-	cat_eta_true.push_back(prim_Eta); 
-	cat_phi_meas.push_back(ctrack.Phi()); 
-	cat_phi_true.push_back(prim_Phi); 
+	cat_pid = pid;
+	cat_p_true = prim_p; 
+        cat_e_tot = ctrack.Mag();
+	cat_match = minDist; 
+	cat_eta_meas = ctrack.Eta(); 
+	cat_eta_true = prim_Eta; 
+	cat_phi_meas = ctrack.Phi(); 
+	cat_phi_true = prim_Phi; 
+
+	if(type=="CENT") _eval_calo_tracks_cent->Fill(); 
+	if(type=="FWD") _eval_calo_tracks_fwd->Fill(); 
 
       }
 
@@ -2294,8 +2289,6 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
 
   }
 
-  if(type=="CENT") _eval_calo_tracks_cent->Fill(); 
-  if(type=="FWD") _eval_calo_tracks_fwd->Fill(); 
 
   return; 
 

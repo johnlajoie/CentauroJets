@@ -259,14 +259,14 @@ class CentauroJets: public SubsysReco
 
   TTree *_eval_calo_tracks_cent; 
   TTree *_eval_calo_tracks_fwd; 
-  std::vector<int> cat_pid;  
-  std::vector<double> cat_p_true; 
-  std::vector<double> cat_eta_meas; 
-  std::vector<double> cat_eta_true; 
-  std::vector<double> cat_phi_meas; 
-  std::vector<double> cat_phi_true; 
-  std::vector<double> cat_e_tot; 
-  std::vector<double> cat_match; 
+  int cat_pid;  
+  double cat_p_true; 
+  double cat_eta_meas; 
+  double cat_eta_true; 
+  double cat_phi_meas; 
+  double cat_phi_true; 
+  double cat_e_tot; 
+  double cat_match; 
 
   double _tm_deta;
   double _tm_dphi;
