@@ -257,6 +257,8 @@ class CentauroJets: public SubsysReco
   std::vector<double> ct_lfhcal_deta; 
   std::vector<double> ct_lfhcal_dphi; 
 
+  TTree *_calo_tracks_cent; 
+  TTree *_calo_tracks_fwd; 
   TTree *_eval_calo_tracks_cent; 
   TTree *_eval_calo_tracks_fwd; 
   int cat_pid;  
@@ -304,29 +306,6 @@ class CentauroJets: public SubsysReco
   TRandom *rand; 
 
   //Diagnostic histograms
-
-  TH1D *_h_calotrack_prim_match_cent; 
-  TH1D *_h_calotrack_prim_match_cent_gamma; 
-  TH1D *_h_calotrack_prim_match_cent_neutron; 
-  TH1D *_h_calotrack_pid_prim_match_cent; 
-
-  TH1D *_h_calotrack_prim_match_fwd; 
-  TH1D *_h_calotrack_prim_match_fwd_gamma; 
-  TH1D *_h_calotrack_prim_match_fwd_neutron; 
-  TH1D *_h_calotrack_pid_prim_match_fwd; 
-
-  TH1D *_h_calotrack_cent_NES; 
-  TH1D *_h_calotrack_fwd_NES; 
-
-  TH2D *_h_calotrack_cent_NES_2D; 
-  TH2D *_h_calotrack_fwd_NES_2D; 
-
-  TH2D *_h_calotrack_cent_gamma_NES_2D; 
-  TH2D *_h_calotrack_fwd_gamma_NES_2D; 
-
-  TH2D *_h_calotrack_cent_neutron_NES_2D; 
-  TH2D *_h_calotrack_fwd_neutron_NES_2D; 
-
   TH1D *_h_nclusters_becal; 
   TH1D *_h_nclusters_ihcal; 
   TH1D *_h_nclusters_ohcal; 

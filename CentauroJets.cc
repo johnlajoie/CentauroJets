@@ -447,6 +447,17 @@ int CentauroJets::Init(PHCompositeNode *topNode) {
 	_eval_charged_tracks_fwd->Branch("lfhcal_deta",&ct_lfhcal_deta); 
 	_eval_charged_tracks_fwd->Branch("lfhcal_dphi",&ct_lfhcal_dphi); 
 
+	// calo tracks
+	_calo_tracks_cent = new TTree("calotrack_cent", "Calotrack (central)");
+	_calo_tracks_cent->Branch("eta",&cat_eta_meas, "cat_eta_meas/D"); 
+	_calo_tracks_cent->Branch("phi",&cat_phi_meas, "cat_phi_meas/D"); 
+        _calo_tracks_cent->Branch("e",&cat_e_tot, "cat_e_tot"); 
+
+	_calo_tracks_fwd = new TTree("calotrack_fwd", "Calotrack (fwd)");
+	_calo_tracks_fwd->Branch("eta",&cat_eta_meas, "cat_eta_meas/D"); 
+	_calo_tracks_fwd->Branch("phi",&cat_phi_meas, "cat_phi_meas/D"); 
+        _calo_tracks_fwd->Branch("e",&cat_e_tot, "cat_e_tot"); 
+
 	// evaluation for calo tracks
 	_eval_calo_tracks_cent = new TTree("calotrackeval_cent", "Calotrack Evaluation (central)");
 	_eval_calo_tracks_cent->Branch("event", &event, "event/I");
@@ -461,7 +472,6 @@ int CentauroJets::Init(PHCompositeNode *topNode) {
 
 	_eval_calo_tracks_fwd = new TTree("calotrackeval_fwd", "Calotrack Evaluation (fwd)");
 	_eval_calo_tracks_fwd->Branch("event", &event, "event/I");
-	_eval_calo_tracks_fwd->Branch("pid",&cat_pid); 
 	_eval_calo_tracks_fwd->Branch("pid",&cat_pid,"cat_pid/I"); 
 	_eval_calo_tracks_fwd->Branch("p_true",&cat_p_true, "cat_p_true/D"); 
 	_eval_calo_tracks_fwd->Branch("eta_meas",&cat_eta_meas, "cat_eta_meas/D"); 
@@ -602,6 +612,9 @@ int CentauroJets::End(PHCompositeNode *topNode) {
 	_eval_cmatch_becal_ohcal->Write(); 
 	_eval_cmatch_ihcal_ohcal->Write(); 
 	_eval_cmatch_femc_lfhcal->Write(); 
+
+	_calo_tracks_cent->Write(); 
+	_calo_tracks_fwd->Write(); 
 
 	_eval_calo_tracks_cent->Write(); 
 	_eval_calo_tracks_fwd->Write(); 
@@ -1947,15 +1960,25 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
 	_cm_phi = cluster1.Phi();
 	_cm_E = cluster1.E();
 
+	// tuned matching cut
+	double dcut_eta = 9999.0; 
+	double dcut_phi = 9999.0; 
+
 	if(type=="CENT"){
+	  dcut_eta = 2.5*0.105; 
+	  dcut_phi = 2.5*0.129; 
 	  _eval_cmatch_becal_ihcal->Fill();
 	}
 	else if(type=="FWD"){
+	  dcut_eta = 2.5*0.266; 
+	  dcut_phi = 2.5*0.261; 
 	  _eval_cmatch_femc_lfhcal->Fill();
 	}
 
-	// Add what we found to the existing cluster
-	cluster += cluster1;
+	if((fabs(c_deta)<dcut_eta)&&(fabs(c_dPhi)<dcut_phi)){
+	  // Add what we found to the existing cluster
+	  cluster += cluster1;
+	}
 
       }
 
@@ -2017,6 +2040,11 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
 
       if(cluster2.E()>0.0){
 
+	// tuned matching cut
+	c_deta -= 0.107; 
+	double dcut_eta = 2.5*0.303; 
+	double dcut_phi = 2.5*0.300; 
+
 	_cm_deta = c_deta;
 	_cm_dphi = c_dPhi;
 	_cm_dist = c_dist;
@@ -2026,8 +2054,10 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
 
 	_eval_cmatch_becal_ohcal->Fill(); 
 
-	// Add what we found to the existing cluster
-	cluster += cluster2;
+	if((fabs(c_deta)<dcut_eta)&&(fabs(c_dPhi)<dcut_phi)){
+	  // Add what we found to the existing cluster
+	  cluster += cluster2;
+	}
 
       }
 
@@ -2149,8 +2179,13 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
  
 	  }
 
-	  // Add what we found to the existing cluster
-	  cluster += cluster2;
+	  double dcut_eta = 2.5*0.170; 
+	  double dcut_phi = 2.5*0.207; 
+
+	  if((fabs(c_deta)<dcut_eta)&&(fabs(c_dPhi)<dcut_phi)){
+	    // Add what we found to the existing cluster
+	    cluster += cluster2;
+	  }
 
 	}
 
@@ -2220,6 +2255,13 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
     if(pseudojets[i].user_index()==0){
 
       TVector3 ctrack(pseudojets[i].px(),pseudojets[i].py(),pseudojets[i].pz());
+
+      cat_e_tot = ctrack.Mag();
+      cat_eta_meas = ctrack.Eta(); 
+      cat_phi_meas = ctrack.Phi(); 
+
+      if(type=="CENT") _calo_tracks_cent->Fill(); 
+      if(type=="FWD") _calo_tracks_fwd->Fill(); 
       
       double minDist = 9999.0; 
       int pid = -9999; 
@@ -2274,7 +2316,7 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
 
       }
 
-      if(minDist<9999.0){
+      if(minDist<5.0){
 
 	cat_pid = pid;
 	cat_p_true = prim_p; 
