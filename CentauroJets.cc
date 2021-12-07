@@ -598,6 +598,11 @@ int CentauroJets::End(PHCompositeNode *topNode) {
 	_eval_tmatch_femc->Write(); 
 	_eval_tmatch_lfhcal->Write(); 
 
+	_eval_cmatch_becal_ihcal->Write(); 
+	_eval_cmatch_becal_ohcal->Write(); 
+	_eval_cmatch_ihcal_ohcal->Write(); 
+	_eval_cmatch_femc_lfhcal->Write(); 
+
 	_eval_calo_tracks_cent->Write(); 
 	_eval_calo_tracks_fwd->Write(); 
 
