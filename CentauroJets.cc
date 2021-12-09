@@ -78,6 +78,7 @@ using namespace fastjet;
 //#define FEMC_CLUST_TRACKMATCH 0.15
 //#define LFHCAL_CLUST_TRACKMATCH 0.35
 
+#define EEMC_CLUST_TRACKMATCH 0.10
 #define BECAL_CLUST_TRACKMATCH 0.02
 #define IHCAL_CLUST_TRACKMATCH 0.20
 #define OHCAL_CLUST_TRACKMATCH 0.25
@@ -458,6 +459,11 @@ int CentauroJets::Init(PHCompositeNode *topNode) {
 	_calo_tracks_fwd->Branch("phi",&cat_phi_meas, "cat_phi_meas/D"); 
         _calo_tracks_fwd->Branch("e",&cat_e_tot, "cat_e_tot"); 
 
+	_calo_tracks_bkwd = new TTree("calotrack_bkwd", "Calotrack (bkwd)");
+	_calo_tracks_bkwd->Branch("eta",&cat_eta_meas, "cat_eta_meas/D"); 
+	_calo_tracks_bkwd->Branch("phi",&cat_phi_meas, "cat_phi_meas/D"); 
+        _calo_tracks_bkwd->Branch("e",&cat_e_tot, "cat_e_tot"); 
+
 	// evaluation for calo tracks
 	_eval_calo_tracks_cent = new TTree("calotrackeval_cent", "Calotrack Evaluation (central)");
 	_eval_calo_tracks_cent->Branch("event", &event, "event/I");
@@ -481,7 +487,26 @@ int CentauroJets::Init(PHCompositeNode *topNode) {
 	_eval_calo_tracks_fwd->Branch("match",&cat_match, "cat_match/D"); 
 	_eval_calo_tracks_fwd->Branch("e_tot",&cat_e_tot, "cat_e_tot"); 
 
+	_eval_calo_tracks_bkwd = new TTree("calotrackeval_bkwd", "Calotrack Evaluation (bkwd)");
+	_eval_calo_tracks_bkwd->Branch("event", &event, "event/I");
+	_eval_calo_tracks_bkwd->Branch("pid",&cat_pid,"cat_pid/I"); 
+	_eval_calo_tracks_bkwd->Branch("p_true",&cat_p_true, "cat_p_true/D"); 
+	_eval_calo_tracks_bkwd->Branch("eta_meas",&cat_eta_meas, "cat_eta_meas/D"); 
+	_eval_calo_tracks_bkwd->Branch("eta_true",&cat_eta_true, "cat_eta_true/D"); 
+	_eval_calo_tracks_bkwd->Branch("phi_meas",&cat_phi_meas, "cat_phi_meas/D"); 
+	_eval_calo_tracks_bkwd->Branch("phi_true",&cat_phi_true, "cat_phi_true/D"); 
+	_eval_calo_tracks_bkwd->Branch("match",&cat_match, "cat_match/D"); 
+	_eval_calo_tracks_bkwd->Branch("e_tot",&cat_e_tot, "cat_e_tot"); 
+
 	// charged track matching 
+	_eval_tmatch_eemc = new TTree("tmatch_eemc", "EEMC Track Match");
+	_eval_tmatch_eemc->Branch("deta", &_tm_deta, "_tm_deta/D");
+	_eval_tmatch_eemc->Branch("dphi", &_tm_dphi, "_tm_dphi/D");
+	_eval_tmatch_eemc->Branch("dist", &_tm_dist, "_tm_dist/D");
+	_eval_tmatch_eemc->Branch("eta", &_tm_eta, "_tm_eta/D");
+	_eval_tmatch_eemc->Branch("phi", &_tm_phi, "_tm_phi/D");
+	_eval_tmatch_eemc->Branch("p", &_tm_p, "_tm_p/D");
+
 	_eval_tmatch_becal = new TTree("tmatch_becal", "BECAL Track Match");
 	_eval_tmatch_becal->Branch("deta", &_tm_deta, "_tm_deta/D");
 	_eval_tmatch_becal->Branch("dphi", &_tm_dphi, "_tm_dphi/D");
@@ -558,6 +583,7 @@ int CentauroJets::Init(PHCompositeNode *topNode) {
 
 	// Diagnostic histograms
 
+	_h_nclusters_eemc = new TH1D("_h_nclusters_eemc","",51,-0.5,50.5); 
 	_h_nclusters_becal = new TH1D("_h_nclusters_becal","",51,-0.5,50.5); 
 	_h_nclusters_ihcal = new TH1D("_h_nclusters_ihcal","",51,-0.5,50.5); 
 	_h_nclusters_ohcal = new TH1D("_h_nclusters_ohcal","",51,-0.5,50.5); 
@@ -600,8 +626,10 @@ int CentauroJets::End(PHCompositeNode *topNode) {
 
 	_eval_tree_event->Write();
 
-	_eval_charged_tracks_cent->Write(); 	_eval_charged_tracks_fwd->Write(); 
+	_eval_charged_tracks_cent->Write(); 	
+	_eval_charged_tracks_fwd->Write(); 
 
+	_eval_tmatch_eemc->Write(); 
 	_eval_tmatch_becal->Write(); 
 	_eval_tmatch_ihcal->Write(); 
 	_eval_tmatch_ohcal->Write(); 
@@ -615,10 +643,13 @@ int CentauroJets::End(PHCompositeNode *topNode) {
 
 	_calo_tracks_cent->Write(); 
 	_calo_tracks_fwd->Write(); 
+	_calo_tracks_bkwd->Write(); 
 
 	_eval_calo_tracks_cent->Write(); 
 	_eval_calo_tracks_fwd->Write(); 
+	_eval_calo_tracks_bkwd->Write(); 
 
+	_h_nclusters_eemc->Write(); 
 	_h_nclusters_becal->Write(); 
 	_h_nclusters_ihcal->Write(); 
 	_h_nclusters_ohcal->Write(); 
@@ -1231,6 +1262,7 @@ void CentauroJets::fill_tree(PHCompositeNode *topNode) {
     
     BuildCaloTracks(topNode, "CENT", tcpseudojets, breit, breitRotInv, ECDetName, ECIdx); 
     BuildCaloTracks(topNode, "FWD", tcpseudojets, breit, breitRotInv, ECDetName, ECIdx); 
+    BuildCaloTracks(topNode, "BKWD", tcpseudojets, breit, breitRotInv, ECDetName, ECIdx); 
 
     fastjet::ClusterSequence tcjetFinder(tcpseudojets, *jetdef);
     // get jets sorted by energy
@@ -1638,6 +1670,11 @@ void CentauroJets::ApplyTrackClusterMatchOffsets( double eta, double &dPhi, doub
 
   // Apply matching offsets 
 
+  if(detName=="EEMC") {
+
+
+  }
+
   if(detName=="BECAL") {
     if(eta>=0.0){
       deta -= becal_deta_offset[0]; 
@@ -1728,6 +1765,11 @@ bool CentauroJets::VetoClusterWithTrack(double eta, double phi, std::string detN
 
   double cutDist = 0.15; 
 
+  if(detName=="EEMC") {
+    _eval_tmatch_eemc->Fill(); 
+    cutDist = EEMC_CLUST_TRACKMATCH; 
+  }
+
   if(detName=="BECAL") {
     _eval_tmatch_becal->Fill(); 
     cutDist = BECAL_CLUST_TRACKMATCH; 
@@ -1768,6 +1810,7 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
 
   std::string fwd_calos[3] = {"FEMC","LFHCAL",""}; 
   std::string cent_calos[3] = {"BECAL","HCALIN","HCALOUT"}; 
+  std::string bkwd_calos[3] = {"EEMC","",""}; 
   std::string detName[3] = {"","",""}; 
 
   // Store the starting index so we don't double-count 
@@ -1784,6 +1827,8 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
       detName[i] = cent_calos[i]; 
     else if(type=="FWD") 
       detName[i] = fwd_calos[i]; 
+    else if(type=="BKWD") 
+      detName[i] = bkwd_calos[i]; 
     else{
       cout << " Unknown calo track type = " << type << endl; 
       return; 
@@ -1844,6 +1889,7 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
 
     }
 
+    if(detName[i]=="EEMC") _h_nclusters_eemc->Fill(clusterList[i]->size()); 
     if(detName[i]=="BECAL") _h_nclusters_becal->Fill(clusterList[i]->size()); 
     if(detName[i]=="HCALIN") _h_nclusters_ihcal->Fill(clusterList[i]->size()); 
     if(detName[i]=="HCALOUT") _h_nclusters_ohcal->Fill(clusterList[i]->size()); 
@@ -2262,6 +2308,7 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
 
       if(type=="CENT") _calo_tracks_cent->Fill(); 
       if(type=="FWD") _calo_tracks_fwd->Fill(); 
+      if(type=="BKWD") _calo_tracks_bkwd->Fill(); 
       
       double minDist = 9999.0; 
       int pid = -9999; 
@@ -2329,6 +2376,7 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
 
 	if(type=="CENT") _eval_calo_tracks_cent->Fill(); 
 	if(type=="FWD") _eval_calo_tracks_fwd->Fill(); 
+	if(type=="BKWD") _eval_calo_tracks_bkwd->Fill(); 
 
       }
 
@@ -2378,6 +2426,10 @@ SvtxTrack *CentauroJets::AttachClusterToTrack(double eta, double phi, std::strin
   }
 
   double cutDist = 0.15; 
+
+  if(detName=="EEMC") {
+    cutDist = EEMC_CLUST_TRACKMATCH; 
+  }
 
   if(detName=="BECAL") {
     cutDist = BECAL_CLUST_TRACKMATCH; 

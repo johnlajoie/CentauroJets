@@ -259,8 +259,10 @@ class CentauroJets: public SubsysReco
 
   TTree *_calo_tracks_cent; 
   TTree *_calo_tracks_fwd; 
+  TTree *_calo_tracks_bkwd; 
   TTree *_eval_calo_tracks_cent; 
   TTree *_eval_calo_tracks_fwd; 
+  TTree *_eval_calo_tracks_bkwd; 
   int cat_pid;  
   double cat_p_true; 
   double cat_eta_meas; 
@@ -277,6 +279,7 @@ class CentauroJets: public SubsysReco
   double _tm_phi;
   double _tm_p;
 
+  TTree *_eval_tmatch_eemc;
   TTree *_eval_tmatch_becal;
   TTree *_eval_tmatch_ihcal;
   TTree *_eval_tmatch_ohcal;
@@ -306,6 +309,7 @@ class CentauroJets: public SubsysReco
   TRandom *rand; 
 
   //Diagnostic histograms
+  TH1D *_h_nclusters_eemc; 
   TH1D *_h_nclusters_becal; 
   TH1D *_h_nclusters_ihcal; 
   TH1D *_h_nclusters_ohcal; 
