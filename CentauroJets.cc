@@ -72,18 +72,12 @@ using namespace fastjet;
 #define CLUSTER_E_CUTOFF 0.100
 
 // Cluster/track matching cuts
-//#define BECAL_CLUST_TRACKMATCH 0.10
-//#define IHCAL_CLUST_TRACKMATCH 0.35
-//#define OHCAL_CLUST_TRACKMATCH 0.35
-//#define FEMC_CLUST_TRACKMATCH 0.15
-//#define LFHCAL_CLUST_TRACKMATCH 0.35
-
-#define EEMC_CLUST_TRACKMATCH 0.10
-#define BECAL_CLUST_TRACKMATCH 0.02
-#define IHCAL_CLUST_TRACKMATCH 0.20
+#define EEMC_CLUST_TRACKMATCH 0.05
+#define BECAL_CLUST_TRACKMATCH 0.035
+#define IHCAL_CLUST_TRACKMATCH 0.075
 #define OHCAL_CLUST_TRACKMATCH 0.25
-#define FEMC_CLUST_TRACKMATCH 0.15
-#define LFHCAL_CLUST_TRACKMATCH 0.35
+#define FEMC_CLUST_TRACKMATCH 0.14
+#define LFHCAL_CLUST_TRACKMATCH 0.25
 
 // HCAL neutral energy scales
 #define BARREL_HCAL_NEUT_SCALE (1.0/0.46)
@@ -91,23 +85,27 @@ using namespace fastjet;
 
 // Cluster/Tracking Matching offsets:
 
-double becal_dphi_offset[2] = {-0.02194,-0.02194}; 
-double becal_deta_offset[2] = {0.0,0.0}; 
+double becal_dphi_offset = -0.00776943; 
+double becal_deta_offset_m = -0.0522795; 
+double becal_deta_offset_b = 0.040317; 
 
-double ihcal_dphi_offset = -0.011; 
-double ihcal_dphi_offset_phase2 = -0.011; 
-double ihcal_deta_offset_m = -0.177916; 
-double ihcal_deta_offset_b = 0.150; 
+double eemc_dphi_offset = -0.0206587; 
+double eemc_deta_offset_0 = 0.800618; 
+double eemc_deta_offset_1 = 0.916694; 
+double eemc_deta_offset_2 = 0.137632; 
+double eemc_deta_offset2_0 = -1.01584; 
+double eemc_deta_offset2_1 = -0.568819; 
+double eemc_deta_offset2_2 = -0.0812967; 
 
-double ohcal_dphi_offset = -0.083607;  
-double ohcal_dphi_offset_phase2 = -0.0084;  
-double ohcal_deta_offset = 0.0; 
+double ihcal_dphi_offset_m = 0.027181; 
+double ihcal_dphi_offset_b = -0.0148866; 
+double ihcal_deta_offset_m = -0.159833; 
+double ihcal_deta_offset_b = 0.122384; 
 
-double femc_dphi_offset = 0.0; 
-double femc_deta_offset = 0.0; 
-
-double lfhcal_dphi_offset = 0.0; 
-double lfhcal_deta_offset = 0.0; 
+double ohcal_dphi_offset_m = 0.0; 
+double ohcal_dphi_offset_b = -0.0201131; 
+double ohcal_deta_offset_m = -0.0449632; 
+double ohcal_deta_offset_b = -0.0266762; 
 
 // Use PID?
 #define USE_PID 0
@@ -1668,44 +1666,25 @@ void CentauroJets::FillTowerPseudoJets( PHCompositeNode *topNode, std::string de
 
 void CentauroJets::ApplyTrackClusterMatchOffsets( double eta, double &dPhi, double &deta, std::string detName ){
 
-  // Apply matching offsets 
-
-  if(detName=="EEMC") {
-
-
+  if(detName=="BECAL") {
+    dPhi -= becal_dphi_offset;
+    deta -= becal_deta_offset_m*eta + becal_deta_offset_b; 
   }
 
-  if(detName=="BECAL") {
-    if(eta>=0.0){
-      deta -= becal_deta_offset[0]; 
-      dPhi -= becal_dphi_offset[0];
-    }
-    else{
-      deta -= becal_deta_offset[1]; 
-      dPhi -= becal_dphi_offset[1];
-    }
+  if(detName=="EEMC") {
+    dPhi -= eemc_dphi_offset;
+    deta -= eemc_deta_offset_0 + eemc_deta_offset_1*eta + eemc_deta_offset_2*eta*eta; 
+    deta -= eemc_deta_offset2_0 + eemc_deta_offset2_1*eta + eemc_deta_offset2_2*eta*eta; 
   }
 
   if(detName=="HCALIN") {
-    dPhi -= ihcal_dphi_offset;
-    dPhi -= ihcal_dphi_offset_phase2;
-    deta -= ihcal_deta_offset_m*eta + ihcal_deta_offset_b; 
+    dPhi -= ihcal_dphi_offset_m*eta + ihcal_dphi_offset_b; 
+    deta -= ihcal_deta_offset_m*eta + ihcal_deta_offset_b + 0.0121243; 
   }
 
   if(detName=="HCALOUT") {
-    deta -= ohcal_deta_offset;
-    if(eta<0.5) dPhi -= ohcal_dphi_offset;
-    dPhi -= ohcal_dphi_offset_phase2;
-  }
-
-  if(detName=="FEMC") {
-    deta -= femc_deta_offset; 
-    dPhi -= femc_dphi_offset;
-  }
-
-  if(detName=="LFHCAL") {
-    deta -= lfhcal_deta_offset; 
-    dPhi -= lfhcal_dphi_offset;
+    dPhi -= ohcal_dphi_offset_m*eta + ohcal_dphi_offset_b; 
+    deta -= ohcal_deta_offset_m*eta + ohcal_deta_offset_b - 0.0157173; 
   }
 
 }
