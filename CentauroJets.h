@@ -116,6 +116,9 @@ class CentauroJets: public SubsysReco
   double _hepmcp_x1; 
   double _hepmcp_x2; 
   double _hepmcp_Q2; 
+  double _hepmcp_y;
+  double _hepmcp_W2; 
+
   double _hepmcp_procid; 
   int _hepmcp_id1; 
   int _hepmcp_id2; 
@@ -123,6 +126,8 @@ class CentauroJets: public SubsysReco
   int event; 
   double measQ2; 
   double meas_x; 
+  double meas_y; 
+  double measW2;
   double meas_E_p; 
   double electron_eta; 
   double electron_phi; 

@@ -297,6 +297,8 @@ int CentauroJets::Init(PHCompositeNode *topNode) {
 	_eval_tree_event->Branch("x1", &_hepmcp_x1, "_hepmcp_x1/D");
 	_eval_tree_event->Branch("x2", &_hepmcp_x2, "_hepmcp_x2/D");
 	_eval_tree_event->Branch("Q2", &_hepmcp_Q2, "_hepmcp_Q2/D");
+	_eval_tree_event->Branch("y", &_hepmcp_y, "_hepmcp_y/D");
+	_eval_tree_event->Branch("W2", &_hepmcp_W2, "_hepmcp_W2/D");
 	_eval_tree_event->Branch("procid", &_hepmcp_procid, "_hepmcp_procid/I");
 	_eval_tree_event->Branch("id1", &_hepmcp_id1, "_hepmcp_id1/I");
 	_eval_tree_event->Branch("id2", &_hepmcp_id2, "_hepmcp_id2/I");
@@ -306,6 +308,8 @@ int CentauroJets::Init(PHCompositeNode *topNode) {
 	_eval_tree_event->Branch("vtx_t", &vtx_t, "vtx_t/D");	
 	_eval_tree_event->Branch("measQ2", &measQ2, "measQ2/D");
 	_eval_tree_event->Branch("meas_x", &meas_x, "meas_x/D");
+	_eval_tree_event->Branch("meas_y", &meas_y, "meas_y/D");
+	_eval_tree_event->Branch("measW2", &measW2, "measW2/D");
 	_eval_tree_event->Branch("meas_E_p", &meas_E_p, "meas_E_p/D"); 
 	_eval_tree_event->Branch("electron_eta",&electron_eta,"electron_eta/D"); 
 	_eval_tree_event->Branch("electron_phi",&electron_eta,"electron_phi/D"); 
@@ -682,6 +686,8 @@ void CentauroJets::fill_tree(PHCompositeNode *topNode) {
   _hepmcp_x1 = -9999.0; 
   _hepmcp_x2 = -9999.0; 
   _hepmcp_Q2 = -9999.0; 
+  _hepmcp_W2 = -9999.0;
+  _hepmcp_y = -9999.0;  
   _hepmcp_procid = -9999.0; 
   _hepmcp_id1 = -9999; 
   _hepmcp_id2 = -9999; 
@@ -852,6 +858,8 @@ void CentauroJets::fill_tree(PHCompositeNode *topNode) {
 
   meas_x = -9999.0; 
   measQ2 = -9999.0; 
+  meas_y = -9999.0; 
+  measW2 = -9999.0; 
   meas_E_p = -9999.0;
   electron_eta = -9999.0; 
   electron_phi = -9999.0; 
@@ -999,6 +1007,8 @@ void CentauroJets::fill_tree(PHCompositeNode *topNode) {
     TLorentzVector p_initial(-p_p_initial*sin(crossing_angle), 0.0, p_p_initial*cos(crossing_angle), 
 			     sqrt(pow(0.938,2) + pow(p_p_initial,2)));
     meas_x = measQ2/(2*virtual_photon*p_initial);
+    meas_y = (virtual_photon*p_initial)/(virtual_photon*e_initial);
+    measW2 = (p_initial + virtual_photon)*(p_initial + virtual_photon); 
 
     // Set up the transformation (boost) to the Breit frame
     TVector3 P3 = p_initial.Vect(); 
@@ -1333,6 +1343,9 @@ void CentauroJets::fill_tree(PHCompositeNode *topNode) {
     efp = EventToLab * efp;  
     TLorentzVector true_e_final(efp.px(), efp.py(), efp.pz(), efp.e()); 
     TLorentzVector true_virtual_photon = (true_e_initial - true_e_final); 
+
+    _hepmcp_W2 = (true_p_initial + true_virtual_photon)*(true_p_initial + true_virtual_photon); 
+    _hepmcp_y = (true_virtual_photon*true_p_initial)/(true_virtual_photon*true_e_initial); 
 
     // Recalculate the kinematics 
     // (clean up round-off errors and keep everything self-consistent)
