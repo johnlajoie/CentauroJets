@@ -80,8 +80,8 @@ using namespace fastjet;
 #define LFHCAL_CLUST_TRACKMATCH 0.25
 
 // HCAL neutral energy scales
-#define BARREL_HCAL_NEUT_SCALE (1.0/0.46)
-#define FWD_HCAL_NEUT_SCALE (1.0/0.77)
+#define BARREL_HCAL_NEUT_SCALE (1.0)
+#define FWD_HCAL_NEUT_SCALE (1.0)
 
 // Cluster/Tracking Matching offsets:
 
@@ -96,11 +96,6 @@ double eemc_deta_offset_2 = 0.137632;
 double eemc_deta_offset2_0 = -1.01584; 
 double eemc_deta_offset2_1 = -0.568819; 
 double eemc_deta_offset2_2 = -0.0812967; 
-
-double ihcal_dphi_offset_m = 0.027181; 
-double ihcal_dphi_offset_b = -0.0148866; 
-double ihcal_deta_offset_m = -0.159833; 
-double ihcal_deta_offset_b = 0.122384; 
 
 double ohcal_dphi_offset_m = 0.0; 
 double ohcal_dphi_offset_b = -0.0201131; 
@@ -410,61 +405,61 @@ int CentauroJets::Init(PHCompositeNode *topNode) {
 	// cluster evaluation for charged tracks
 	_eval_charged_tracks_cent = new TTree("clusteval_cent", "Charged track clusters (central)");
 	_eval_charged_tracks_cent->Branch("event", &event, "event/I");
-	_eval_charged_tracks_cent->Branch("pid",&ct_pid); 
-	_eval_charged_tracks_cent->Branch("p_meas",&ct_p_meas); 
-	_eval_charged_tracks_cent->Branch("p_true",&ct_p_true); 
-	_eval_charged_tracks_cent->Branch("eta_meas",&ct_eta_meas); 
-	_eval_charged_tracks_cent->Branch("eta_true",&ct_eta_true); 
-	_eval_charged_tracks_cent->Branch("phi_meas",&ct_phi_meas); 
-	_eval_charged_tracks_cent->Branch("phi_true",&ct_phi_true); 
-	_eval_charged_tracks_cent->Branch("e_bemc",&ct_e_bemc); 
-	_eval_charged_tracks_cent->Branch("e_ihcal",&ct_e_ihcal); 
-	_eval_charged_tracks_cent->Branch("e_ohcal",&ct_e_ohcal); 
-	_eval_charged_tracks_cent->Branch("e_tot",&ct_e_tot); 
-	_eval_charged_tracks_cent->Branch("bemc_dist",&ct_bemc_dist); 
-	_eval_charged_tracks_cent->Branch("bemc_deta",&ct_bemc_deta); 
-	_eval_charged_tracks_cent->Branch("bemc_dphi",&ct_bemc_dphi); 
-	_eval_charged_tracks_cent->Branch("ihcal_dist",&ct_ihcal_dist); 
-	_eval_charged_tracks_cent->Branch("ihcal_deta",&ct_ihcal_deta); 
-	_eval_charged_tracks_cent->Branch("ihcal_dphi",&ct_ihcal_dphi); 
-	_eval_charged_tracks_cent->Branch("ohcal_dist",&ct_ohcal_dist); 
-	_eval_charged_tracks_cent->Branch("ohcal_deta",&ct_ohcal_deta); 
-	_eval_charged_tracks_cent->Branch("ohcal_dphi",&ct_ohcal_dphi); 
+	_eval_charged_tracks_cent->Branch("pid",&ct_pid,"ct_pid/I"); 
+	_eval_charged_tracks_cent->Branch("p_meas",&ct_p_meas,"ct_p_meas/D"); 
+	_eval_charged_tracks_cent->Branch("p_true",&ct_p_true,"ct_p_true/D"); 
+	_eval_charged_tracks_cent->Branch("eta_meas",&ct_eta_meas,"ct_eta_meas/D"); 
+	_eval_charged_tracks_cent->Branch("eta_true",&ct_eta_true,"ct_eta_true/D"); 
+	_eval_charged_tracks_cent->Branch("phi_meas",&ct_phi_meas,"ct_phi_meas/D"); 
+	_eval_charged_tracks_cent->Branch("phi_true",&ct_phi_true,"ct_phi_true/D"); 
+	_eval_charged_tracks_cent->Branch("e_bemc",&ct_e_bemc,"ct_e_bemc/D"); 
+	_eval_charged_tracks_cent->Branch("e_ihcal",&ct_e_ihcal,"ct_e_ihcal/D"); 
+	_eval_charged_tracks_cent->Branch("e_ohcal",&ct_e_ohcal,"ct_e_ohcal/D"); 
+	_eval_charged_tracks_cent->Branch("e_tot",&ct_e_tot,"ct_e_tot/D"); 
 
 	_eval_charged_tracks_fwd = new TTree("clusteval_fwd", "Charged track clusters (fwd)");
 	_eval_charged_tracks_fwd->Branch("event", &event, "event/I");
-	_eval_charged_tracks_fwd->Branch("pid",&ct_pid); 
-	_eval_charged_tracks_fwd->Branch("p_meas",&ct_p_meas); 
-	_eval_charged_tracks_fwd->Branch("p_true",&ct_p_true); 
-	_eval_charged_tracks_fwd->Branch("eta_meas",&ct_eta_meas); 
-	_eval_charged_tracks_fwd->Branch("eta_true",&ct_eta_true); 
-	_eval_charged_tracks_fwd->Branch("phi_meas",&ct_phi_meas); 
-	_eval_charged_tracks_fwd->Branch("phi_true",&ct_phi_true); 
-	_eval_charged_tracks_fwd->Branch("e_femc",&ct_e_femc); 
-	_eval_charged_tracks_fwd->Branch("e_lfhcal",&ct_e_lfhcal); 
-	_eval_charged_tracks_fwd->Branch("e_tot",&ct_e_tot); 
-	_eval_charged_tracks_fwd->Branch("femc_dist",&ct_femc_dist); 
-	_eval_charged_tracks_fwd->Branch("femc_deta",&ct_femc_deta); 
-	_eval_charged_tracks_fwd->Branch("femc_dphi",&ct_femc_dphi); 
-	_eval_charged_tracks_fwd->Branch("lfhcal_dist",&ct_lfhcal_dist); 
-	_eval_charged_tracks_fwd->Branch("lfhcal_deta",&ct_lfhcal_deta); 
-	_eval_charged_tracks_fwd->Branch("lfhcal_dphi",&ct_lfhcal_dphi); 
+	_eval_charged_tracks_fwd->Branch("pid",&ct_pid,"c_pid/I"); 
+	_eval_charged_tracks_fwd->Branch("p_meas",&ct_p_meas,"ct_p_meas/D"); 
+	_eval_charged_tracks_fwd->Branch("p_true",&ct_p_true,"ct_p_true/D"); 
+	_eval_charged_tracks_fwd->Branch("eta_meas",&ct_eta_meas,"ct_ema_meas/D"); 
+	_eval_charged_tracks_fwd->Branch("eta_true",&ct_eta_true,"ct_eta_true/D"); 
+	_eval_charged_tracks_fwd->Branch("phi_meas",&ct_phi_meas,"ct_phi_meas/D"); 
+	_eval_charged_tracks_fwd->Branch("phi_true",&ct_phi_true,"ct_phi_true/D"); 
+	_eval_charged_tracks_fwd->Branch("e_femc",&ct_e_femc,"ct_e_femc/D"); 
+	_eval_charged_tracks_fwd->Branch("e_lfhcal",&ct_e_lfhcal,"ct_e_lfhcal/D"); 
+	_eval_charged_tracks_fwd->Branch("e_tot",&ct_e_tot,"ct_e_tot/D"); 
+
+	_eval_charged_tracks_bkwd = new TTree("clusteval_fwd", "Charged track clusters (fwd)");
+	_eval_charged_tracks_bkwd->Branch("event", &event, "event/I");
+	_eval_charged_tracks_bkwd->Branch("pid",&ct_pid,"c_pid/I"); 
+	_eval_charged_tracks_bkwd->Branch("p_meas",&ct_p_meas,"ct_p_meas/D"); 
+	_eval_charged_tracks_bkwd->Branch("p_true",&ct_p_true,"ct_p_true/D"); 
+	_eval_charged_tracks_bkwd->Branch("eta_meas",&ct_eta_meas,"ct_ema_meas/D"); 
+	_eval_charged_tracks_bkwd->Branch("eta_true",&ct_eta_true,"ct_eta_true/D"); 
+	_eval_charged_tracks_bkwd->Branch("phi_meas",&ct_phi_meas,"ct_phi_meas/D"); 
+	_eval_charged_tracks_bkwd->Branch("phi_true",&ct_phi_true,"ct_phi_true/D"); 
+	_eval_charged_tracks_bkwd->Branch("e_eemc",&ct_e_eemc,"ct_e_eemc/D"); 
 
 	// calo tracks
 	_calo_tracks_cent = new TTree("calotrack_cent", "Calotrack (central)");
 	_calo_tracks_cent->Branch("eta",&cat_eta_meas, "cat_eta_meas/D"); 
 	_calo_tracks_cent->Branch("phi",&cat_phi_meas, "cat_phi_meas/D"); 
-        _calo_tracks_cent->Branch("e",&cat_e_tot, "cat_e_tot"); 
+        _calo_tracks_cent->Branch("e",&cat_e_tot, "cat_e_tot/D"); 
+        _calo_tracks_cent->Branch("bf",&cat_bf, "cat_bf/I"); 
 
 	_calo_tracks_fwd = new TTree("calotrack_fwd", "Calotrack (fwd)");
 	_calo_tracks_fwd->Branch("eta",&cat_eta_meas, "cat_eta_meas/D"); 
 	_calo_tracks_fwd->Branch("phi",&cat_phi_meas, "cat_phi_meas/D"); 
-        _calo_tracks_fwd->Branch("e",&cat_e_tot, "cat_e_tot"); 
+        _calo_tracks_fwd->Branch("e",&cat_e_tot, "cat_e_tot/D"); 
+        _calo_tracks_fwd->Branch("bf",&cat_bf, "cat_bf/I"); 
 
 	_calo_tracks_bkwd = new TTree("calotrack_bkwd", "Calotrack (bkwd)");
 	_calo_tracks_bkwd->Branch("eta",&cat_eta_meas, "cat_eta_meas/D"); 
 	_calo_tracks_bkwd->Branch("phi",&cat_phi_meas, "cat_phi_meas/D"); 
-        _calo_tracks_bkwd->Branch("e",&cat_e_tot, "cat_e_tot"); 
+        _calo_tracks_bkwd->Branch("e",&cat_e_tot, "cat_e_tot/D"); 
+        _calo_tracks_bkwd->Branch("bf",&cat_bf, "cat_bf/I"); 
+
 
 	// evaluation for calo tracks
 	_eval_calo_tracks_cent = new TTree("calotrackeval_cent", "Calotrack Evaluation (central)");
@@ -476,7 +471,8 @@ int CentauroJets::Init(PHCompositeNode *topNode) {
 	_eval_calo_tracks_cent->Branch("phi_meas",&cat_phi_meas, "cat_phi_meas/D"); 
 	_eval_calo_tracks_cent->Branch("phi_true",&cat_phi_true, "cat_phi_true/D"); 
 	_eval_calo_tracks_cent->Branch("match",&cat_match, "cat_match/D"); 
-	_eval_calo_tracks_cent->Branch("e_tot",&cat_e_tot, "cat_e_tot"); 
+	_eval_calo_tracks_cent->Branch("e_tot",&cat_e_tot, "cat_e_tot/D"); 
+        _eval_calo_tracks_cent->Branch("bf",&cat_bf, "cat_bf/I"); 
 
 	_eval_calo_tracks_fwd = new TTree("calotrackeval_fwd", "Calotrack Evaluation (fwd)");
 	_eval_calo_tracks_fwd->Branch("event", &event, "event/I");
@@ -487,7 +483,8 @@ int CentauroJets::Init(PHCompositeNode *topNode) {
 	_eval_calo_tracks_fwd->Branch("phi_meas",&cat_phi_meas, "cat_phi_meas/D"); 
 	_eval_calo_tracks_fwd->Branch("phi_true",&cat_phi_true, "cat_phi_true/D"); 
 	_eval_calo_tracks_fwd->Branch("match",&cat_match, "cat_match/D"); 
-	_eval_calo_tracks_fwd->Branch("e_tot",&cat_e_tot, "cat_e_tot"); 
+	_eval_calo_tracks_fwd->Branch("e_tot",&cat_e_tot, "cat_e_tot/D"); 
+        _eval_calo_tracks_fwd->Branch("bf",&cat_bf, "cat_bf/I"); 
 
 	_eval_calo_tracks_bkwd = new TTree("calotrackeval_bkwd", "Calotrack Evaluation (bkwd)");
 	_eval_calo_tracks_bkwd->Branch("event", &event, "event/I");
@@ -498,7 +495,8 @@ int CentauroJets::Init(PHCompositeNode *topNode) {
 	_eval_calo_tracks_bkwd->Branch("phi_meas",&cat_phi_meas, "cat_phi_meas/D"); 
 	_eval_calo_tracks_bkwd->Branch("phi_true",&cat_phi_true, "cat_phi_true/D"); 
 	_eval_calo_tracks_bkwd->Branch("match",&cat_match, "cat_match/D"); 
-	_eval_calo_tracks_bkwd->Branch("e_tot",&cat_e_tot, "cat_e_tot"); 
+	_eval_calo_tracks_bkwd->Branch("e_tot",&cat_e_tot, "cat_e_tot/D"); 
+        _eval_calo_tracks_bkwd->Branch("bf",&cat_bf, "cat_bf/I"); 
 
 	// charged track matching 
 	_eval_tmatch_eemc = new TTree("tmatch_eemc", "EEMC Track Match");
@@ -630,6 +628,7 @@ int CentauroJets::End(PHCompositeNode *topNode) {
 
 	_eval_charged_tracks_cent->Write(); 	
 	_eval_charged_tracks_fwd->Write(); 
+	_eval_charged_tracks_bkwd->Write(); 
 
 	_eval_tmatch_eemc->Write(); 
 	_eval_tmatch_becal->Write(); 
@@ -695,7 +694,7 @@ void CentauroJets::fill_tree(PHCompositeNode *topNode) {
   e_p_initial = -9999.0; 
   p_p_initial = -9999.0; 
 
-  true_electron_headon = NULL; 
+  true_electron_headon = NULL; // not really deadon but in lab frame 
   TLorentzVector true_e_initial; 
   TLorentzVector true_p_initial; 
 
@@ -805,13 +804,14 @@ void CentauroJets::fill_tree(PHCompositeNode *topNode) {
 
     if (g4particle->get_pid() != 11) continue;
  
-    TLorentzVector e_i(0.0,0.0,-e_p_initial,e_p_initial); 
+    // Lab frame!
+    //TLorentzVector e_i(0.0,0.0,-e_p_initial,e_p_initial);
+    TLorentzVector e_i = true_e_initial; 
     TLorentzVector e_f(g4particle->get_px(), g4particle->get_py(), g4particle->get_pz(), g4particle->get_e()); 
     TLorentzVector v_phot = (e_i - e_f); 
     double checkQ2 = -v_phot.Mag2();
 
     if(fabs(checkQ2-_hepmcp_Q2)<minQ2diff){
-      // NOTE: This is in the head-on frame
       true_electron_headon = g4particle;
       minQ2diff = fabs(checkQ2-_hepmcp_Q2); 
     }
@@ -825,6 +825,7 @@ void CentauroJets::fill_tree(PHCompositeNode *topNode) {
 
     BuildChargedCaloTracks(topNode,"CENT"); 
     BuildChargedCaloTracks(topNode,"FWD"); 
+    BuildChargedCaloTracks(topNode,"BKWD"); 
 
     // Do the CaloTracks - diagnostic for single particle events
     // note that these will be in the lab frame
@@ -833,12 +834,19 @@ void CentauroJets::fill_tree(PHCompositeNode *topNode) {
 
     TLorentzRotation breit; // initialized as identity
     TRotation breitRotInv;  // initialized as identity
+    
+    electron_found = false;
 
     BuildCaloTracks(topNode, "CENT", tcpseudojets, breit, breitRotInv, "", -1); 
     BuildCaloTracks(topNode, "FWD", tcpseudojets, breit, breitRotInv, "", -1); 
+    BuildCaloTracks(topNode, "BKWD", tcpseudojets, breit, breitRotInv, "", -1); 
 
     return; 
   }
+  else{
+    electron_found = true; 
+  }
+
 
   // Find the scattered electron in the reconstructed data
 
@@ -1007,7 +1015,7 @@ void CentauroJets::fill_tree(PHCompositeNode *topNode) {
     TLorentzVector p_initial(-p_p_initial*sin(crossing_angle), 0.0, p_p_initial*cos(crossing_angle), 
 			     sqrt(pow(0.938,2) + pow(p_p_initial,2)));
     meas_x = measQ2/(2*virtual_photon*p_initial);
-    meas_y = (virtual_photon*p_initial)/(virtual_photon*e_initial);
+    meas_y = (p_initial*virtual_photon)/(p_initial*e_initial);
     measW2 = (p_initial + virtual_photon)*(p_initial + virtual_photon); 
 
     // Set up the transformation (boost) to the Breit frame
@@ -1340,12 +1348,13 @@ void CentauroJets::fill_tree(PHCompositeNode *topNode) {
     // Get the final electron in the lab frame
     CLHEP::HepLorentzVector efp(true_electron_headon->get_px(),true_electron_headon->get_py(),
 				true_electron_headon->get_pz(),true_electron_headon->get_e());
-    efp = EventToLab * efp;  
+    // Already in lab frame! 
+    //efp = EventToLab * efp;  
     TLorentzVector true_e_final(efp.px(), efp.py(), efp.pz(), efp.e()); 
     TLorentzVector true_virtual_photon = (true_e_initial - true_e_final); 
 
     _hepmcp_W2 = (true_p_initial + true_virtual_photon)*(true_p_initial + true_virtual_photon); 
-    _hepmcp_y = (true_virtual_photon*true_p_initial)/(true_virtual_photon*true_e_initial); 
+    _hepmcp_y = (true_p_initial*true_virtual_photon)/(true_p_initial*true_e_initial); 
 
     // Recalculate the kinematics 
     // (clean up round-off errors and keep everything self-consistent)
@@ -1677,27 +1686,101 @@ void CentauroJets::FillTowerPseudoJets( PHCompositeNode *topNode, std::string de
 
 }
 
+bool CentauroJets::PassClusterEtaCut(double eta, std::string detName ){
+
+  if(detName=="BECAL") {
+    if( (eta>-1.6) && (eta<1.3) ) 
+      return true; 
+    else
+      return false; 
+  }
+
+  if(detName=="EEMC") {
+    if( (eta>-3.5) && (eta<-2.6) ) 
+      return true; 
+    else
+      return false; 
+  }
+
+  if(detName=="HCALIN") {
+    if( (eta>-1.5) && (eta<1.15) ) 
+      return true; 
+    else
+      return false; 
+  }
+
+  if(detName=="HCALOUT") {
+    if( (eta>-1.1) && (eta<1.1) ) 
+      return true; 
+    else
+      return false; 
+  }
+
+  if(detName=="FEMC") {
+    if( (eta>1.3) && (eta<3.3) ) 
+      return true; 
+    else
+      return false; 
+  }
+
+  if(detName=="LFHCAL") {
+    if( (eta>1.3) && (eta<3.3) ) 
+      return true; 
+    else
+      return false; 
+  }
+
+  return false; 
+
+}
+
 void CentauroJets::ApplyTrackClusterMatchOffsets( double eta, double &dPhi, double &deta, std::string detName ){
 
   if(detName=="BECAL") {
     dPhi -= becal_dphi_offset;
+    dPhi -= -0.0142905 + -0.0142905*eta + 8.44883e-05*eta*eta + 0.00522552*eta*eta*eta;
+    dPhi -= -0.000646175 + 0.0130135*eta + -0.00818564*eta*eta +  0.00575239*pow(eta,3) + 
+      -0.00411877*pow(eta,4) + -0.00195375*pow(eta,5) + 0.00381183*pow(eta,6); 
     deta -= becal_deta_offset_m*eta + becal_deta_offset_b; 
+    deta -= 0.0145762 + -0.00531063*eta + -0.0335982*eta*eta + 0.0222769*pow(eta,3) +
+      0.0320784*pow(eta,4) + -0.0108325*pow(eta,5) + -0.0111674*pow(eta,6); 
+    if(eta<-0.5)
+      deta -= -0.0114967 + -0.0500774*eta + -0.0720299*eta*eta + -0.0312535*pow(eta,3); 
   }
 
   if(detName=="EEMC") {
     dPhi -= eemc_dphi_offset;
+    dPhi -= -0.0540423 + -0.0146311*eta; 
     deta -= eemc_deta_offset_0 + eemc_deta_offset_1*eta + eemc_deta_offset_2*eta*eta; 
-    deta -= eemc_deta_offset2_0 + eemc_deta_offset2_1*eta + eemc_deta_offset2_2*eta*eta; 
+    deta -= eemc_deta_offset2_0 + eemc_deta_offset2_1*eta + eemc_deta_offset2_2*eta*eta;
+    deta -= -0.457194 +  -0.338785*eta + -0.056236*eta*eta; 
+    if((eta>-3.7) && (eta<-2.6))
+      deta -=  1.25463 + 1.13589*eta + 0.342876*eta*eta + 0.0344722*pow(eta,3); 
+    if((eta>-2.6) && (eta<-2.5)) 
+      deta -= -30.8167 + -23.8203*eta + -4.60117*eta*eta; 
   }
 
   if(detName=="HCALIN") {
-    dPhi -= ihcal_dphi_offset_m*eta + ihcal_dphi_offset_b; 
-    deta -= ihcal_deta_offset_m*eta + ihcal_deta_offset_b + 0.0121243; 
+
   }
 
   if(detName=="HCALOUT") {
     dPhi -= ohcal_dphi_offset_m*eta + ohcal_dphi_offset_b; 
-    deta -= ohcal_deta_offset_m*eta + ohcal_deta_offset_b - 0.0157173; 
+    dPhi -= -0.00849659 +  0.00336439*eta; 
+    deta -= ohcal_deta_offset_m*eta + ohcal_deta_offset_b - 0.0157173;
+    deta -= 0.023074 + 0.0415849*eta + -0.046564*eta*eta + -0.0766266*pow(eta,3) + -0.0766266*pow(eta,4);
+    deta -= -0.0067078 + -0.0071178*eta + 0.080815*eta*eta; 
+  }
+
+  if(detName=="FEMC") {
+    dPhi -= 0.00168607; 
+    dPhi -= 0.00430244 + -0.000721602*eta; 
+    deta -= 0.0426469 + -0.0764429*eta + 0.0391231*eta*eta + -0.00616063*pow(eta,3); 
+  }
+
+  if(detName=="LFHCAL") {
+    deta -= 1.92207 + -6.99823*eta + 9.57352*eta*eta + -6.53645*pow(eta,3) + 
+      2.38833*pow(eta,4) + -0.446796*pow(eta,5) + 0.0336248*pow(eta,6); 
   }
 
 }
@@ -1809,6 +1892,11 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
   // when filling the diagnostic output
   int startIdx = pseudojets.size(); 
 
+  if(electron_found) 
+    cat_bf = 1; 
+  else
+    cat_bf = 0; 
+
   // Collect the required cluster lists
 
   RawClusterContainer *clusterList[3] = {NULL, NULL, NULL};
@@ -1912,6 +2000,8 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
     // Apply the track/cluster matching offsets to the eta/phi
     ApplyTrackClusterMatchOffsets( eta, phi, eta, detName[0] ); 
 
+    if(!PassClusterEtaCut(eta,detName[0])) continue; 
+
     double pt = rcluster0->get_energy() / cosh(eta);
     double px = pt * cos(phi);
     double py = pt * sin(phi);
@@ -1952,6 +2042,8 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
 	// Apply the track/cluster offsets
 	// using the eta of the first cluster
 	ApplyTrackClusterMatchOffsets( eta, phi1, eta1, detName[1] ); 
+
+	if(!PassClusterEtaCut(eta1,detName[1])) continue; 
 
 	double deta = eta -  eta1; 
 	double dPhi = DeltaPhi(phi, phi1); 
@@ -2132,6 +2224,8 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
       // Apply the track/cluster offsets
       ApplyTrackClusterMatchOffsets( eta, phi, eta, detName[1] ); 
 
+      if(!PassClusterEtaCut(eta,detName[1])) continue; 
+
       double pt = rcluster->get_energy() / cosh(eta);
       double px = pt * cos(phi);
       double py = pt * sin(phi);
@@ -2175,6 +2269,8 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
 
 	  // Apply the track/cluster offsets
 	  ApplyTrackClusterMatchOffsets( eta, phi2, eta2, detName[2] ); 
+
+	  if(!PassClusterEtaCut(eta2,detName[2])) continue; 
 
 	  double deta = eta -  eta2; 
 	  double dPhi = DeltaPhi(phi, phi2); 
@@ -2260,6 +2356,8 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
 
       // Apply the track/cluster offsets
       ApplyTrackClusterMatchOffsets( eta1, phi1, eta1, detName[2] ); 
+
+      if(!PassClusterEtaCut(eta1,detName[2])) continue; 
 
       double pt1 = rcluster1->get_energy() / cosh(eta1);
       double px1 = pt1 * cos(phi1);
@@ -2455,6 +2553,7 @@ void CentauroJets::BuildChargedCaloTracks(PHCompositeNode *topNode, std::string 
 
   std::string fwd_calos[3] = {"FEMC","LFHCAL",""}; 
   std::string cent_calos[3] = {"BECAL","HCALIN","HCALOUT"}; 
+  std::string bkwd_calos[3] = {"EEMC","",""}; 
   std::string detName[3] = {"","",""}; 
 
   // Collect the required cluster lists
@@ -2466,6 +2565,8 @@ void CentauroJets::BuildChargedCaloTracks(PHCompositeNode *topNode, std::string 
     if(type=="CENT") 
       detName[i] = cent_calos[i]; 
     else if(type=="FWD") 
+      detName[i] = fwd_calos[i]; 
+    else if(type=="BKWD") 
       detName[i] = fwd_calos[i]; 
     else{
       cout << " Unknown calo track type = " << type << endl; 
@@ -2517,7 +2618,7 @@ void CentauroJets::BuildChargedCaloTracks(PHCompositeNode *topNode, std::string 
       if(rcluster->get_energy()<CLUSTER_E_CUTOFF) continue; 
 
       double eta = getEta(rcluster->get_r(),rcluster->get_z()-vtx_z);
-      double phi = rcluster->get_phi(); 
+      double phi = rcluster->get_phi();
 
       if(i==0) {tmatched0[k] = AttachClusterToTrack(eta, phi, detName[i]);}
       if(i==1) {tmatched1[k] = AttachClusterToTrack(eta, phi, detName[i]);}
@@ -2527,38 +2628,6 @@ void CentauroJets::BuildChargedCaloTracks(PHCompositeNode *topNode, std::string 
 
   }
 
-  // Clear the vectors
-
-  ct_pid.clear(); 
-  ct_p_meas.clear();  
-  ct_p_true.clear(); 
-  ct_eta_meas.clear(); 
-  ct_eta_true.clear(); 
-  ct_phi_meas.clear(); 
-  ct_phi_true.clear(); 
-  ct_e_bemc.clear(); 
-  ct_e_ihcal.clear(); 
-  ct_e_ohcal.clear(); 
-  ct_e_femc.clear(); 
-  ct_e_lfhcal.clear(); 
-  ct_e_tot.clear(); 
-
-  ct_bemc_dist.clear(); 
-  ct_bemc_deta.clear(); 
-  ct_bemc_dphi.clear(); 
-  ct_ihcal_dist.clear(); 
-  ct_ihcal_deta.clear(); 
-  ct_ihcal_dphi.clear(); 
-  ct_ohcal_dist.clear(); 
-  ct_ohcal_deta.clear(); 
-  ct_ohcal_dphi.clear(); 
-  ct_femc_dist.clear(); 
-  ct_femc_deta.clear(); 
-  ct_femc_dphi.clear(); 
-  ct_lfhcal_dist.clear(); 
-  ct_lfhcal_deta.clear(); 
-  ct_lfhcal_dphi.clear(); 
-
   // Attach the clusters to the tracks and fill the tree
   // start seeded with the first calorimeter (EMCAL)
 
@@ -2566,6 +2635,21 @@ void CentauroJets::BuildChargedCaloTracks(PHCompositeNode *topNode, std::string 
 
     if(!tmatched0[k]) continue; 
     if(cused0[k]) continue; 
+
+    ct_pid = -9999; 
+    ct_p_meas = -9999.0;  
+    ct_p_true = -9999.0; 
+    ct_eta_meas = -9999.0; 
+    ct_eta_true = -9999.0; 
+    ct_phi_meas = -9999.0; 
+    ct_phi_true = -9999.0; 
+    ct_e_eemc = -9999.0; 
+    ct_e_bemc = -9999.0; 
+    ct_e_ihcal = -9999.0; 
+    ct_e_ohcal = -9999.0;  
+    ct_e_femc = -9999.0; 
+    ct_e_lfhcal = -9999.0; 
+    ct_e_tot = -9999.0; 
 
     RawCluster *rcluster = clusterList[0]->getCluster(k);
 
@@ -2586,7 +2670,7 @@ void CentauroJets::BuildChargedCaloTracks(PHCompositeNode *topNode, std::string 
 
 	found = true;
 
-	ct_pid.push_back(g4particle->get_pid()); 
+	ct_pid = g4particle->get_pid(); 
 
 	// Get the final particle in the lab frame
 	CLHEP::HepLorentzVector efp(g4particle->get_px(),g4particle->get_py(),
@@ -2595,32 +2679,16 @@ void CentauroJets::BuildChargedCaloTracks(PHCompositeNode *topNode, std::string 
 	//efp = EventToLab * efp;  
 	TLorentzVector match_lf(efp.px(), efp.py(), efp.pz(), efp.e());
 
-	ct_p_meas.push_back(tmatched0[k]->get_p()); 
-	ct_p_true.push_back(match_lf.Vect().Mag()); 
+	ct_p_meas = tmatched0[k]->get_p(); 
+	ct_p_true = match_lf.Vect().Mag(); 
 		
-	ct_eta_meas.push_back(tmatched0[k]->get_eta()); 
-        ct_eta_true.push_back(match_lf.Vect().Eta()); 
+	ct_eta_meas = tmatched0[k]->get_eta(); 
+        ct_eta_true = match_lf.Vect().Eta(); 
 
-	ct_phi_meas.push_back(tmatched0[k]->get_phi()); 
-        ct_phi_true.push_back(match_lf.Vect().Phi()); 
-
-	double deta = tmatched0[k]->get_eta() - match_lf.Vect().Eta(); 
-	double dphi = DeltaPhi(tmatched0[k]->get_phi(),match_lf.Vect().Phi()); 
-
-	if(type=="CENT"){
-	  ct_bemc_dist.push_back(sqrt(pow(dphi,2)+ pow(deta,2))); 
-	  ct_bemc_dphi.push_back(dphi); 
-	  ct_bemc_deta.push_back(deta); 
-	}
-	else if(type=="FWD"){
-	  ct_femc_dist.push_back(sqrt(pow(dphi,2)+ pow(deta,2))); 
-	  ct_femc_dphi.push_back(dphi); 
-	  ct_femc_deta.push_back(deta); 
-	}
+	ct_phi_meas = tmatched0[k]->get_phi(); 
+        ct_phi_true = match_lf.Vect().Phi(); 
 
 	cused0[k] = true; 
-
-	break; 
 
       }
 	
@@ -2631,10 +2699,13 @@ void CentauroJets::BuildChargedCaloTracks(PHCompositeNode *topNode, std::string 
     double caloTot = rcluster->get_energy(); 
  
     if(type=="CENT"){
-      ct_e_bemc.push_back(rcluster->get_energy()); 
+      ct_e_bemc = rcluster->get_energy(); 
     }
     else if(type=="FWD"){
-      ct_e_femc.push_back(rcluster->get_energy()); 
+      ct_e_femc = rcluster->get_energy(); 
+    }
+    else if(type=="BKWD"){
+      ct_e_eemc = rcluster->get_energy(); 
     }
 
     double stage2_energy = 0.0; 
@@ -2652,7 +2723,7 @@ void CentauroJets::BuildChargedCaloTracks(PHCompositeNode *topNode, std::string 
 	  RawCluster *rcluster1 = clusterList[1]->getCluster(j);
 
 	  caloTot += rcluster1->get_energy(); 
-	  stage2_energy = rcluster1->get_energy(); 
+	  stage2_energy += rcluster1->get_energy(); 
 
 	  cused1[j] = true; 
 
@@ -2665,10 +2736,10 @@ void CentauroJets::BuildChargedCaloTracks(PHCompositeNode *topNode, std::string 
     }
 
     if(type=="CENT"){
-      ct_e_ihcal.push_back(stage2_energy); 
+      ct_e_ihcal = stage2_energy; 
     }
     else if(type=="FWD"){
-      ct_e_lfhcal.push_back(stage2_energy); 
+      ct_e_lfhcal = stage2_energy; 
     }
 
     // Last calorimeter
@@ -2701,12 +2772,22 @@ void CentauroJets::BuildChargedCaloTracks(PHCompositeNode *topNode, std::string 
     }
 
     if(type=="CENT"){
-      ct_e_ohcal.push_back(stage3_energy); 
+      ct_e_ohcal = stage3_energy; 
     }
 
     // record the combined energy
-    ct_e_tot.push_back(caloTot); 
-   
+    ct_e_tot = caloTot; 
+  
+    if(type=="CENT"){
+      _eval_charged_tracks_cent->Fill(); 
+    }
+    else if(type=="FWD"){
+      _eval_charged_tracks_fwd->Fill();  
+    }
+    else if(type=="BKWD"){
+      _eval_charged_tracks_bkwd->Fill();  
+    }
+
   }
 
   // Now look for tracks seeded by the first HCAL (no EMCAL cluster)
@@ -2739,7 +2820,7 @@ void CentauroJets::BuildChargedCaloTracks(PHCompositeNode *topNode, std::string 
 
 	  if(!found){
 
-	    ct_pid.push_back(g4particle->get_pid()); 
+	    ct_pid = g4particle->get_pid(); 
 
 	    // Get the final particle in the lab frame
 	    CLHEP::HepLorentzVector efp(g4particle->get_px(),g4particle->get_py(),
@@ -2748,31 +2829,17 @@ void CentauroJets::BuildChargedCaloTracks(PHCompositeNode *topNode, std::string 
 	    //efp = EventToLab * efp;  
 	    TLorentzVector match_lf(efp.px(), efp.py(), efp.pz(), efp.e());
 
-	    ct_p_meas.push_back(tmatched1[k]->get_p()); 
-	    ct_p_true.push_back(match_lf.Vect().Mag()); 
+	    ct_p_meas = tmatched1[k]->get_p(); 
+	    ct_p_true = match_lf.Vect().Mag(); 
 	
-	    ct_eta_meas.push_back(tmatched1[k]->get_eta()); 
-	    ct_eta_true.push_back(match_lf.Vect().Eta()); 
+	    ct_eta_meas = tmatched1[k]->get_eta(); 
+	    ct_eta_true = match_lf.Vect().Eta(); 
 
-	    double deta = tmatched1[k]->get_eta() - match_lf.Vect().Eta(); 
-	    double dphi = DeltaPhi(tmatched1[k]->get_phi(),match_lf.Vect().Phi());
+	    found = true;
 
-	    if(type=="CENT"){
-	      ct_ihcal_dist.push_back(sqrt(pow(dphi,2)+ pow(deta,2))); 
-	      ct_ihcal_dphi.push_back(dphi); 
-	      ct_ihcal_deta.push_back(deta); 
-	    }
-	    else if(type=="FWD"){
-	      ct_lfhcal_dist.push_back(sqrt(pow(dphi,2)+ pow(deta,2))); 
-	      ct_lfhcal_dphi.push_back(dphi); 
-	      ct_lfhcal_deta.push_back(deta); 
-	    }
+	    cused1[k] = true; 
 
 	  }
-
-	  found = true;
-
-	  cused1[k] = true; 
 
 	  stage1_energy += rcluster->get_energy(); 
 
@@ -2787,12 +2854,12 @@ void CentauroJets::BuildChargedCaloTracks(PHCompositeNode *topNode, std::string 
       double caloTot = stage1_energy; 
  
       if(type=="CENT"){
-	ct_e_bemc.push_back(0.0); 
-	ct_e_ihcal.push_back(stage1_energy); 
+	ct_e_bemc = 0.0; 
+	ct_e_ihcal = stage1_energy; 
       }
       else if(type=="FWD"){
-	ct_e_femc.push_back(0.0); 
-	ct_e_lfhcal.push_back(stage1_energy); 
+	ct_e_femc = 0.0; 
+	ct_e_lfhcal = stage1_energy; 
       }
 
       // Last calorimeter
@@ -2825,11 +2892,18 @@ void CentauroJets::BuildChargedCaloTracks(PHCompositeNode *topNode, std::string 
       }
 
       if(type=="CENT"){
-	ct_e_ohcal.push_back(stage3_energy); 
+	ct_e_ohcal = stage3_energy; 
       }
 
       // record the combined energy
-      ct_e_tot.push_back(caloTot); 
+      ct_e_tot = caloTot; 
+
+      if(type=="CENT"){
+	_eval_charged_tracks_cent->Fill(); 
+      }
+      else if(type=="FWD"){
+	_eval_charged_tracks_fwd->Fill();  
+      }
 
     }
 
@@ -2863,7 +2937,7 @@ void CentauroJets::BuildChargedCaloTracks(PHCompositeNode *topNode, std::string 
 
 	  found = true;
 
-	  ct_pid.push_back(g4particle->get_pid()); 
+	  ct_pid = g4particle->get_pid(); 
 
 	  // Get the final particle in the lab frame
 	  CLHEP::HepLorentzVector efp(g4particle->get_px(),g4particle->get_py(),
@@ -2872,18 +2946,11 @@ void CentauroJets::BuildChargedCaloTracks(PHCompositeNode *topNode, std::string 
 	  //efp = EventToLab * efp;  
 	  TLorentzVector match_lf(efp.px(), efp.py(), efp.pz(), efp.e());
 
-	  ct_p_meas.push_back(tmatched2[k]->get_p()); 
-	  ct_p_true.push_back(match_lf.Vect().Mag()); 
+	  ct_p_meas = tmatched2[k]->get_p(); 
+	  ct_p_true = match_lf.Vect().Mag(); 
 	
-	  ct_eta_meas.push_back(tmatched2[k]->get_eta()); 
-	  ct_eta_true.push_back(match_lf.Vect().Eta()); 
-
-	  double deta = tmatched2[k]->get_eta() - match_lf.Vect().Eta(); 
-	  double dphi = DeltaPhi(tmatched2[k]->get_phi(),match_lf.Vect().Phi()); 
-
-	  ct_ohcal_dist.push_back(sqrt(pow(dphi,2)+ pow(deta,2))); 
-	  ct_ohcal_dphi.push_back(dphi); 
-	  ct_ohcal_deta.push_back(deta); 
+	  ct_eta_meas = tmatched2[k]->get_eta(); 
+	  ct_eta_true = match_lf.Vect().Eta(); 
 
 	  cused2[k] = true; 
 
@@ -2898,23 +2965,20 @@ void CentauroJets::BuildChargedCaloTracks(PHCompositeNode *topNode, std::string 
       double caloTot = rcluster->get_energy(); 
  
       if(type=="CENT"){
-	ct_e_bemc.push_back(0.0); 
-	ct_e_ihcal.push_back(0.0); 
-	ct_e_ohcal.push_back(rcluster->get_energy()); 
+	ct_e_bemc = 0.0; 
+	ct_e_ihcal = 0.0; 
+	ct_e_ohcal = rcluster->get_energy(); 
       }
 
       // record the combined energy
-      ct_e_tot.push_back(caloTot); 
+      ct_e_tot = caloTot; 
+
+      if(type=="CENT"){
+	_eval_charged_tracks_cent->Fill(); 
+      }
 
     }
 
-  }
-
-  if(type=="CENT"){
-    _eval_charged_tracks_cent->Fill(); 
-  }
-  else if(type=="FWD"){
-    _eval_charged_tracks_fwd->Fill();  
   }
 
   return; 
@@ -2995,11 +3059,17 @@ RawCluster *CentauroJets:: getCluster( PHCompositeNode *topNode, std::string det
 
     RawCluster *cluster = clusterList->getCluster(k);
 
-    double dphi = DeltaPhi(phi,cluster->get_phi());
+    double dphi = DeltaPhi(cluster->get_phi(),phi);
     double cluster_eta = getEta(cluster->get_r(),cluster->get_z()); 
-    double deta = eta-cluster_eta;
+    double deta = cluster_eta - eta;
     
-    ApplyTrackClusterMatchOffsets( eta, dphi, deta, detName ); 
+    ApplyTrackClusterMatchOffsets( eta, dphi, deta, detName );
+ 
+    // Check cluster acceptance
+    double teta = cluster_eta;
+    double tphi = cluster->get_phi(); 
+    ApplyTrackClusterMatchOffsets( eta, tphi, teta, detName ); 
+    if(!PassClusterEtaCut(teta, detName )) continue; 
 
     double r = sqrt(pow(dphi,2)+pow(deta,2));
 

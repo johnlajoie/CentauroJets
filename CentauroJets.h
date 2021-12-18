@@ -105,6 +105,8 @@ class CentauroJets: public SubsysReco
 
   void ApplyTrackClusterMatchOffsets( double eta, double &dPhi, double &deta, std::string detName ); 
 
+  bool PassClusterEtaCut(double eta, std::string detName ); 
+
   // Event generator transform
   CLHEP::HepLorentzRotation EventToLab; 
 
@@ -132,6 +134,8 @@ class CentauroJets: public SubsysReco
   double electron_eta; 
   double electron_phi; 
   double electron_cluster_dR; 
+
+  bool electron_found; 
 
   double vtx_x; 
   double vtx_y; 
@@ -232,36 +236,23 @@ class CentauroJets: public SubsysReco
 
   TTree *_eval_charged_tracks_cent; 
   TTree *_eval_charged_tracks_fwd; 
+  TTree *_eval_charged_tracks_bkwd; 
 
-  std::vector<int> ct_pid; 
-  std::vector<double> ct_p_meas; 
-  std::vector<double> ct_p_true; 
-  std::vector<double> ct_eta_meas; 
-  std::vector<double> ct_eta_true; 
-  std::vector<double> ct_phi_meas; 
-  std::vector<double> ct_phi_true; 
-  std::vector<double> ct_e_bemc; 
-  std::vector<double> ct_e_ihcal; 
-  std::vector<double> ct_e_ohcal; 
-  std::vector<double> ct_e_femc; 
-  std::vector<double> ct_e_lfhcal; 
-  std::vector<double> ct_e_tot; 
-  std::vector<double> ct_bemc_dist; 
-  std::vector<double> ct_bemc_deta; 
-  std::vector<double> ct_bemc_dphi; 
-  std::vector<double> ct_ihcal_dist; 
-  std::vector<double> ct_ihcal_deta; 
-  std::vector<double> ct_ihcal_dphi; 
-  std::vector<double> ct_ohcal_dist; 
-  std::vector<double> ct_ohcal_deta; 
-  std::vector<double> ct_ohcal_dphi; 
-  std::vector<double> ct_femc_dist; 
-  std::vector<double> ct_femc_deta; 
-  std::vector<double> ct_femc_dphi; 
-  std::vector<double> ct_lfhcal_dist; 
-  std::vector<double> ct_lfhcal_deta; 
-  std::vector<double> ct_lfhcal_dphi; 
-
+  int ct_pid; 
+  double ct_p_meas; 
+  double ct_p_true; 
+  double ct_eta_meas; 
+  double ct_eta_true; 
+  double ct_phi_meas; 
+  double ct_phi_true; 
+  double ct_e_eemc; 
+  double ct_e_bemc; 
+  double ct_e_ihcal; 
+  double ct_e_ohcal; 
+  double ct_e_femc; 
+  double ct_e_lfhcal; 
+  double ct_e_tot; 
+ 
   TTree *_calo_tracks_cent; 
   TTree *_calo_tracks_fwd; 
   TTree *_calo_tracks_bkwd; 
@@ -275,7 +266,8 @@ class CentauroJets: public SubsysReco
   double cat_phi_meas; 
   double cat_phi_true; 
   double cat_e_tot; 
-  double cat_match; 
+  double cat_match;
+  int cat_bf; 
 
   double _tm_deta;
   double _tm_dphi;
