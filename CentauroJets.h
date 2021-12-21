@@ -69,7 +69,8 @@ class CentauroJets: public SubsysReco
   
   // Match track to cluster
   double getClusterByIndex( PHCompositeNode *topNode, std::string detName, int clIdx);
-  RawCluster *getCluster( PHCompositeNode *topNode, std::string detName, double eta, double phi, double &clustE, int &clIdx, double &dR); 
+  RawCluster *getCluster( PHCompositeNode *topNode, std::string detName, double eta, double phi, int charge, 
+			  double ptot, double &clustE, int &clIdx, double &dR); 
 
   // Fill tower pseudojets
   void FillTowerPseudoJets( PHCompositeNode *topNode, std::string detName, 
@@ -103,7 +104,8 @@ class CentauroJets: public SubsysReco
 
   bool isThisAnElectron(SvtxTrack *temp); 
 
-  void ApplyTrackClusterMatchOffsets( double eta, double &dPhi, double &deta, std::string detName ); 
+  void GetClusterOffsetFit( double &eta, double &phi, int charge, double p, std::string detName );
+  void ApplyClusterOffsets( double &eta, double &phi, int charge, double p, std::string detName ); 
 
   bool PassClusterEtaCut(double eta, std::string detName ); 
 
@@ -275,6 +277,9 @@ class CentauroJets: public SubsysReco
   double _tm_eta;
   double _tm_phi;
   double _tm_p;
+  double _tm_ceta; 
+  double _tm_cphi; 
+  int    _tm_q; 
 
   TTree *_eval_tmatch_eemc;
   TTree *_eval_tmatch_becal;
@@ -312,6 +317,13 @@ class CentauroJets: public SubsysReco
   TH1D *_h_nclusters_ohcal; 
   TH1D *_h_nclusters_femc; 
   TH1D *_h_nclusters_lfhcal; 
+
+  TH1D *_h_clusteta_eemc; 
+  TH1D *_h_clusteta_becal; 
+  TH1D *_h_clusteta_ihcal; 
+  TH1D *_h_clusteta_ohcal; 
+  TH1D *_h_clusteta_femc; 
+  TH1D *_h_clusteta_lfhcal; 
   
 
 };

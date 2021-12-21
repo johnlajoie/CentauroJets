@@ -83,25 +83,6 @@ using namespace fastjet;
 #define BARREL_HCAL_NEUT_SCALE (1.0)
 #define FWD_HCAL_NEUT_SCALE (1.0)
 
-// Cluster/Tracking Matching offsets:
-
-double becal_dphi_offset = -0.00776943; 
-double becal_deta_offset_m = -0.0522795; 
-double becal_deta_offset_b = 0.040317; 
-
-double eemc_dphi_offset = -0.0206587; 
-double eemc_deta_offset_0 = 0.800618; 
-double eemc_deta_offset_1 = 0.916694; 
-double eemc_deta_offset_2 = 0.137632; 
-double eemc_deta_offset2_0 = -1.01584; 
-double eemc_deta_offset2_1 = -0.568819; 
-double eemc_deta_offset2_2 = -0.0812967; 
-
-double ohcal_dphi_offset_m = 0.0; 
-double ohcal_dphi_offset_b = -0.0201131; 
-double ohcal_deta_offset_m = -0.0449632; 
-double ohcal_deta_offset_b = -0.0266762; 
-
 // Use PID?
 #define USE_PID 0
 
@@ -430,7 +411,7 @@ int CentauroJets::Init(PHCompositeNode *topNode) {
 	_eval_charged_tracks_fwd->Branch("e_lfhcal",&ct_e_lfhcal,"ct_e_lfhcal/D"); 
 	_eval_charged_tracks_fwd->Branch("e_tot",&ct_e_tot,"ct_e_tot/D"); 
 
-	_eval_charged_tracks_bkwd = new TTree("clusteval_fwd", "Charged track clusters (fwd)");
+	_eval_charged_tracks_bkwd = new TTree("clusteval_bkwd", "Charged track clusters (fwd)");
 	_eval_charged_tracks_bkwd->Branch("event", &event, "event/I");
 	_eval_charged_tracks_bkwd->Branch("pid",&ct_pid,"c_pid/I"); 
 	_eval_charged_tracks_bkwd->Branch("p_meas",&ct_p_meas,"ct_p_meas/D"); 
@@ -506,6 +487,9 @@ int CentauroJets::Init(PHCompositeNode *topNode) {
 	_eval_tmatch_eemc->Branch("eta", &_tm_eta, "_tm_eta/D");
 	_eval_tmatch_eemc->Branch("phi", &_tm_phi, "_tm_phi/D");
 	_eval_tmatch_eemc->Branch("p", &_tm_p, "_tm_p/D");
+	_eval_tmatch_eemc->Branch("ceta", &_tm_ceta, "_tm_ceta/D");
+	_eval_tmatch_eemc->Branch("cphi", &_tm_cphi, "_tm_cphi/D");
+	_eval_tmatch_eemc->Branch("q", &_tm_q, "_tm_q/I");
 
 	_eval_tmatch_becal = new TTree("tmatch_becal", "BECAL Track Match");
 	_eval_tmatch_becal->Branch("deta", &_tm_deta, "_tm_deta/D");
@@ -514,6 +498,9 @@ int CentauroJets::Init(PHCompositeNode *topNode) {
 	_eval_tmatch_becal->Branch("eta", &_tm_eta, "_tm_eta/D");
 	_eval_tmatch_becal->Branch("phi", &_tm_phi, "_tm_phi/D");
 	_eval_tmatch_becal->Branch("p", &_tm_p, "_tm_p/D");
+	_eval_tmatch_becal->Branch("ceta", &_tm_ceta, "_tm_ceta/D");
+	_eval_tmatch_becal->Branch("cphi", &_tm_cphi, "_tm_cphi/D");
+	_eval_tmatch_becal->Branch("q", &_tm_q, "_tm_q/I");
 
 	_eval_tmatch_ihcal = new TTree("tmatch_ihcal", "IHCAL Track Match");
 	_eval_tmatch_ihcal->Branch("deta", &_tm_deta, "_tm_deta/D");
@@ -522,6 +509,9 @@ int CentauroJets::Init(PHCompositeNode *topNode) {
 	_eval_tmatch_ihcal->Branch("eta", &_tm_eta, "_tm_eta/D");
 	_eval_tmatch_ihcal->Branch("phi", &_tm_phi, "_tm_phi/D");
 	_eval_tmatch_ihcal->Branch("p", &_tm_p, "_tm_p/D");
+	_eval_tmatch_ihcal->Branch("ceta", &_tm_ceta, "_tm_ceta/D");
+	_eval_tmatch_ihcal->Branch("cphi", &_tm_cphi, "_tm_cphi/D");
+	_eval_tmatch_ihcal->Branch("q", &_tm_q, "_tm_q/I");
 
 	_eval_tmatch_ohcal = new TTree("tmatch_ohcal", "IHCAL Track Match");
 	_eval_tmatch_ohcal->Branch("deta", &_tm_deta, "_tm_deta/D");
@@ -530,6 +520,9 @@ int CentauroJets::Init(PHCompositeNode *topNode) {
 	_eval_tmatch_ohcal->Branch("eta", &_tm_eta, "_tm_eta/D");
 	_eval_tmatch_ohcal->Branch("phi", &_tm_phi, "_tm_phi/D");
 	_eval_tmatch_ohcal->Branch("p", &_tm_p, "_tm_p/D");
+	_eval_tmatch_ohcal->Branch("ceta", &_tm_ceta, "_tm_ceta/D");
+	_eval_tmatch_ohcal->Branch("cphi", &_tm_cphi, "_tm_cphi/D");
+	_eval_tmatch_ohcal->Branch("q", &_tm_q, "_tm_q/I");
 
 	_eval_tmatch_femc = new TTree("tmatch_femc", "FEMC Track Match");
 	_eval_tmatch_femc->Branch("deta", &_tm_deta, "_tm_deta/D");
@@ -538,6 +531,9 @@ int CentauroJets::Init(PHCompositeNode *topNode) {
 	_eval_tmatch_femc->Branch("eta", &_tm_eta, "_tm_eta/D");
 	_eval_tmatch_femc->Branch("phi", &_tm_phi, "_tm_phi/D");
 	_eval_tmatch_femc->Branch("p", &_tm_p, "_tm_p/D");
+	_eval_tmatch_femc->Branch("ceta", &_tm_ceta, "_tm_ceta/D");
+	_eval_tmatch_femc->Branch("cphi", &_tm_cphi, "_tm_cphi/D");
+	_eval_tmatch_femc->Branch("q", &_tm_q, "_tm_q/I");
 
 	_eval_tmatch_lfhcal = new TTree("tmatch_lfhcal", "LFHCAL Track Match");
 	_eval_tmatch_lfhcal->Branch("deta", &_tm_deta, "_tm_deta/D");
@@ -546,6 +542,9 @@ int CentauroJets::Init(PHCompositeNode *topNode) {
 	_eval_tmatch_lfhcal->Branch("eta", &_tm_eta, "_tm_eta/D");
 	_eval_tmatch_lfhcal->Branch("phi", &_tm_phi, "_tm_phi/D");
 	_eval_tmatch_lfhcal->Branch("p", &_tm_p, "_tm_p/D");
+	_eval_tmatch_lfhcal->Branch("ceta", &_tm_ceta, "_tm_ceta/D");
+	_eval_tmatch_lfhcal->Branch("cphi", &_tm_cphi, "_tm_cphi/D");
+	_eval_tmatch_lfhcal->Branch("q", &_tm_q, "_tm_q/I");
 
 	// calotrack cluster matching
 
@@ -589,6 +588,13 @@ int CentauroJets::Init(PHCompositeNode *topNode) {
 	_h_nclusters_ohcal = new TH1D("_h_nclusters_ohcal","",51,-0.5,50.5); 
 	_h_nclusters_femc = new TH1D("_h_nclusters_femc","",51,-0.5,50.5); 
 	_h_nclusters_lfhcal = new TH1D("_h_nclusters_lfhcal","",51,-0.5,50.5); 
+
+	_h_clusteta_eemc = new TH1D("_h_clusteta_eemc","",100,-5.0,5.0); 
+	_h_clusteta_becal = new TH1D("_h_clusteta_becal","",100,-5.0,5.0); 
+	_h_clusteta_ihcal = new TH1D("_h_clusteta_ihcal","",100,-5.0,5.0); 
+	_h_clusteta_ohcal = new TH1D("_h_clusteta_ohcal","",100,-5.0,5.0); 
+	_h_clusteta_femc = new TH1D("_h_clusteta_femc","",100,-5.0,5.0); 
+	_h_clusteta_lfhcal = new TH1D("_h_clusteta_lfhcal","",100,-5.0,5.0); 
 
 	return Fun4AllReturnCodes::EVENT_OK;
 }
@@ -656,6 +662,13 @@ int CentauroJets::End(PHCompositeNode *topNode) {
 	_h_nclusters_ohcal->Write(); 
 	_h_nclusters_femc->Write(); 
 	_h_nclusters_lfhcal->Write(); 
+
+	_h_clusteta_eemc->Write(); 
+	_h_clusteta_becal->Write(); 
+	_h_clusteta_ihcal->Write(); 
+	_h_clusteta_ohcal->Write(); 
+	_h_clusteta_femc->Write(); 
+	_h_clusteta_lfhcal->Write(); 
 
 	delete rand; 
 
@@ -985,7 +998,8 @@ void CentauroJets::fill_tree(PHCompositeNode *topNode) {
 	double clustE = 9999.0; 
 	double clustdR = 9999.0; 
 	int clustIdx = -1; 
-	RawCluster *testCluster = getCluster(topNode, temp->get_name(), temp->get_eta(), temp->get_phi(), clustE, clustIdx, clustdR); 
+	RawCluster *testCluster = getCluster(topNode, temp->get_name(), temp->get_eta(), temp->get_phi(), 
+					     -1, electron->get_p(), clustE, clustIdx, clustdR); 
 	if((clustE>0.0)&&(clustdR<ElectronClusterDistance)) {
 	  ElectronClusterEnergy = clustE;
 	  ElectronClusterDistance = clustdR; 
@@ -1687,44 +1701,46 @@ void CentauroJets::FillTowerPseudoJets( PHCompositeNode *topNode, std::string de
 }
 
 bool CentauroJets::PassClusterEtaCut(double eta, std::string detName ){
+  
+  // Cuts are *after* clusters are adjusted to track match locations
 
   if(detName=="BECAL") {
-    if( (eta>-1.6) && (eta<1.3) ) 
+    if( (eta>-1.8) && (eta<1.3) ) 
       return true; 
     else
       return false; 
   }
 
   if(detName=="EEMC") {
-    if( (eta>-3.5) && (eta<-2.6) ) 
-      return true; 
-    else
-      return false; 
-  }
-
-  if(detName=="HCALIN") {
-    if( (eta>-1.5) && (eta<1.15) ) 
-      return true; 
-    else
-      return false; 
-  }
-
-  if(detName=="HCALOUT") {
-    if( (eta>-1.1) && (eta<1.1) ) 
+    if( (eta>-3.4) && (eta<-1.8) ) 
       return true; 
     else
       return false; 
   }
 
   if(detName=="FEMC") {
-    if( (eta>1.3) && (eta<3.3) ) 
+    if( (eta>1.3) && (eta<3.4) ) 
+      return true; 
+    else
+      return false; 
+  }
+
+  if(detName=="HCALIN") {
+    if( (eta>-1.6) && (eta<1.2) ) 
+      return true; 
+    else
+      return false; 
+  }
+
+  if(detName=="HCALOUT") {
+    if( (eta>-1.2) && (eta<1.2) ) 
       return true; 
     else
       return false; 
   }
 
   if(detName=="LFHCAL") {
-    if( (eta>1.3) && (eta<3.3) ) 
+    if( (eta>1.2) && (eta<3.4) ) 
       return true; 
     else
       return false; 
@@ -1734,57 +1750,244 @@ bool CentauroJets::PassClusterEtaCut(double eta, std::string detName ){
 
 }
 
-void CentauroJets::ApplyTrackClusterMatchOffsets( double eta, double &dPhi, double &deta, std::string detName ){
+void CentauroJets::GetClusterOffsetFit( double &eta, double &phi, int charge, double p, std::string detName ){
+
+  double new_phi_pos = phi; 
+  double new_eta_pos = eta; 
+  double new_phi_neg = phi; 
+  double new_eta_neg = eta; 
 
   if(detName=="BECAL") {
-    dPhi -= becal_dphi_offset;
-    dPhi -= -0.0142905 + -0.0142905*eta + 8.44883e-05*eta*eta + 0.00522552*eta*eta*eta;
-    dPhi -= -0.000646175 + 0.0130135*eta + -0.00818564*eta*eta +  0.00575239*pow(eta,3) + 
-      -0.00411877*pow(eta,4) + -0.00195375*pow(eta,5) + 0.00381183*pow(eta,6); 
-    deta -= becal_deta_offset_m*eta + becal_deta_offset_b; 
-    deta -= 0.0145762 + -0.00531063*eta + -0.0335982*eta*eta + 0.0222769*pow(eta,3) +
-      0.0320784*pow(eta,4) + -0.0108325*pow(eta,5) + -0.0111674*pow(eta,6); 
-    if(eta<-0.5)
-      deta -= -0.0114967 + -0.0500774*eta + -0.0720299*eta*eta + -0.0312535*pow(eta,3); 
+
+    if(p<1.0){
+      new_phi_pos = -0.790809 + 1.03333*phi; 
+      new_eta_pos = -0.055134 + 1.05179*eta;
+      new_phi_neg = 0.656683 + 1.03974*phi; 
+      new_eta_neg = -0.0498023 + 1.04796*eta; 
+    }
+    else if(p>=1.0 && p<2.0){
+      new_phi_pos = -0.26241 + 1.00443*phi; 
+      new_eta_pos = -0.0520299 + 1.05307*eta;
+      new_phi_neg = 0.255534 + 0.997839*phi; 
+      new_eta_neg = -0.0512095 + 1.05521*eta; 
+    }
+    else if(p>=2.0 && p<5.0){
+      new_phi_pos = -0.114327 + 1.00106*phi; 
+      new_eta_pos = -0.0496239 + 1.04886*eta;
+      new_phi_neg = 0.102647 + 0.999467*phi; 
+      new_eta_neg = -0.0495655 + 1.04986*eta; 
+    }
+    else{
+      new_phi_pos = -0.0328114 + 1.00036*phi; 
+      new_eta_pos = -0.0479465 + 1.04541*eta;
+      new_phi_neg = 0.0261091 + 1.00035*phi; 
+      new_eta_neg = -0.0479982 + 1.04762*eta; 
+    }
+
   }
 
   if(detName=="EEMC") {
-    dPhi -= eemc_dphi_offset;
-    dPhi -= -0.0540423 + -0.0146311*eta; 
-    deta -= eemc_deta_offset_0 + eemc_deta_offset_1*eta + eemc_deta_offset_2*eta*eta; 
-    deta -= eemc_deta_offset2_0 + eemc_deta_offset2_1*eta + eemc_deta_offset2_2*eta*eta;
-    deta -= -0.457194 +  -0.338785*eta + -0.056236*eta*eta; 
-    if((eta>-3.7) && (eta<-2.6))
-      deta -=  1.25463 + 1.13589*eta + 0.342876*eta*eta + 0.0344722*pow(eta,3); 
-    if((eta>-2.6) && (eta<-2.5)) 
-      deta -= -30.8167 + -23.8203*eta + -4.60117*eta*eta; 
+
+    if(p<1.0){
+      new_phi_pos = -0.169671 + 1.01043*phi; 
+      new_eta_pos = 0.533367 + 0.978339*eta;
+      new_phi_neg = 0.176672 + 1.0131*phi; 
+      new_eta_neg = 0.676218 + 1.01308*eta; 
+    }
+    else if(p>=1.0 && p<2.0){
+      new_phi_pos = -0.0989564 + 1.00688*phi; 
+      new_eta_pos = 0.641639 + 0.986472*eta;
+      new_phi_neg = 0.116037 + 1.0033*phi; 
+      new_eta_neg = 0.662325 + 0.991997*eta; 
+    }
+    else if(p>=2.0 && p<5.0){
+      new_phi_pos = -0.0605684 + 1.00035*phi; 
+      new_eta_pos = 0.668034 + 0.990231*eta;
+      new_phi_neg = 0.0614057 + 0.998342*phi; 
+      new_eta_neg = 0.663743 + 0.988732*eta; 
+    }
+    else{
+      new_phi_pos = -0.0189368 + 1.00029*phi; 
+      new_eta_pos = 0.67639 + 0.992932*eta;
+      new_phi_neg = 0.0198274 + 1.00037*phi; 
+      new_eta_neg = 0.670935 + 0.991306*eta; 
+    }
+
+  }
+
+  if(detName=="FEMC") {
+
+    if(p<1.0){
+      new_phi_pos = -0.218881 + 1.01025*phi; 
+      new_eta_pos = 0.0618603 + 0.984258*eta;
+      new_phi_neg = 0.186663 + 1.00484*phi; 
+      new_eta_neg = 0.114516 + 0.95808*eta; 
+    }
+    else if(p>=1.0 && p<2.0){
+      new_phi_pos = -0.10387 + 0.999125*phi; 
+      new_eta_pos = -0.0158887 + 1.00204*eta;
+      new_phi_neg = 0.0987378 + 0.994283*phi; 
+      new_eta_neg = -0.0159015 + 1.0027*eta; 
+    }
+    else if(p>=2.0 && p<5.0){
+      new_phi_pos = -0.0492254 + 1.00019*phi; 
+      new_eta_pos = -0.0234706 + 1.00247*eta;
+      new_phi_neg = 0.0493793 + 0.0493793*phi; 
+      new_eta_neg = -0.0232658 + 1.00208*eta; 
+    }
+    else{
+      new_phi_pos = -0.0148439 + 1.00053*phi; 
+      new_eta_pos = -0.0186565 + 1.00256*eta;
+      new_phi_neg = 0.0141556 + 0.999793*phi; 
+      new_eta_neg = -0.0216814 + 1.00348*eta; 
+    }
+
   }
 
   if(detName=="HCALIN") {
 
+    if(p<1.0){
+      new_phi_pos = -0.430135 + 1.0263*phi; 
+      new_eta_pos = 0.0381384 + 1.01611*eta;
+      new_phi_neg = 0.441247 + 0.942187*phi; 
+      new_eta_neg = -0.00796134 + 0.924449*eta; 
+    }
+    else if(p>=1.0 && p<2.0){
+      new_phi_pos = -0.194461 + 1.00596*phi; 
+      new_eta_pos = -0.0123693 + 1.02343*eta;
+      new_phi_neg = 0.166375 + 1.02169*phi; 
+      new_eta_neg = -0.0111075 +  0.988893*eta; 
+    }
+    else if(p>=2.0 && p<5.0){
+      new_phi_pos = -0.0843341 + 1.01536*phi; 
+      new_eta_pos = 0.00596009 + 1.00052*eta;
+      new_phi_neg = 0.07617 + 1.00723*phi; 
+      new_eta_neg = 0.00450778 + 1.0065*eta; 
+    }
+    else{
+      new_phi_pos = -0.0266751 + 0.998253*phi; 
+      new_eta_pos = 0.00732495 + 1.00378*eta + -0.0204908*eta*eta;
+      new_phi_neg = 0.0252699 + 0.999391*phi; 
+      new_eta_neg = -0.000147567 + 1.00708*eta; 
+    }
+
   }
 
   if(detName=="HCALOUT") {
-    dPhi -= ohcal_dphi_offset_m*eta + ohcal_dphi_offset_b; 
-    dPhi -= -0.00849659 +  0.00336439*eta; 
-    deta -= ohcal_deta_offset_m*eta + ohcal_deta_offset_b - 0.0157173;
-    deta -= 0.023074 + 0.0415849*eta + -0.046564*eta*eta + -0.0766266*pow(eta,3) + -0.0766266*pow(eta,4);
-    deta -= -0.0067078 + -0.0071178*eta + 0.080815*eta*eta; 
-  }
 
-  if(detName=="FEMC") {
-    dPhi -= 0.00168607; 
-    dPhi -= 0.00430244 + -0.000721602*eta; 
-    deta -= 0.0426469 + -0.0764429*eta + 0.0391231*eta*eta + -0.00616063*pow(eta,3); 
+    if(p<2.0){
+      new_phi_pos = -0.0911529 + 1.01105*phi; 
+      new_eta_pos = 0.0267768 + 0.972507*eta;
+      new_phi_neg = 0.207614 + 0.965075*phi; 
+      new_eta_neg = -0.0118167 + 1.0365*eta; 
+    }
+    else if(p>=2.0 && p<5.0){
+      new_phi_pos = -0.0293987 + 1.0031*phi; 
+      new_eta_pos = 0.0149126 + 1.01048*eta;
+      new_phi_neg = 0.10269 + 1.00116*phi; 
+      new_eta_neg = -0.0126848 + 1.03481*eta; 
+    }
+    else{
+      new_phi_pos = 0.0233147 +  0.996347*phi; 
+      new_eta_pos = -0.00568223 + 1.05541*eta;
+      new_phi_neg = 0.061677 + 0.995576*phi; 
+      new_eta_neg = -0.00253092 + 1.05975*eta; 
+    }
+
   }
 
   if(detName=="LFHCAL") {
-    deta -= 1.92207 + -6.99823*eta + 9.57352*eta*eta + -6.53645*pow(eta,3) + 
-      2.38833*pow(eta,4) + -0.446796*pow(eta,5) + 0.0336248*pow(eta,6); 
+
+    if(p<1.0){
+      new_phi_pos = -0.137888 + 0.991358*phi; 
+      new_eta_pos = 0.173009 + 0.945503*eta;
+      new_phi_neg = 0.0974656 + 0.986173*phi; 
+      new_eta_neg = -0.067442 + 1.05617*eta; 
+    }
+    else if(p>=1.0 && p<2.0){
+      new_phi_pos = -0.076133 + 0.997761*phi; 
+      new_eta_pos = 0.0171041 + 0.996268*eta;
+      new_phi_neg =  0.0907287 + 1.00832*phi; 
+      new_eta_neg = 0.0417289 + 0.986766*eta; 
+    }
+    else if(p>=2.0 && p<5.0){
+      new_phi_pos = -0.0195723 + 0.945219*phi; 
+      new_eta_pos = -0.0424823 + 1.04634*eta;
+      new_phi_neg = 0.0316167 + 0.970774*phi; 
+      new_eta_neg = -0.0267821 + 1.03769*eta; 
+    }
+    else{
+      new_phi_pos = -0.00559962 + 0.901618*phi; 
+      new_eta_pos = -0.0964234 + 1.0876*eta;
+      new_phi_neg = -0.00540441 + 0.908178*phi; 
+      new_eta_neg = -0.051715 + 1.06786*eta; 
+    }
+
+  }
+
+  if(charge>0){
+    phi = new_phi_pos; 
+    eta = new_eta_pos;
+  }
+  else if(charge<0){
+    phi = new_phi_neg; 
+    eta = new_eta_neg;
+  }
+  else{
+    phi = 0.5*(new_phi_pos + new_phi_neg); 
+    eta = 0.5*(new_eta_pos + new_eta_neg);
   }
 
 }
 
+void CentauroJets::ApplyClusterOffsets( double &eta, double &phi, int charge, double p, std::string detName ){
+
+  if(p>5.0){
+    // No interpolation for p>5GeV 
+    GetClusterOffsetFit(eta, phi, charge, p, detName); 
+  }
+  else{
+
+    // interpolate
+
+    double bins[4] = {0.75,1.5,3.5,12.5}; 
+    double ohcal_bins[3] = {1.25,3.5,12.5};
+
+    double x_low = bins[0]; 
+    double x_high = bins[2]; 
+    if(detName=="HCALOUT") {
+      x_low = ohcal_bins[0]; 
+      x_high = ohcal_bins[1]; 
+    }
+
+    for(int i=0; i<3; i++){
+      if( detName=="HCALOUT" ){
+	if(i==2) continue;
+	if(p>=ohcal_bins[i]) x_low = ohcal_bins[i]; 
+	if(p<ohcal_bins[i]) x_high = ohcal_bins[i]; 
+      }
+      else{
+	if(p>=bins[i]) x_low = bins[i]; 
+	if(p<bins[i]) x_high = bins[i]; 
+      }
+    }
+
+    double eta_low = eta; 
+    double phi_low = phi; 
+    GetClusterOffsetFit(eta_low, phi_low, charge, x_low, detName); 
+
+    double eta_high = eta; 
+    double phi_high = phi; 
+    GetClusterOffsetFit(eta_high, phi_high, charge, x_high, detName); 
+
+    eta = eta_low + (p - x_low)*( (eta_high - eta_low)/(x_high - x_low));
+    phi = phi_low + (p - x_low)*( (phi_high - phi_low)/(x_high - x_low));
+
+  }
+  
+  return; 
+
+}
 
 bool CentauroJets::VetoClusterWithTrack(double eta, double phi, std::string detName){
 
@@ -1795,7 +1998,8 @@ bool CentauroJets::VetoClusterWithTrack(double eta, double phi, std::string detN
   double minDphi = 9999.0; 
   double minP = 9999.0; 
   double minEta = 9999.0; 
-  double minPhi = 9999.0; 
+  double minPhi = 9999.0;
+  double minQ = 9999.0; 
 
   for (SvtxTrackMap::ConstIter track_itr = _trackmap->begin();
        track_itr != _trackmap->end(); track_itr++) {
@@ -1809,20 +2013,21 @@ bool CentauroJets::VetoClusterWithTrack(double eta, double phi, std::string detN
 
       if( (tstate->get_pathlength()>0.0) && (tstate->get_name()==detName) ) {
 
-	double deta = eta -  tstate->get_eta(); 
-	double dPhi = DeltaPhi(phi, tstate->get_phi()); 
-	double ptot = tstate->get_p(); 
+	double ceta = eta; 
+	double cphi = phi; 
+	ApplyClusterOffsets(ceta,cphi,temp->get_charge(),temp->get_p(),detName); 
 
-	ApplyTrackClusterMatchOffsets( eta, dPhi, deta, detName ); 
-
+	double deta = ceta -  tstate->get_eta(); 
+	double dPhi = DeltaPhi(cphi, tstate->get_phi()); 
 	double dist = sqrt( pow(deta,2) + pow(dPhi,2) ); 
 	if(dist<minDist){
 	  minDist = dist; 
 	  minDeta = deta; 
 	  minDphi = dPhi; 
-	  minEta = eta;
+	  minEta = tstate->get_eta();
 	  minPhi = tstate->get_phi(); 
-	  minP = ptot; 
+	  minP = tstate->get_p();
+	  minQ = temp->get_charge(); 
 	}
 
       }
@@ -1837,6 +2042,9 @@ bool CentauroJets::VetoClusterWithTrack(double eta, double phi, std::string detN
   _tm_p = minP; 
   _tm_eta = minEta; 
   _tm_phi = minPhi; 
+  _tm_ceta = eta; 
+  _tm_cphi = phi; 
+  _tm_q = minQ; 
 
   double cutDist = 0.15; 
 
@@ -1967,14 +2175,55 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
       if(i==1) {tmatched1[k] = VetoClusterWithTrack(eta, phi, detName[i]); cused1[k] = tmatched1[k];}
       if(i==2) {tmatched2[k] = VetoClusterWithTrack(eta, phi, detName[i]); cused2[k] = tmatched2[k];}
 
+      if(detName[i]=="EEMC") {
+	_h_clusteta_eemc->Fill(eta); 
+      }
+
+      if(detName[i]=="BECAL") {
+	_h_clusteta_becal->Fill(eta); 
+      }
+
+      if(detName[i]=="HCALIN") {
+	_h_clusteta_ihcal->Fill(eta); 
+      }
+
+      if(detName[i]=="HCALOUT") {
+	_h_clusteta_ohcal->Fill(eta); 
+      }
+
+      if(detName[i]=="FEMC") {
+	_h_clusteta_femc->Fill(eta); 
+      }
+
+      if(detName[i]=="LFHCAL") {
+	_h_clusteta_lfhcal->Fill(eta); 
+      }
+
     }
 
-    if(detName[i]=="EEMC") _h_nclusters_eemc->Fill(clusterList[i]->size()); 
-    if(detName[i]=="BECAL") _h_nclusters_becal->Fill(clusterList[i]->size()); 
-    if(detName[i]=="HCALIN") _h_nclusters_ihcal->Fill(clusterList[i]->size()); 
-    if(detName[i]=="HCALOUT") _h_nclusters_ohcal->Fill(clusterList[i]->size()); 
-    if(detName[i]=="FEMC") _h_nclusters_femc->Fill(clusterList[i]->size()); 
-    if(detName[i]=="LFHCAL") _h_nclusters_lfhcal->Fill(clusterList[i]->size()); 
+    if(detName[i]=="EEMC") {
+      _h_nclusters_eemc->Fill(clusterList[i]->size());
+    }
+
+    if(detName[i]=="BECAL") {
+      _h_nclusters_becal->Fill(clusterList[i]->size()); 
+    }
+
+    if(detName[i]=="HCALIN") {
+      _h_nclusters_ihcal->Fill(clusterList[i]->size());
+    }
+
+    if(detName[i]=="HCALOUT") {
+      _h_nclusters_ohcal->Fill(clusterList[i]->size());
+    }
+
+    if(detName[i]=="FEMC") {
+      _h_nclusters_femc->Fill(clusterList[i]->size()); 
+    }
+
+    if(detName[i]=="LFHCAL") {
+      _h_nclusters_lfhcal->Fill(clusterList[i]->size()); 
+    }
 
   }
 
@@ -1998,7 +2247,7 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
     double phi = rcluster0->get_phi(); 
  
     // Apply the track/cluster matching offsets to the eta/phi
-    ApplyTrackClusterMatchOffsets( eta, phi, eta, detName[0] ); 
+    ApplyClusterOffsets( eta, phi, 0, 20.0, detName[0] ); 
 
     if(!PassClusterEtaCut(eta,detName[0])) continue; 
 
@@ -2040,8 +2289,7 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
 	double phi1 = rcluster1->get_phi(); 
 
 	// Apply the track/cluster offsets
-	// using the eta of the first cluster
-	ApplyTrackClusterMatchOffsets( eta, phi1, eta1, detName[1] ); 
+	ApplyClusterOffsets( eta1, phi1, 0, 20.0, detName[1] ); 
 
 	if(!PassClusterEtaCut(eta1,detName[1])) continue; 
 
@@ -2137,8 +2385,7 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
 	double phi2 = rcluster2->get_phi(); 
 
 	// Apply the track/cluster offsets
-	// using the eta of the first cluster
-	ApplyTrackClusterMatchOffsets( eta, phi2, eta2, detName[2] ); 
+	ApplyClusterOffsets( eta2, phi2, 0, 20.0, detName[2] ); 
 
 	double deta = eta -  eta2; 
 	double dPhi = DeltaPhi(phi, phi2); 
@@ -2222,7 +2469,7 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
       double phi = rcluster->get_phi(); 
 
       // Apply the track/cluster offsets
-      ApplyTrackClusterMatchOffsets( eta, phi, eta, detName[1] ); 
+      ApplyClusterOffsets( eta, phi, 0, 20.0, detName[1] ); 
 
       if(!PassClusterEtaCut(eta,detName[1])) continue; 
 
@@ -2268,7 +2515,7 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
 	  double phi2 = rcluster2->get_phi(); 
 
 	  // Apply the track/cluster offsets
-	  ApplyTrackClusterMatchOffsets( eta, phi2, eta2, detName[2] ); 
+	  ApplyClusterOffsets( eta2, phi2, 0, 20.0, detName[2] ); 
 
 	  if(!PassClusterEtaCut(eta2,detName[2])) continue; 
 
@@ -2355,7 +2602,7 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
       double phi1 = rcluster1->get_phi(); 
 
       // Apply the track/cluster offsets
-      ApplyTrackClusterMatchOffsets( eta1, phi1, eta1, detName[2] ); 
+      ApplyClusterOffsets( eta1, phi1, 0, 20.0, detName[2] ); 
 
       if(!PassClusterEtaCut(eta1,detName[2])) continue; 
 
@@ -2498,10 +2745,12 @@ SvtxTrack *CentauroJets::AttachClusterToTrack(double eta, double phi, std::strin
 
       if( (tstate->get_pathlength()>0.0) && (tstate->get_name()==detName) ) {
 
-	double deta = eta -  tstate->get_eta(); 
-	double dPhi = DeltaPhi(phi, tstate->get_phi()); 
+	double ceta = eta; 
+	double cphi = phi; 
+	ApplyClusterOffsets(ceta,cphi,temp->get_charge(),temp->get_p(), detName); 
 
-	ApplyTrackClusterMatchOffsets( eta, dPhi, deta, detName ); 
+	double deta = ceta -  tstate->get_eta(); 
+	double dPhi = DeltaPhi(cphi, tstate->get_phi()); 
 
 	double dist = sqrt( pow(deta,2) + pow(dPhi,2) ); 
 	if(dist<minDist){
@@ -3004,13 +3253,13 @@ void CentauroJets::FillClusterPseudoJets( PHCompositeNode *topNode, std::string 
 
     RawCluster *rcluster = clusterList->getCluster(k);
 
-    //double eta = getEta(rcluster->get_r(),rcluster->get_z()-vtx_z);
-    // match is to eta relative to z=0
-    double eta = getEta(rcluster->get_r(),rcluster->get_z());
-    double phi = rcluster->get_phi(); 
-
     // eliminate noise clusters
     if(rcluster->get_energy()<CLUSTER_E_CUTOFF) continue; 
+
+    double eta = getEta(rcluster->get_r(),rcluster->get_z()-vtx_z);
+    double phi = rcluster->get_phi(); 
+
+    ApplyClusterOffsets(eta, phi, 0.0, 20.0, detName); 
 
     if(TrackVeto){
       if(VetoClusterWithTrack(eta, phi, detName)) continue; 
@@ -3037,7 +3286,8 @@ void CentauroJets::FillClusterPseudoJets( PHCompositeNode *topNode, std::string 
 }
 
 RawCluster *CentauroJets:: getCluster( PHCompositeNode *topNode, std::string detName, 
-				       double eta, double phi, double &clustE, int &clIdx, double &dR){
+				       double eta, double phi, int charge, double ptot, 
+				       double &clustE, int &clIdx, double &dR){
 
   RawCluster *retCluster = NULL; 
 
@@ -3059,18 +3309,14 @@ RawCluster *CentauroJets:: getCluster( PHCompositeNode *topNode, std::string det
 
     RawCluster *cluster = clusterList->getCluster(k);
 
-    double dphi = DeltaPhi(cluster->get_phi(),phi);
+    double cluster_phi = cluster->get_phi(); 
     double cluster_eta = getEta(cluster->get_r(),cluster->get_z()); 
-    double deta = cluster_eta - eta;
-    
-    ApplyTrackClusterMatchOffsets( eta, dphi, deta, detName );
- 
-    // Check cluster acceptance
-    double teta = cluster_eta;
-    double tphi = cluster->get_phi(); 
-    ApplyTrackClusterMatchOffsets( eta, tphi, teta, detName ); 
-    if(!PassClusterEtaCut(teta, detName )) continue; 
 
+    ApplyClusterOffsets( cluster_eta, cluster_phi, charge, ptot, detName );
+    if(!PassClusterEtaCut(cluster_eta, detName )) continue; 
+
+    double dphi = DeltaPhi(cluster_phi,phi);
+    double deta = cluster_eta - eta;
     double r = sqrt(pow(dphi,2)+pow(deta,2));
 
     if (r < min_r) {
