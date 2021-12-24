@@ -98,9 +98,9 @@ class CentauroJets: public SubsysReco
 
   void BuildChargedCaloTracks(PHCompositeNode *topNode, std::string type);
 
-  bool VetoClusterWithTrack(double eta, double phi, std::string detName);
+  bool VetoClusterWithTrack(double eta, double phi, double e, std::string detName);
 
-  SvtxTrack *AttachClusterToTrack(double eta, double phi, std::string detName); 
+  SvtxTrack *AttachClusterToTrack(double eta, double phi, double e, std::string detName); 
 
   bool isThisAnElectron(SvtxTrack *temp); 
 
@@ -280,6 +280,7 @@ class CentauroJets: public SubsysReco
   double _tm_ceta; 
   double _tm_cphi; 
   int    _tm_q; 
+  double _tm_e; 
 
   TTree *_eval_tmatch_eemc;
   TTree *_eval_tmatch_becal;

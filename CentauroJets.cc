@@ -490,6 +490,7 @@ int CentauroJets::Init(PHCompositeNode *topNode) {
 	_eval_tmatch_eemc->Branch("ceta", &_tm_ceta, "_tm_ceta/D");
 	_eval_tmatch_eemc->Branch("cphi", &_tm_cphi, "_tm_cphi/D");
 	_eval_tmatch_eemc->Branch("q", &_tm_q, "_tm_q/I");
+	_eval_tmatch_eemc->Branch("e", &_tm_e, "_tm_e/D");
 
 	_eval_tmatch_becal = new TTree("tmatch_becal", "BECAL Track Match");
 	_eval_tmatch_becal->Branch("deta", &_tm_deta, "_tm_deta/D");
@@ -501,6 +502,7 @@ int CentauroJets::Init(PHCompositeNode *topNode) {
 	_eval_tmatch_becal->Branch("ceta", &_tm_ceta, "_tm_ceta/D");
 	_eval_tmatch_becal->Branch("cphi", &_tm_cphi, "_tm_cphi/D");
 	_eval_tmatch_becal->Branch("q", &_tm_q, "_tm_q/I");
+	_eval_tmatch_becal->Branch("e", &_tm_e, "_tm_e/D");
 
 	_eval_tmatch_ihcal = new TTree("tmatch_ihcal", "IHCAL Track Match");
 	_eval_tmatch_ihcal->Branch("deta", &_tm_deta, "_tm_deta/D");
@@ -512,6 +514,7 @@ int CentauroJets::Init(PHCompositeNode *topNode) {
 	_eval_tmatch_ihcal->Branch("ceta", &_tm_ceta, "_tm_ceta/D");
 	_eval_tmatch_ihcal->Branch("cphi", &_tm_cphi, "_tm_cphi/D");
 	_eval_tmatch_ihcal->Branch("q", &_tm_q, "_tm_q/I");
+	_eval_tmatch_ihcal->Branch("e", &_tm_e, "_tm_e/D");
 
 	_eval_tmatch_ohcal = new TTree("tmatch_ohcal", "IHCAL Track Match");
 	_eval_tmatch_ohcal->Branch("deta", &_tm_deta, "_tm_deta/D");
@@ -523,6 +526,7 @@ int CentauroJets::Init(PHCompositeNode *topNode) {
 	_eval_tmatch_ohcal->Branch("ceta", &_tm_ceta, "_tm_ceta/D");
 	_eval_tmatch_ohcal->Branch("cphi", &_tm_cphi, "_tm_cphi/D");
 	_eval_tmatch_ohcal->Branch("q", &_tm_q, "_tm_q/I");
+	_eval_tmatch_ohcal->Branch("e", &_tm_e, "_tm_e/D");
 
 	_eval_tmatch_femc = new TTree("tmatch_femc", "FEMC Track Match");
 	_eval_tmatch_femc->Branch("deta", &_tm_deta, "_tm_deta/D");
@@ -534,6 +538,7 @@ int CentauroJets::Init(PHCompositeNode *topNode) {
 	_eval_tmatch_femc->Branch("ceta", &_tm_ceta, "_tm_ceta/D");
 	_eval_tmatch_femc->Branch("cphi", &_tm_cphi, "_tm_cphi/D");
 	_eval_tmatch_femc->Branch("q", &_tm_q, "_tm_q/I");
+	_eval_tmatch_femc->Branch("e", &_tm_e, "_tm_e/D");
 
 	_eval_tmatch_lfhcal = new TTree("tmatch_lfhcal", "LFHCAL Track Match");
 	_eval_tmatch_lfhcal->Branch("deta", &_tm_deta, "_tm_deta/D");
@@ -545,6 +550,7 @@ int CentauroJets::Init(PHCompositeNode *topNode) {
 	_eval_tmatch_lfhcal->Branch("ceta", &_tm_ceta, "_tm_ceta/D");
 	_eval_tmatch_lfhcal->Branch("cphi", &_tm_cphi, "_tm_cphi/D");
 	_eval_tmatch_lfhcal->Branch("q", &_tm_q, "_tm_q/I");
+	_eval_tmatch_lfhcal->Branch("e", &_tm_e, "_tm_e/D");
 
 	// calotrack cluster matching
 
@@ -1759,172 +1765,566 @@ void CentauroJets::GetClusterOffsetFit( double &eta, double &phi, int charge, do
 
   if(detName=="BECAL") {
 
-    if(p<1.0){
-      new_phi_pos = -0.790809 + 1.03333*phi; 
-      new_eta_pos = -0.055134 + 1.05179*eta;
-      new_phi_neg = 0.656683 + 1.03974*phi; 
-      new_eta_neg = -0.0498023 + 1.04796*eta; 
+    if(charge<=0){
+
+      if(p<0.75){
+
+	if(abs(eta)<=1.0)
+	  new_phi_neg = phi - (-0.360005 + 0.0119768*eta + -0.191993*eta*eta) ;
+	else if(eta<-1.0)
+	  new_phi_neg = phi - (-1.18532 + -0.624726*eta);
+	else
+	  new_phi_neg = phi - (-0.669893 + 0.138791*eta);
+
+	new_eta_neg = -0.0432953 + 1.0674*eta; 
+
+      }
+      else if(p>=0.75 && p<1.0){
+
+	if(abs(eta)<=1.0)
+	  new_phi_neg = phi - (-0.268165 + 0.0141392*eta + -0.157004*eta*eta) ;
+	else if(eta<-1.0)
+	  new_phi_neg = phi - (-0.865813 + -0.438634*eta);
+	else
+	  new_phi_neg = phi - (-0.469131 + 0.0846924*eta);
+
+	new_eta_neg = -0.052961 + 1.04777*eta; 
+
+      }
+      else if(p>=1.0 && p<2.0){
+
+	if(abs(eta)<=1.0)
+	  new_phi_neg = phi - (-0.167403 + 0.0119659*eta + -0.108719*eta*eta) ;
+	else if(eta<-1.0)
+	  new_phi_neg = phi - (-0.575884 + -0.292328*eta);
+	else
+	  new_phi_neg = phi - (-0.407185 + 0.138671*eta);
+
+	new_eta_neg = -0.0523756 + 1.05244*eta; 
+
+      }
+      else if(p>=2.0 && p<3.0){
+
+	if(abs(eta)<=1.0)
+	  new_phi_neg = phi - (-0.0987133 + 0.00757871*eta + -0.0612283*eta*eta) ;
+	else if(eta<-1.0)
+	  new_phi_neg = phi - (-0.353617 + -0.182957*eta);
+	else
+	  new_phi_neg = phi - ( -0.218702 +  0.0532541*eta);
+
+	new_eta_neg = -0.0513668 + 1.05107*eta;
+
+      }
+      else if(p>=3.0 && p<4.0){
+
+	if(abs(eta)<=1.0)
+	  new_phi_neg = phi - (-0.0653631 + 0.0031072*eta + -0.0466652*eta*eta) ;
+	else if(eta<-1.0)
+	  new_phi_neg = phi - (-0.231377 + -0.115999*eta);
+	else
+	  new_phi_neg = phi - (-0.200313 +  0.0868494*eta);
+
+	new_eta_neg = -0.0508864 + 1.04994*eta;
+
+      }
+      else if(p>=4.0 && p<5.0){
+
+	if(abs(eta)<=1.0)
+	  new_phi_neg = phi - (-0.0512339 +  0.0046292*eta + -0.0376337*eta*eta);
+	else if(eta<-1.0)
+	  new_phi_neg = phi - (-0.161873 + -0.0788219*eta);
+	else
+	  new_phi_neg = phi - (-0.153439  + 0.0676106*eta);
+
+	new_eta_neg = -0.0500371 + 1.04697*eta;
+	
+      }
+      else if(p>=5.0 && p<10.0){
+
+	if(abs(eta)<=1.0)
+	  new_phi_neg = phi - (-0.0313837 +  0.00193104*eta + -0.021448*eta*eta);
+	else if(eta<-1.0)
+	  new_phi_neg = phi - (-0.109924 + -0.0559835*eta);
+	else
+	  new_phi_neg = phi - (-0.103726 + 0.0493075*eta);
+
+	new_eta_neg = -0.0494103 + 1.04727*eta;
+
+      }
+      else if(p>=10.0 && p<15.0){
+
+	if(abs(eta)<=1.0)
+	  new_phi_neg = phi - (-0.0178984 + 0.00114097*eta + -0.0113011*eta*eta);
+	else if(eta<-1.0)
+	  new_phi_neg = phi - (-0.0623192 + -0.0318633*eta);
+	else
+	  new_phi_neg = phi - (-0.0419758 +0.0127882*eta);
+
+	new_eta_neg = -0.0484053 + 1.04748*eta;
+
+      }
+      else{
+
+	if(abs(eta)<=1.0)
+	  new_phi_neg = phi - (-0.0125593 + 0.000676921*eta + -0.00685772*eta*eta);
+	else if(eta<-1.0)
+	  new_phi_neg = phi - (-0.0423715 + -0.0214144*eta);
+	else
+	  new_phi_neg = phi - (-0.0288464 + 0.00890873*eta);
+
+	new_eta_neg = -0.0474674 + 1.04464*eta;
+
+      }
+
     }
-    else if(p>=1.0 && p<2.0){
-      new_phi_pos = -0.26241 + 1.00443*phi; 
-      new_eta_pos = -0.0520299 + 1.05307*eta;
-      new_phi_neg = 0.255534 + 0.997839*phi; 
-      new_eta_neg = -0.0512095 + 1.05521*eta; 
-    }
-    else if(p>=2.0 && p<5.0){
-      new_phi_pos = -0.114327 + 1.00106*phi; 
-      new_eta_pos = -0.0496239 + 1.04886*eta;
-      new_phi_neg = 0.102647 + 0.999467*phi; 
-      new_eta_neg = -0.0495655 + 1.04986*eta; 
-    }
-    else{
-      new_phi_pos = -0.0328114 + 1.00036*phi; 
-      new_eta_pos = -0.0479465 + 1.04541*eta;
-      new_phi_neg = 0.0261091 + 1.00035*phi; 
-      new_eta_neg = -0.0479982 + 1.04762*eta; 
+    else if(charge>=0){
+
+      if(p<0.75){
+
+	if(abs(eta)<=-1.0){
+	  new_phi_pos = phi - (1.12761 + 0.565174*eta) ;
+	  new_eta_pos = -0.0443036 + 1.09318*eta; 
+	}
+	else if(eta>-1.0 && eta<=-1.0){
+	  new_phi_pos = phi - (0.356764 +  -0.00946361*eta +  0.190724*eta*eta);
+	  new_eta_pos = -0.056254 + 1.05487*eta; 
+	}
+	else{
+	  new_phi_pos = phi - (0.614763 + -0.0985048*eta);
+	  new_eta_pos = -0.505265 + 1.47364*eta; 
+	}
+
+      }
+      else if(p>=0.75 && p<1.0){
+
+	if(abs(eta)<=-1.0){
+	  new_phi_pos = phi - (1.01863 + 0.528971*eta) ;
+	  new_eta_pos = -0.0468911 + 1.07121*eta; 
+	}
+	else if(eta>-1.0 && eta<=-1.0){
+	  new_phi_pos = phi - (0.299654 + -0.0121693*eta + 0.17995*eta*eta);
+	  new_eta_pos = -0.0541906 + 1.04853*eta; 
+	}
+	else{
+	  new_phi_pos = phi - (0.693192 + -0.252914*eta);
+	  new_eta_pos = -0.270632 + 1.25931*eta; 
+	}
+
+
+      }
+      else if(p>=1.0 && p<2.0){
+
+	if(abs(eta)<=-1.0){
+	  new_phi_pos = phi - (0.592628 + 0.299501*eta) ;
+	  new_eta_pos = -0.0452062+ 1.05673*eta; 
+	}
+	else if(eta>-1.0 && eta<=-1.0){
+	  new_phi_pos = phi - (0.17873 + -0.00604416*eta + 0.112273*eta*eta);
+	  new_eta_pos = -0.0516357 + 1.05131*eta; 
+	}
+	else{
+	  new_phi_pos = phi - (0.200865 + 0.0559365*eta);
+	  new_eta_pos = -0.111421 + 1.11325*eta; 
+	}
+
+      }
+      else if(p>=2.0 && p<3.0){
+
+	if(abs(eta)<=-1.0){
+	  new_phi_pos = phi - (0.38207 + 0.194595*eta) ;
+	}
+	else if(eta>-1.0 && eta<=-1.0){
+	  new_phi_pos = phi - (0.108245 + -0.00600031*eta + 0.0685143*eta*eta);
+	}
+	else{
+	  new_phi_pos = phi - (0.188961 + -0.015496*eta);
+	}
+
+	new_eta_pos = -0.05072 + 1.04944*eta; 
+
+      }
+      else if(p>=3.0 && p<4.0){
+
+	if(abs(eta)<=-1.0){
+	  new_phi_pos = phi - (0.266011 + 0.133414*eta) ;
+	}
+	else if(eta>-1.0 && eta<=-1.0){
+	  new_phi_pos = phi - (0.0781154 + -0.00342547*eta + 0.0534418*eta*eta);
+	}
+	else{
+	  new_phi_pos = phi - ( 0.115435 + 0.00274316*eta);
+	}
+
+	new_eta_pos = -0.0491458 + 1.04895*eta; 
+
+      }
+      else if(p>=4.0 && p<5.0){
+
+	if(abs(eta)<=-1.0){
+	  new_phi_pos = phi - (0.193749 + 0.0914972*eta) ;
+	}
+	else if(eta>-1.0 && eta<=-1.0){
+	  new_phi_pos = phi - (0.0611015 + -0.00434471*eta + 0.043988*eta*eta);
+	}
+	else{
+	  new_phi_pos = phi - (0.166096 + -0.0617353*eta);
+	}
+
+	new_eta_pos = -0.0617353 + 1.04652*eta; 
+	
+      }
+      else if(p>=5.0 && p<10.0){
+
+	if(abs(eta)<=-1.0){
+	  new_phi_pos = phi - (0.135296 + 0.0675732*eta) ;
+	}
+	else if(eta>-1.0 && eta<=-1.0){
+	  new_phi_pos = phi - (0.0375606 + -0.00284185*eta + 0.0290346*eta*eta);
+	}
+	else{
+	  new_phi_pos = phi - (0.101738 + -0.0357625*eta);
+	}
+
+	new_eta_pos = -0.0477418 + 1.04549*eta; 
+
+      }
+      else if(p>=10.0 && p<15.0){
+
+	if(abs(eta)<=-1.0){
+	  new_phi_pos = phi - (0.0726225 + 0.0342078*eta) ;
+	}
+	else if(eta>-1.0 && eta<=-1.0){
+	  new_phi_pos = phi - (0.0207465 + -0.00137859*eta + 0.0177749*eta*eta);
+	}
+	else{
+	  new_phi_pos = phi - (0.0345588);
+	}
+
+	new_eta_pos = -0.0471691 + 1.04462*eta; 
+
+      }
+      else{
+
+	if(abs(eta)<=-1.0){
+	  new_phi_pos = phi - (0.0551176 + 0.0262792*eta) ;
+	}
+	else if(eta>-1.0 && eta<=-1.0){
+	  new_phi_pos = phi - (0.0156055+ -0.00102952*eta + 0.0113895*eta*eta);
+	}
+	else{
+	  new_phi_pos = phi - ( 0.036707 + -0.0102788*eta);
+	}
+
+	new_eta_pos =  -0.0469741 + 1.04337*eta; 
+
+      }
+
     }
 
   }
 
   if(detName=="EEMC") {
 
-    if(p<1.0){
-      new_phi_pos = -0.169671 + 1.01043*phi; 
-      new_eta_pos = 0.533367 + 0.978339*eta;
-      new_phi_neg = 0.176672 + 1.0131*phi; 
-      new_eta_neg = 0.676218 + 1.01308*eta; 
+    if(charge<=0){
+
+      if(p<0.75){
+	new_phi_neg = phi - (-1.16179 + -0.259465*eta) - (0.414229 + 0.139939*eta); 
+	new_eta_neg =  0.62582 + 1.00921*eta; 	
+	//pass2
+	new_eta_neg = -0.0992593 + 0.978769*new_eta_neg; 
+      }
+      else if(p>=0.75 && p<1.0){
+	new_phi_neg = phi - ( -0.313656 + -0.0375806*eta) - (0.285341 + 0.19494*eta + 0.0309245*eta*eta); 
+	new_eta_neg = 0.649029 + 1.0014*eta; 
+	//pass2
+	new_eta_neg = -0.064377 + 0.980927*new_eta_neg; 
+      }
+      else if(p>=1.0 && p<2.0){
+	new_phi_neg = phi - ( 0.710866 + 0.532129*eta + 0.0832523*eta*eta); 
+	new_eta_neg = 0.636933 + 0.985618*eta; 
+      }
+      else if(p>=2.0 && p<3.0){
+	new_phi_neg = phi - ( 0.285694 + 0.236475*eta + 0.0377741*eta*eta); 
+	new_eta_neg =  0.671283 + 0.992211*eta;
+      }
+      else if(p>=3.0 && p<4.0){
+	new_phi_neg = phi - (0.170495 + 0.150894*eta + 0.0245132*eta*eta);
+	new_eta_neg = 0.671818 + 0.991587*eta;
+      }
+      else if(p>=4.0 && p<5.0){
+	new_phi_neg = phi - (0.163727 +  0.13559*eta + 0.0215778*eta*eta);
+	new_eta_neg = 0.658744 + 0.986451*eta;
+      }
+      else if(p>=5.0 && p<10.0){
+	new_phi_neg = phi - ( 0.0613308 + 0.0596665*eta +  0.0097991*eta*eta);
+	new_eta_neg = 0.670769 + 0.99088*eta;
+      }
+      else if(p>=10.0 && p<15.0){
+	new_phi_neg = phi - ( 0.0321589 + 0.0327477*eta + 0.00542826*eta*eta);
+	new_eta_neg = 0.669707 + 0.991005*eta;
+      }
+      else{
+	new_phi_neg = phi - (-0.0218494 + -0.00578351*eta + -0.000843055*eta*eta); 
+	new_eta_neg = 0.67257 + 0.992391*eta; 
+      }
+
     }
-    else if(p>=1.0 && p<2.0){
-      new_phi_pos = -0.0989564 + 1.00688*phi; 
-      new_eta_pos = 0.641639 + 0.986472*eta;
-      new_phi_neg = 0.116037 + 1.0033*phi; 
-      new_eta_neg = 0.662325 + 0.991997*eta; 
+    else if(charge>=0){
+
+      if(p<0.75){
+	new_phi_pos = phi - (-9.70627 + -8.61072*eta + -2.43144*eta*eta + -0.224025*eta*eta*eta); 
+	new_eta_pos = 0.508898 + 0.986242*eta; 	
+      }
+      else if(p>=0.75 && p<1.0){
+	if(eta>-3.8)
+	  new_phi_pos = phi - (-1.33588 + -0.989257*eta + -0.156125*eta*eta);
+	else 
+	  new_phi_pos = phi - (-0.0996687 + -0.0608529*eta);
+	  
+	new_eta_pos =  0.614822 +  0.997376*eta; 
+      }
+      else if(p>=1.0 && p<2.0){
+	if(eta>-4.0)
+	  new_phi_pos = phi - (-0.422022 + -0.350997*eta + -0.0554087*eta*eta);
+	else
+	  new_phi_pos = phi - (0.0972069);
+
+	new_eta_pos =  0.654154 + 0.992041*eta; 
+      }
+      else if(p>=2.0 && p<3.0){
+	new_phi_pos = phi - (-0.200488+  -0.179789*eta + -0.0284848*eta*eta); 
+	new_eta_pos = 0.670637 + 0.992128*eta;
+      }
+      else if(p>=3.0 && p<4.0){
+	new_phi_pos = phi - (-0.245038 + -0.196194*eta + -0.0312907*eta*eta);
+	new_eta_pos =  0.67352 + 0.991529*eta;
+      }
+      else if(p>=4.0 && p<5.0){
+	new_phi_pos = phi - (-0.207216 + -0.167319*eta + -0.0271406*eta*eta);
+	new_eta_pos = 0.675999 +  0.991738*eta;
+      }
+      else if(p>=5.0 && p<10.0){
+	new_phi_pos = phi - (-0.0147171 + -0.0318478*eta + -0.00567834*eta*eta);
+	new_eta_pos = 0.673918 + 0.991918*eta;
+      }
+      else if(p>=10.0 && p<15.0){
+	new_phi_pos = phi - (-0.000588034 + -0.0128759*eta + -0.00231411*eta*eta);
+	new_eta_pos = 0.674106 + 0.992373*eta;
+      }
+      else{
+	new_phi_pos = phi - ( 0.0234586 + 0.00525386*eta + 0.00048939*eta*eta ); 
+	new_eta_pos = 0.700449 + 1.0017*eta; 
+      }
+
     }
-    else if(p>=2.0 && p<5.0){
-      new_phi_pos = -0.0605684 + 1.00035*phi; 
-      new_eta_pos = 0.668034 + 0.990231*eta;
-      new_phi_neg = 0.0614057 + 0.998342*phi; 
-      new_eta_neg = 0.663743 + 0.988732*eta; 
-    }
-    else{
-      new_phi_pos = -0.0189368 + 1.00029*phi; 
-      new_eta_pos = 0.67639 + 0.992932*eta;
-      new_phi_neg = 0.0198274 + 1.00037*phi; 
-      new_eta_neg = 0.670935 + 0.991306*eta; 
-    }
+
 
   }
 
   if(detName=="FEMC") {
 
-    if(p<1.0){
-      new_phi_pos = -0.218881 + 1.01025*phi; 
-      new_eta_pos = 0.0618603 + 0.984258*eta;
-      new_phi_neg = 0.186663 + 1.00484*phi; 
-      new_eta_neg = 0.114516 + 0.95808*eta; 
+    if(charge<=0){
+
+      if(p<0.75){
+	new_phi_neg = phi - (0.273612 + -0.420079*eta + 0.077171*eta*eta) - (-0.222667 + 0.212773*eta + -0.0366431*eta*eta); 
+	new_eta_neg =  0.12501 + 0.980493*eta; 
+      }
+      else if(p>=0.75 && p<1.0){
+	new_phi_neg = phi - (0.0105355 + -0.108362*eta +  0.0190665*eta*eta) - (0.00877707 + -0.00479967*eta); 
+	new_eta_neg = 0.0414085 + 0.987142*eta;
+      }
+      else if(p>=1.0 && p<2.0){
+	new_phi_neg = phi - (0.0202877 + -0.0732956*eta + 0.0121526*eta*eta); 
+	new_eta_neg = -0.0163598 + 1.00125*eta; 
+      }
+      else if(p>=2.0 && p<3.0){
+	new_phi_neg = phi - (-0.00392383 + -0.00392383*eta + 0.00601271*eta*eta) - (0.000861668 + -0.0225117*eta); 
+	new_eta_neg = -0.0228555 + 1.00222*eta;
+      }
+      else if(p>=3.0 && p<4.0){
+	new_phi_neg = phi - (0.00567538 + -0.0320377*eta + 0.00589812*eta*eta);
+	new_eta_neg = -0.0214558 + 1.00145*eta;
+      }
+      else if(p>=4.0 && p<5.0){
+	new_phi_neg = phi - (-0.00832566 + -0.0147959*eta + 0.00260797*eta*eta);
+	new_eta_neg = -0.0218401 + 1.00223*eta;
+      }
+      else if(p>=5.0 && p<10.0){
+	new_phi_neg = phi - (-0.0076235 + -0.00697934*eta +  0.00108543*eta*eta);
+	new_eta_neg =  -0.020734 + 1.00258*eta;
+      }
+      else if(p>=10.0 && p<15.0){
+	new_phi_neg = phi - (-0.00273903 + -0.00566229*eta +  0.00098751*eta*eta);
+	new_eta_neg = -0.017006 + 1.00236*eta;
+      }
+      else{
+	new_phi_neg = phi - (-0.00328948 +  -0.00317229*eta + 0.000517406*eta*eta);
+	new_eta_neg =  -0.017006 + 1.00236*eta;
+      }
+
     }
-    else if(p>=1.0 && p<2.0){
-      new_phi_pos = -0.10387 + 0.999125*phi; 
-      new_eta_pos = -0.0158887 + 1.00204*eta;
-      new_phi_neg = 0.0987378 + 0.994283*phi; 
-      new_eta_neg = -0.0159015 + 1.0027*eta; 
+    else if(charge>=0){
+
+      if(p<0.75){
+	new_phi_pos = phi - (-0.0212205 + 0.157972*eta + -0.0268174*eta*eta); 
+	new_eta_pos = 0.045431 + 0.992563*eta; 	
+      }
+      else if(p>=0.75 && p<1.0){
+	new_phi_pos = phi - ( -3.48109 + 5.71202*eta + -3.32969*eta*eta + 0.852357*pow(eta,3) + -0.0807565*pow(eta,4)); 
+	new_eta_pos = 0.0145786 + 0.996376*eta; 
+      }
+      else if(p>=1.0 && p<2.0){
+	new_phi_pos = phi - (0.0454196 + 0.0233758*eta +  -0.00283064*eta*eta); 
+	new_eta_pos = -0.0111863 + 0.998818*eta; 
+      }
+      else if(p>=2.0 && p<3.0){
+	new_phi_pos = phi - (0.0101583 + 0.0295474*eta + -0.00507624*eta*eta); 
+	new_eta_pos =  -0.0211347 + 1.00097*eta;
+      }
+      else if(p>=3.0 && p<4.0){
+	new_phi_pos = phi - (0.0071257 +  0.0206688*eta + -0.00338545*eta*eta);
+	new_eta_pos = -0.0205476 + 1.00104*eta;
+      }
+      else if(p>=4.0 && p<5.0){
+	new_phi_pos = phi - (0.00891172 + 0.0144097*eta + -0.00239306*eta*eta);
+	new_eta_pos = -0.0219039 + 1.00205*eta;
+      }
+      else if(p>=5.0 && p<10.0){
+	new_phi_pos = phi - (0.00724539 + 0.006736*eta + -0.00094245*eta*eta);
+	new_eta_pos = -0.0205005 + 1.00253*eta;
+      }
+      else if(p>=10.0 && p<15.0){
+	new_phi_pos = phi - (0.00276497 + 0.00590355*eta + -0.00109209*eta*eta);
+	new_eta_pos = -0.019365 + 1.00317*eta;
+      }
+      else{
+	new_phi_pos = phi - (0.0020188 + 0.00402878*eta + -0.000666731*eta*eta); 
+	new_eta_pos = -0.0169182 + 1.00251*eta; 
+      }
+
     }
-    else if(p>=2.0 && p<5.0){
-      new_phi_pos = -0.0492254 + 1.00019*phi; 
-      new_eta_pos = -0.0234706 + 1.00247*eta;
-      new_phi_neg = 0.0493793 + 0.0493793*phi; 
-      new_eta_neg = -0.0232658 + 1.00208*eta; 
-    }
-    else{
-      new_phi_pos = -0.0148439 + 1.00053*phi; 
-      new_eta_pos = -0.0186565 + 1.00256*eta;
-      new_phi_neg = 0.0141556 + 0.999793*phi; 
-      new_eta_neg = -0.0216814 + 1.00348*eta; 
-    }
+
 
   }
 
+  /*
+  
   if(detName=="HCALIN") {
 
-    if(p<1.0){
-      new_phi_pos = -0.430135 + 1.0263*phi; 
-      new_eta_pos = 0.0381384 + 1.01611*eta;
-      new_phi_neg = 0.441247 + 0.942187*phi; 
-      new_eta_neg = -0.00796134 + 0.924449*eta; 
+    if(charge<=0){
+      if(p<1.0){
+	new_phi_neg = 0.441247 + 0.942187*phi; 
+	new_eta_neg = -0.00796134 + 0.924449*eta; 
+      }
+      else if(p>=1.0 && p<2.0){
+	new_phi_neg = 0.166375 + 1.02169*phi; 
+	new_eta_neg = -0.0111075 +  0.988893*eta; 
+      }
+      else if(p>=2.0 && p<5.0){
+	new_phi_neg = 0.07617 + 1.00723*phi; 
+	new_eta_neg = 0.00450778 + 1.0065*eta; 
+      }
+      else{
+	new_phi_neg = 0.0252699 + 0.999391*phi; 
+	new_eta_neg = -0.000147567 + 1.00708*eta; 
+      }
     }
-    else if(p>=1.0 && p<2.0){
-      new_phi_pos = -0.194461 + 1.00596*phi; 
-      new_eta_pos = -0.0123693 + 1.02343*eta;
-      new_phi_neg = 0.166375 + 1.02169*phi; 
-      new_eta_neg = -0.0111075 +  0.988893*eta; 
-    }
-    else if(p>=2.0 && p<5.0){
-      new_phi_pos = -0.0843341 + 1.01536*phi; 
-      new_eta_pos = 0.00596009 + 1.00052*eta;
-      new_phi_neg = 0.07617 + 1.00723*phi; 
-      new_eta_neg = 0.00450778 + 1.0065*eta; 
-    }
-    else{
-      new_phi_pos = -0.0266751 + 0.998253*phi; 
-      new_eta_pos = 0.00732495 + 1.00378*eta + -0.0204908*eta*eta;
-      new_phi_neg = 0.0252699 + 0.999391*phi; 
-      new_eta_neg = -0.000147567 + 1.00708*eta; 
+    else if(charge>=0){
+      if(p<1.0){
+	new_phi_pos = -0.430135 + 1.0263*phi; 
+	new_eta_pos = 0.0381384 + 1.01611*eta;
+      }
+      else if(p>=1.0 && p<2.0){
+	new_phi_pos = -0.194461 + 1.00596*phi; 
+	new_eta_pos = -0.0123693 + 1.02343*eta;
+      }
+      else if(p>=2.0 && p<5.0){
+	new_phi_pos = -0.0843341 + 1.01536*phi; 
+	new_eta_pos = 0.00596009 + 1.00052*eta;
+      }
+      else{
+	new_phi_pos = -0.0266751 + 0.998253*phi; 
+	new_eta_pos = 0.00732495 + 1.00378*eta + -0.0204908*eta*eta;
+      }
     }
 
   }
 
   if(detName=="HCALOUT") {
 
-    if(p<2.0){
-      new_phi_pos = -0.0911529 + 1.01105*phi; 
-      new_eta_pos = 0.0267768 + 0.972507*eta;
-      new_phi_neg = 0.207614 + 0.965075*phi; 
-      new_eta_neg = -0.0118167 + 1.0365*eta; 
+    if(charge<=0){
+      if(p<2.0){
+	new_phi_neg = 0.207614 + 0.965075*phi; 
+	new_eta_neg = -0.0118167 + 1.0365*eta; 
+      }
+      else if(p>=2.0 && p<5.0){
+	new_phi_neg = 0.10269 + 1.00116*phi; 
+	new_eta_neg = -0.0126848 + 1.03481*eta; 
+      }
+      else{
+	new_phi_neg = 0.061677 + 0.995576*phi; 
+	new_eta_neg = -0.00253092 + 1.05975*eta; 
+      }
     }
-    else if(p>=2.0 && p<5.0){
-      new_phi_pos = -0.0293987 + 1.0031*phi; 
-      new_eta_pos = 0.0149126 + 1.01048*eta;
-      new_phi_neg = 0.10269 + 1.00116*phi; 
-      new_eta_neg = -0.0126848 + 1.03481*eta; 
-    }
-    else{
-      new_phi_pos = 0.0233147 +  0.996347*phi; 
-      new_eta_pos = -0.00568223 + 1.05541*eta;
-      new_phi_neg = 0.061677 + 0.995576*phi; 
-      new_eta_neg = -0.00253092 + 1.05975*eta; 
+    else if(charge>=0){
+      if(p<2.0){
+	new_phi_pos = -0.0911529 + 1.01105*phi; 
+	new_eta_pos = 0.0267768 + 0.972507*eta;
+      }
+      else if(p>=2.0 && p<5.0){
+	new_phi_pos = -0.0293987 + 1.0031*phi; 
+	new_eta_pos = 0.0149126 + 1.01048*eta;
+      }
+      else{
+	new_phi_pos = 0.0233147 +  0.996347*phi; 
+	new_eta_pos = -0.00568223 + 1.05541*eta;
+      }
     }
 
   }
 
   if(detName=="LFHCAL") {
 
-    if(p<1.0){
-      new_phi_pos = -0.137888 + 0.991358*phi; 
-      new_eta_pos = 0.173009 + 0.945503*eta;
-      new_phi_neg = 0.0974656 + 0.986173*phi; 
-      new_eta_neg = -0.067442 + 1.05617*eta; 
+    if(charge<=0){
+      if(p<1.0){
+	new_phi_neg = 0.0974656 + 0.986173*phi; 
+	new_eta_neg = -0.067442 + 1.05617*eta; 
+      }
+      else if(p>=1.0 && p<2.0){
+	new_phi_neg =  0.0907287 + 1.00832*phi; 
+	new_eta_neg = 0.0417289 + 0.986766*eta; 
+      }
+      else if(p>=2.0 && p<5.0){
+	new_phi_neg = 0.0316167 + 0.970774*phi; 
+	new_eta_neg = -0.0267821 + 1.03769*eta; 
+      }
+      else{
+	new_phi_neg = -0.00540441 + 0.908178*phi; 
+	new_eta_neg = -0.051715 + 1.06786*eta; 
+      }
     }
-    else if(p>=1.0 && p<2.0){
-      new_phi_pos = -0.076133 + 0.997761*phi; 
-      new_eta_pos = 0.0171041 + 0.996268*eta;
-      new_phi_neg =  0.0907287 + 1.00832*phi; 
-      new_eta_neg = 0.0417289 + 0.986766*eta; 
-    }
-    else if(p>=2.0 && p<5.0){
-      new_phi_pos = -0.0195723 + 0.945219*phi; 
-      new_eta_pos = -0.0424823 + 1.04634*eta;
-      new_phi_neg = 0.0316167 + 0.970774*phi; 
-      new_eta_neg = -0.0267821 + 1.03769*eta; 
-    }
-    else{
-      new_phi_pos = -0.00559962 + 0.901618*phi; 
-      new_eta_pos = -0.0964234 + 1.0876*eta;
-      new_phi_neg = -0.00540441 + 0.908178*phi; 
-      new_eta_neg = -0.051715 + 1.06786*eta; 
+    else if(charge>=0){
+      if(p<1.0){
+	new_phi_pos = -0.137888 + 0.991358*phi; 
+	new_eta_pos = 0.173009 + 0.945503*eta;
+     }
+      else if(p>=1.0 && p<2.0){
+	new_phi_pos = -0.076133 + 0.997761*phi; 
+	new_eta_pos = 0.0171041 + 0.996268*eta;
+      }
+      else if(p>=2.0 && p<5.0){
+	new_phi_pos = -0.0195723 + 0.945219*phi; 
+	new_eta_pos = -0.0424823 + 1.04634*eta;
+      }
+      else{
+	new_phi_pos = -0.00559962 + 0.901618*phi; 
+	new_eta_pos = -0.0964234 + 1.0876*eta;
+      }
     }
 
   }
-
+  */
+  
   if(charge>0){
     phi = new_phi_pos; 
     eta = new_eta_pos;
@@ -1942,33 +2342,56 @@ void CentauroJets::GetClusterOffsetFit( double &eta, double &phi, int charge, do
 
 void CentauroJets::ApplyClusterOffsets( double &eta, double &phi, int charge, double p, std::string detName ){
 
-  if(p>5.0){
-    // No interpolation for p>5GeV 
+//#define NO_INTERPOLATION
+
+#ifdef NO_INTERPOLATION
+
+  GetClusterOffsetFit(eta, phi, charge, p, detName); 
+
+#else
+
+  if(p>=15.0){
+    // No interpolation for p>=15GeV 
     GetClusterOffsetFit(eta, phi, charge, p, detName); 
   }
   else{
 
-    // interpolate
+    // interpolate results in momentum
 
-    double bins[4] = {0.75,1.5,3.5,12.5}; 
-    double ohcal_bins[3] = {1.25,3.5,12.5};
+    double bins[9] = {0.625,0.875,1.5,2.5,3.5,4.5,7.5,12.5,17.5}; 
 
-    double x_low = bins[0]; 
-    double x_high = bins[2]; 
-    if(detName=="HCALOUT") {
-      x_low = ohcal_bins[0]; 
-      x_high = ohcal_bins[1]; 
+    // Adjust low mmemntum bins based on detector
+
+    if(detName=="BECAL") {
+      bins[0] = 0.6457; 
+      bins[1] = 0.8587;
     }
+    else if(detName=="EEMC") {
+      bins[0] = 0.6505; 
+      bins[1] = 0.8468;
+    }
+    else if(detName=="FEMC") {
+      bins[0] = 0.6265; 
+      bins[1] = 0.8475;
+    }
+    
+    double x_low = bins[0]; 
+    double x_high = bins[8]; 
 
-    for(int i=0; i<3; i++){
-      if( detName=="HCALOUT" ){
-	if(i==2) continue;
-	if(p>=ohcal_bins[i]) x_low = ohcal_bins[i]; 
-	if(p<ohcal_bins[i]) x_high = ohcal_bins[i]; 
+    for(int i=0; i<8; i++){
+      if(p>=bins[i]) {
+	x_low = bins[i];
       }
       else{
-	if(p>=bins[i]) x_low = bins[i]; 
-	if(p<bins[i]) x_high = bins[i]; 
+
+	if(i>0){
+	  x_high = bins[i]; 
+	}
+	else{
+	  x_high = bins[1]; 
+	}
+	  
+	break; 
       }
     }
 
@@ -1984,12 +2407,14 @@ void CentauroJets::ApplyClusterOffsets( double &eta, double &phi, int charge, do
     phi = phi_low + (p - x_low)*( (phi_high - phi_low)/(x_high - x_low));
 
   }
-  
+
+#endif
+
   return; 
 
 }
 
-bool CentauroJets::VetoClusterWithTrack(double eta, double phi, std::string detName){
+bool CentauroJets::VetoClusterWithTrack(double eta, double phi, double e, std::string detName){
 
   // Does this cluster have a track pointing to it? 
       
@@ -2000,6 +2425,8 @@ bool CentauroJets::VetoClusterWithTrack(double eta, double phi, std::string detN
   double minEta = 9999.0; 
   double minPhi = 9999.0;
   double minQ = 9999.0; 
+  double minCEta = 9999.0; 
+  double minCPhi = 9999.0;
 
   for (SvtxTrackMap::ConstIter track_itr = _trackmap->begin();
        track_itr != _trackmap->end(); track_itr++) {
@@ -2015,7 +2442,15 @@ bool CentauroJets::VetoClusterWithTrack(double eta, double phi, std::string detN
 
 	double ceta = eta; 
 	double cphi = phi; 
-	ApplyClusterOffsets(ceta,cphi,temp->get_charge(),temp->get_p(),detName); 
+  
+	double e_o = e; 
+	if((detName=="HCALIN")||
+	   (detName=="HCALOUT")||
+	   (detName=="LFHCAL")){
+	  e_o = tstate->get_p(); 
+	}
+
+	ApplyClusterOffsets(ceta,cphi,temp->get_charge(),e_o,detName); 
 
 	double deta = ceta -  tstate->get_eta(); 
 	double dPhi = DeltaPhi(cphi, tstate->get_phi()); 
@@ -2027,7 +2462,9 @@ bool CentauroJets::VetoClusterWithTrack(double eta, double phi, std::string detN
 	  minEta = tstate->get_eta();
 	  minPhi = tstate->get_phi(); 
 	  minP = tstate->get_p();
-	  minQ = temp->get_charge(); 
+	  minQ = temp->get_charge();
+	  minCEta = ceta; 
+	  minCPhi = cphi; 
 	}
 
       }
@@ -2042,9 +2479,10 @@ bool CentauroJets::VetoClusterWithTrack(double eta, double phi, std::string detN
   _tm_p = minP; 
   _tm_eta = minEta; 
   _tm_phi = minPhi; 
-  _tm_ceta = eta; 
-  _tm_cphi = phi; 
+  _tm_ceta = minCEta; 
+  _tm_cphi = minCPhi; 
   _tm_q = minQ; 
+  _tm_e = e; 
 
   double cutDist = 0.15; 
 
@@ -2171,9 +2609,9 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
       double eta = getEta(rcluster->get_r(),rcluster->get_z()-vtx_z);
       double phi = rcluster->get_phi(); 
 
-      if(i==0) {tmatched0[k] = VetoClusterWithTrack(eta, phi, detName[i]); cused0[k] = tmatched0[k];}
-      if(i==1) {tmatched1[k] = VetoClusterWithTrack(eta, phi, detName[i]); cused1[k] = tmatched1[k];}
-      if(i==2) {tmatched2[k] = VetoClusterWithTrack(eta, phi, detName[i]); cused2[k] = tmatched2[k];}
+      if(i==0) {tmatched0[k] = VetoClusterWithTrack(eta, phi, rcluster->get_energy(), detName[i]); cused0[k] = tmatched0[k];}
+      if(i==1) {tmatched1[k] = VetoClusterWithTrack(eta, phi, rcluster->get_energy(), detName[i]); cused1[k] = tmatched1[k];}
+      if(i==2) {tmatched2[k] = VetoClusterWithTrack(eta, phi, rcluster->get_energy(), detName[i]); cused2[k] = tmatched2[k];}
 
       if(detName[i]=="EEMC") {
 	_h_clusteta_eemc->Fill(eta); 
@@ -2726,7 +3164,7 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
 
 }
 
-SvtxTrack *CentauroJets::AttachClusterToTrack(double eta, double phi, std::string detName){
+SvtxTrack *CentauroJets::AttachClusterToTrack(double eta, double phi, double e, std::string detName){
 
   // Does this cluster have a track pointing to it? 
       
@@ -2747,7 +3185,15 @@ SvtxTrack *CentauroJets::AttachClusterToTrack(double eta, double phi, std::strin
 
 	double ceta = eta; 
 	double cphi = phi; 
-	ApplyClusterOffsets(ceta,cphi,temp->get_charge(),temp->get_p(), detName); 
+
+	double e_o = e; 
+	if((detName=="HCALIN")||
+	   (detName=="HCALOUT")||
+	   (detName=="LFHCAL")){
+	  e_o = tstate->get_p(); 
+	}
+
+	ApplyClusterOffsets(ceta,cphi,temp->get_charge(),e_o, detName); 
 
 	double deta = ceta -  tstate->get_eta(); 
 	double dPhi = DeltaPhi(cphi, tstate->get_phi()); 
@@ -2869,9 +3315,9 @@ void CentauroJets::BuildChargedCaloTracks(PHCompositeNode *topNode, std::string 
       double eta = getEta(rcluster->get_r(),rcluster->get_z()-vtx_z);
       double phi = rcluster->get_phi();
 
-      if(i==0) {tmatched0[k] = AttachClusterToTrack(eta, phi, detName[i]);}
-      if(i==1) {tmatched1[k] = AttachClusterToTrack(eta, phi, detName[i]);}
-      if(i==2) {tmatched2[k] = AttachClusterToTrack(eta, phi, detName[i]);}
+      if(i==0) {tmatched0[k] = AttachClusterToTrack(eta, phi, rcluster->get_energy(), detName[i]);}
+      if(i==1) {tmatched1[k] = AttachClusterToTrack(eta, phi, rcluster->get_energy(), detName[i]);}
+      if(i==2) {tmatched2[k] = AttachClusterToTrack(eta, phi, rcluster->get_energy(), detName[i]);}
 
     }
 
@@ -3262,7 +3708,7 @@ void CentauroJets::FillClusterPseudoJets( PHCompositeNode *topNode, std::string 
     ApplyClusterOffsets(eta, phi, 0.0, 20.0, detName); 
 
     if(TrackVeto){
-      if(VetoClusterWithTrack(eta, phi, detName)) continue; 
+      if(VetoClusterWithTrack(eta, phi, rcluster->get_energy(), detName)) continue; 
     }
 
     double pt = scale_factor*rcluster->get_energy() / cosh(eta);
