@@ -71,13 +71,131 @@ using namespace fastjet;
 #define TOWER_E_CUT 0.200 
 #define CLUSTER_E_CUTOFF 0.100
 
-// Cluster/track matching cuts
-#define EEMC_CLUST_TRACKMATCH 0.05
-#define BECAL_CLUST_TRACKMATCH 0.035
-#define IHCAL_CLUST_TRACKMATCH 0.075
-#define OHCAL_CLUST_TRACKMATCH 0.25
-#define FEMC_CLUST_TRACKMATCH 0.14
-#define LFHCAL_CLUST_TRACKMATCH 0.25
+double getMatchingCut(double p, int q, std::string detName){
+
+
+  double retCut = 0.15; 
+
+  if(detName=="BECAL"){
+
+    if(q<0){
+
+      if(p<=0.75)
+	retCut = 0.08; 
+      else if(p>0.75 && p<=1.0)
+	retCut = 0.065; 
+      else if(p>1.0 && p<=2.0)
+	retCut = 0.065; 
+      else if(p>2.0 && p<=3.0)
+	retCut = 0.04; 
+      else if(p>3.0 && p<=4.0)
+	retCut = 0.03; 
+      else if(p>4.0 && p<=5.0)
+	retCut = 0.025; 
+      else if(p>5.0 && p<=10.0)
+	retCut = 0.02; 
+      else if(p>10.0 && p<=15.0)
+	retCut = 0.02; 
+      else
+	retCut = 0.02;  
+
+    }
+    else if(q>0){
+  
+
+
+    }
+    else{
+
+
+
+
+    }
+
+  }
+
+  if(detName=="EEMC"){
+
+    if(q<0){
+
+
+    }
+    else if(q>0){
+  
+      if(p<=0.75)
+	retCut = 0.15; 
+      else if(p>0.75 && p<=1.0)
+	retCut = 0.08; 
+      else if(p>1.0 && p<=2.0)
+	retCut = 0.08; 
+      else if(p>2.0 && p<=3.0)
+	retCut = 0.06; 
+      else if(p>3.0 && p<=4.0)
+	retCut = 0.05; 
+      else if(p>4.0 && p<=5.0)
+	retCut = 0.05; 
+      else if(p>5.0 && p<=10.0)
+	retCut = 0.045; 
+      else if(p>10.0 && p<=15.0)
+	retCut = 0.045; 
+      else
+	retCut = 0.04;  
+
+
+    }
+    else{
+
+
+
+
+    }
+
+  }
+
+  if(detName=="FEMC"){
+
+    if(q<0){
+
+
+    }
+    else if(q>0){
+  
+      if(p<=0.75)
+	retCut = 0.1; 
+      else if(p>0.75 && p<=1.0)
+	retCut = 0.08; 
+      else if(p>1.0 && p<=2.0)
+	retCut = 0.08; 
+      else if(p>2.0 && p<=3.0)
+	retCut = 0.05; 
+      else if(p>3.0 && p<=4.0)
+	retCut = 0.04; 
+      else if(p>4.0 && p<=5.0)
+	retCut = 0.035; 
+      else if(p>5.0 && p<=10.0)
+	retCut = 0.035; 
+      else if(p>10.0 && p<=15.0)
+	retCut = 0.03; 
+      else
+	retCut = 0.03;  
+
+    }
+    else{
+
+
+
+
+    }
+
+  }
+
+  // return cut value 
+
+  return retCut; 
+
+
+}
+
 
 // HCAL neutral energy scales
 #define BARREL_HCAL_NEUT_SCALE (1.0)
@@ -1881,7 +1999,7 @@ void CentauroJets::GetClusterOffsetFit( double &eta, double &phi, int charge, do
 
       if(p<0.75){
 
-	if(abs(eta)<=-1.0){
+	if(eta<=-1.0){
 	  new_phi_pos = phi - (1.12761 + 0.565174*eta) ;
 	  new_eta_pos = -0.0443036 + 1.09318*eta; 
 	}
@@ -1897,7 +2015,7 @@ void CentauroJets::GetClusterOffsetFit( double &eta, double &phi, int charge, do
       }
       else if(p>=0.75 && p<1.0){
 
-	if(abs(eta)<=-1.0){
+	if(eta<=-1.0){
 	  new_phi_pos = phi - (1.01863 + 0.528971*eta) ;
 	  new_eta_pos = -0.0468911 + 1.07121*eta; 
 	}
@@ -1914,7 +2032,7 @@ void CentauroJets::GetClusterOffsetFit( double &eta, double &phi, int charge, do
       }
       else if(p>=1.0 && p<2.0){
 
-	if(abs(eta)<=-1.0){
+	if(eta<=-1.0){
 	  new_phi_pos = phi - (0.592628 + 0.299501*eta) ;
 	  new_eta_pos = -0.0452062+ 1.05673*eta; 
 	}
@@ -1930,7 +2048,7 @@ void CentauroJets::GetClusterOffsetFit( double &eta, double &phi, int charge, do
       }
       else if(p>=2.0 && p<3.0){
 
-	if(abs(eta)<=-1.0){
+	if(eta<=-1.0){
 	  new_phi_pos = phi - (0.38207 + 0.194595*eta) ;
 	}
 	else if(eta>-1.0 && eta<=-1.0){
@@ -1945,7 +2063,7 @@ void CentauroJets::GetClusterOffsetFit( double &eta, double &phi, int charge, do
       }
       else if(p>=3.0 && p<4.0){
 
-	if(abs(eta)<=-1.0){
+	if(eta<=-1.0){
 	  new_phi_pos = phi - (0.266011 + 0.133414*eta) ;
 	}
 	else if(eta>-1.0 && eta<=-1.0){
@@ -1960,7 +2078,7 @@ void CentauroJets::GetClusterOffsetFit( double &eta, double &phi, int charge, do
       }
       else if(p>=4.0 && p<5.0){
 
-	if(abs(eta)<=-1.0){
+	if(eta<=-1.0){
 	  new_phi_pos = phi - (0.193749 + 0.0914972*eta) ;
 	}
 	else if(eta>-1.0 && eta<=-1.0){
@@ -1975,7 +2093,7 @@ void CentauroJets::GetClusterOffsetFit( double &eta, double &phi, int charge, do
       }
       else if(p>=5.0 && p<10.0){
 
-	if(abs(eta)<=-1.0){
+	if(eta<=-1.0){
 	  new_phi_pos = phi - (0.135296 + 0.0675732*eta) ;
 	}
 	else if(eta>-1.0 && eta<=-1.0){
@@ -1990,7 +2108,7 @@ void CentauroJets::GetClusterOffsetFit( double &eta, double &phi, int charge, do
       }
       else if(p>=10.0 && p<15.0){
 
-	if(abs(eta)<=-1.0){
+	if(eta<=-1.0){
 	  new_phi_pos = phi - (0.0726225 + 0.0342078*eta) ;
 	}
 	else if(eta>-1.0 && eta<=-1.0){
@@ -2005,7 +2123,7 @@ void CentauroJets::GetClusterOffsetFit( double &eta, double &phi, int charge, do
       }
       else{
 
-	if(abs(eta)<=-1.0){
+	if(eta<=-1.0){
 	  new_phi_pos = phi - (0.0551176 + 0.0262792*eta) ;
 	}
 	else if(eta>-1.0 && eta<=-1.0){
@@ -2207,123 +2325,346 @@ void CentauroJets::GetClusterOffsetFit( double &eta, double &phi, int charge, do
 
   }
 
-  /*
-  
   if(detName=="HCALIN") {
 
     if(charge<=0){
-      if(p<1.0){
-	new_phi_neg = 0.441247 + 0.942187*phi; 
-	new_eta_neg = -0.00796134 + 0.924449*eta; 
+
+      if(p<0.75){
+	new_phi_neg = phi - (-4.74674e-01); 
+	new_eta_neg = 0.00715007 + 0.871202*eta + -0.0244734*eta*eta + + 0.164271*eta*eta*eta;  	
+      }
+      else if(p>=0.75 && p<1.0){
+	new_phi_neg = phi - (-0.346706 +  0.00827334*eta); 
+	new_eta_neg = -0.00172789 + 0.965483*eta + -0.00384477*eta*eta + 0.0458575*eta*eta*eta; 
       }
       else if(p>=1.0 && p<2.0){
-	new_phi_neg = 0.166375 + 1.02169*phi; 
-	new_eta_neg = -0.0111075 +  0.988893*eta; 
+	new_phi_neg = phi - ( -0.207237 + 0.0441341*eta); 
+	new_eta_neg = 0.00549633 + 1.02316*eta + -0.0170673*eta*eta + -0.00350476*eta*eta*eta; 
       }
-      else if(p>=2.0 && p<5.0){
-	new_phi_neg = 0.07617 + 1.00723*phi; 
-	new_eta_neg = 0.00450778 + 1.0065*eta; 
+      else if(p>=2.0 && p<3.0){
+	new_phi_neg = phi - (-0.127344 + -0.00619482*eta); 
+	new_eta_neg = -0.013462 + 0.919855*eta + 0.0208697*eta*eta + 0.114938*eta*eta*eta;
+      }
+      else if(p>=3.0 && p<4.0){
+	new_phi_neg = phi - (-0.0902535 + -0.0321342*eta);
+	new_eta_neg = -0.00697089 + 0.990275*eta;
+      }
+      else if(p>=4.0 && p<5.0){
+	new_phi_neg = phi - (-0.0661588 + -0.00668812*eta);
+	new_eta_neg = -0.0144468 + 1.02263*eta;
+      }
+      else if(p>=5.0 && p<10.0){
+	new_phi_neg = phi - (-0.0400165 + -0.0134691*eta);
+	new_eta_neg = -0.0108213 + 1.00154*eta;
+      }
+      else if(p>=10.0 && p<15.0){
+	new_phi_neg = phi - (-0.0201962 + -0.00145956*eta);
+	new_eta_neg =  0.00582504 + 1.00652*eta;
       }
       else{
-	new_phi_neg = 0.0252699 + 0.999391*phi; 
-	new_eta_neg = -0.000147567 + 1.00708*eta; 
+	new_phi_neg = phi - (-0.0179695 + (6.97606e-05)*eta); 
+	new_eta_neg = -0.00109953 + 1.00648*eta; 
       }
+
+
     }
     else if(charge>=0){
-      if(p<1.0){
-	new_phi_pos = -0.430135 + 1.0263*phi; 
-	new_eta_pos = 0.0381384 + 1.01611*eta;
+
+      if(p<0.75){
+	new_phi_pos = phi - (0.423163 +  0.00299655*eta); 
+	new_eta_pos = 0.0174807 + 0.724978*eta + 0.0232405*eta*eta +  0.31458*eta*eta*eta; 	
+	// phase2
+	new_phi_pos -= 0.0396; 
+	new_eta_pos -= 0.01262; 
+      }
+      else if(p>=0.75 && p<1.0){
+	new_phi_pos = phi - (0.357757 + 0.0483568*eta + 0.0358377*eta*eta); 
+	new_eta_pos = 0.023188 + 1.00114*eta; 
+	// phase2
+	new_phi_pos -= -8.07508e-03; 
+	new_eta_pos -= 3.25449e-02; 
       }
       else if(p>=1.0 && p<2.0){
-	new_phi_pos = -0.194461 + 1.00596*phi; 
-	new_eta_pos = -0.0123693 + 1.02343*eta;
+	new_phi_pos = phi - (0.25608 + 0.00654453*eta); 
+	new_eta_pos = -0.008085 + 1.03385*eta; 
+	// phase2
+	new_phi_pos -= -3.70456e-02; 
+	new_eta_pos -=  7.88243e-03; 
       }
-      else if(p>=2.0 && p<5.0){
-	new_phi_pos = -0.0843341 + 1.01536*phi; 
-	new_eta_pos = 0.00596009 + 1.00052*eta;
+      else if(p>=2.0 && p<3.0){
+	new_phi_pos = phi - (0.145427 + 0.0134292*eta); 
+	new_eta_pos =  0.000756643 + 1.01152*eta;
+	// phase2
+	new_phi_pos -= -3.23846e-02; 
+	new_eta_pos -= 9.24605e-03; 
+      }
+      else if(p>=3.0 && p<4.0){
+	new_phi_pos = phi - (0.0992292);
+	new_eta_pos = -0.0105483 + 1.02258*eta;
+	// phase2
+	new_phi_pos -= -6.00624e-03; 
+	new_eta_pos -= -1.54023e-02; 
+      }
+      else if(p>=4.0 && p<5.0){
+	new_phi_pos = phi - (0.10065);
+	new_eta_pos = -0.0143708 + 0.987576*eta;
+	// phase2
+	new_phi_pos -= -3.34988e-02; 
+	new_eta_pos -= -7.50205e-03; 
+      }
+      else if(p>=5.0 && p<10.0){
+	new_phi_pos = phi - (0.0444226);
+	new_eta_pos = -0.00545667 + 1.00571*eta;
+	// phase2
+	new_phi_pos -=  -2.84635e-03; 
+	new_eta_pos -= -4.32661e-03; 
+      }
+      else if(p>=10.0 && p<15.0){
+	new_phi_pos = phi - (0.0263697);
+	new_eta_pos = -0.00286946 + 1.02353*eta;
+	// phase2
+	new_phi_pos -= 1.66569e-03; 
+	new_eta_pos -= -8.34484e-03; 
       }
       else{
-	new_phi_pos = -0.0266751 + 0.998253*phi; 
-	new_eta_pos = 0.00732495 + 1.00378*eta + -0.0204908*eta*eta;
+	new_phi_pos = phi - (0.021827); 
+	new_eta_pos = -0.00387954 + 1.01595*eta; 
+	// phase2
+	new_phi_pos -= 8.93771e-04; 
+	new_eta_pos -= 4.79322e-04; 
       }
+
     }
 
   }
+
 
   if(detName=="HCALOUT") {
 
     if(charge<=0){
-      if(p<2.0){
-	new_phi_neg = 0.207614 + 0.965075*phi; 
-	new_eta_neg = -0.0118167 + 1.0365*eta; 
+
+      if(p<0.75){
+	new_phi_neg = phi - (-0.376324); 
+	new_eta_neg = 0.0343632 + 1.01011*eta; 	
       }
-      else if(p>=2.0 && p<5.0){
-	new_phi_neg = 0.10269 + 1.00116*phi; 
-	new_eta_neg = -0.0126848 + 1.03481*eta; 
+      else if(p>=0.75 && p<1.0){
+	new_phi_neg = phi - (-0.240655); 
+	new_eta_neg = 0.0340835 + 0.994548*eta; 
+      }
+      else if(p>=1.0 && p<2.0){
+	new_phi_neg = phi - (-0.201036); 
+	new_eta_neg = 0.00732727 + 1.10957*eta; 
+      }
+      else if(p>=2.0 && p<3.0){
+	new_phi_neg = phi - (-0.150696 + 0.0234669*eta); 
+	new_eta_neg = 0.0143835+  0.963022*eta + -0.0429179*eta*eta + 0.0943905*eta*eta*eta;
+      }
+      else if(p>=3.0 && p<4.0){
+	new_phi_neg = phi - (-1.13335e-01);
+	new_eta_neg = -0.000437473 + 1.02849*eta;
+      }
+      else if(p>=4.0 && p<5.0){
+	new_phi_neg = phi - (-9.50999e-02);
+	new_eta_neg = 0.000166058 + 1.03416*eta;
+      }
+      else if(p>=5.0 && p<10.0){
+	new_phi_neg = phi - (-0.0790791);
+	new_eta_neg = -0.00500539 + 1.04528*eta;
+      }
+      else if(p>=10.0 && p<15.0){
+	new_phi_neg = phi - (-0.0684646);
+	new_eta_neg = 0.000269227 + 1.04872*eta;
       }
       else{
-	new_phi_neg = 0.061677 + 0.995576*phi; 
-	new_eta_neg = -0.00253092 + 1.05975*eta; 
+	new_phi_neg = phi - (-0.0597346); 
+	new_eta_neg = -0.00761354 + 1.0511*eta; 
       }
+
     }
     else if(charge>=0){
-      if(p<2.0){
-	new_phi_pos = -0.0911529 + 1.01105*phi; 
-	new_eta_pos = 0.0267768 + 0.972507*eta;
+
+      if(p<0.75){
+	new_phi_pos = phi - ( 0.269714 + 0.0150204*eta + 0.113267*eta*eta +  0.375956*eta*eta*eta); 
+	new_eta_pos = 0.0226544 + 0.783425*eta + -0.130746*eta*eta + 0.555223*eta*eta*eta; 	
+	// phase2
+	//new_phi_pos -= ; 
+	new_eta_pos -= 0.02308; 
       }
-      else if(p>=2.0 && p<5.0){
-	new_phi_pos = -0.0293987 + 1.0031*phi; 
-	new_eta_pos = 0.0149126 + 1.01048*eta;
+      else if(p>=0.75 && p<1.0){
+	new_phi_pos = phi - (0.168688 + 0.0551862*eta + -0.0951666*eta*eta); 
+	new_eta_pos =  0.00277313 +  0.849803*eta + 0.0637895*eta*eta + 0.420371*eta*eta*eta; 
+	// phase2
+	new_phi_pos -= 0.01578; 
+	//new_eta_pos -= ; 
+      }
+      else if(p>=1.0 && p<2.0){
+	new_phi_pos = phi - (0.0763659); 
+	new_eta_pos = 0.00467778 + 0.925522*eta + -0.0168405*eta*eta + 0.234916*eta*eta*eta; 
+	// phase2
+	new_phi_pos -= 1.80147e-02; 
+	//new_eta_pos -= ; 
+      }
+      else if(p>=2.0 && p<3.0){
+	new_phi_pos = phi - (0.0559355); 
+	new_eta_pos = -0.00734858 +  1.01537*eta;
+	// phase2
+	new_phi_pos -= -3.64490e-03; 
+	new_eta_pos -= 3.84732e-03; 
+      }
+      else if(p>=3.0 && p<4.0){
+	new_phi_pos = phi - (2.39834e-02);
+	new_eta_pos = -0.00531465 + 1.02202*eta;
+	// phase2
+	new_phi_pos -= 9.82503e-03; 
+	new_eta_pos -= -8.20733e-03; 
+      }
+      else if(p>=4.0 && p<5.0){
+	new_phi_pos = phi - (9.19719e-03);
+	new_eta_pos = -0.00631507 + 1.03453*eta;
+	// phase2
+	new_phi_pos -= 5.45259e-03; 
+	new_eta_pos -= -6.58406e-03; 
+      }
+      else if(p>=5.0 && p<10.0){
+	new_phi_pos = phi - (-0.00893872);
+	new_eta_pos = 0.000622195 + 1.04355*eta;
+	// phase2
+	new_phi_pos -= 8.17611e-03; 
+	new_eta_pos -= 3.30926e-03; 
+      }
+      else if(p>=10.0 && p<15.0){
+	new_phi_pos = phi - (-0.0229137);
+	new_eta_pos =  -0.00528808 + 1.05282*eta;
+	// phase2
+	new_phi_pos -= 4.86959e-03; 
+	new_eta_pos -= -4.14862e-03; 
       }
       else{
-	new_phi_pos = 0.0233147 +  0.996347*phi; 
-	new_eta_pos = -0.00568223 + 1.05541*eta;
+	new_phi_pos = phi - (-3.20578e-02); 
+	new_eta_pos = -0.00344713 + 1.05322*eta; 
+	// phase2
+	new_phi_pos -= 1.53409e-02; 
+	new_eta_pos -= -2.40236e-03; 
       }
+
     }
 
   }
+
 
   if(detName=="LFHCAL") {
 
     if(charge<=0){
-      if(p<1.0){
-	new_phi_neg = 0.0974656 + 0.986173*phi; 
-	new_eta_neg = -0.067442 + 1.05617*eta; 
+
+      if(p<0.75){
+	new_phi_neg = phi - (-0.0686378 + -0.0364384*eta); 
+	new_eta_neg = 3.56676 + -4.05714*eta + 2.33484*eta*eta + -0.340504*eta*eta*eta; 	
+      }
+      else if(p>=0.75 && p<1.0){
+	new_phi_neg = phi - (-0.0430947 + -0.0391439*eta); 
+	new_eta_neg =  1.55612 + -1.02384*eta + 0.861299*eta*eta + -0.117237*eta*eta*eta; 
       }
       else if(p>=1.0 && p<2.0){
-	new_phi_neg =  0.0907287 + 1.00832*phi; 
-	new_eta_neg = 0.0417289 + 0.986766*eta; 
+	new_phi_neg = phi - (-0.0717001 + (1.92653e-05)*eta); 
+	new_eta_neg = 0.570644 + 0.0162908*eta + 0.545085*eta*eta + -0.0926713*eta*eta*eta; 
       }
-      else if(p>=2.0 && p<5.0){
-	new_phi_neg = 0.0316167 + 0.970774*phi; 
-	new_eta_neg = -0.0267821 + 1.03769*eta; 
+      else if(p>=2.0 && p<3.0){
+	new_phi_neg = phi - (-0.0489048 + 0.0040359*eta); 
+	new_eta_neg =  1.55765 + -1.34762*eta + 1.15313*eta*eta + -0.179604*eta*eta*eta;
+      }
+      else if(p>=3.0 && p<4.0){
+	new_phi_neg = phi - (0.00815418 + -0.0123175*eta);
+	new_eta_neg = 1.7756 + -1.69371*eta + 1.3308*eta*eta + -0.207112*eta*eta*eta;
+      }
+      else if(p>=4.0 && p<5.0){
+	new_phi_neg = phi - (0.00530316 + -0.0160722*eta);
+	new_eta_neg = 1.51211 + -1.19703*eta + 1.0704*eta*eta + -0.166915*eta*eta*eta;
+      }
+      else if(p>=5.0 && p<10.0){
+	new_phi_neg = phi - (-0.00796392 + -0.000177456*eta);
+	new_eta_neg = 0.501163 + 0.0465134*eta +  0.580546*eta*eta + -0.10445*eta*eta*eta;
+      }
+      else if(p>=10.0 && p<15.0){
+	new_phi_neg = phi - (-0.0212337 + 0.011897*eta);
+	new_eta_neg =  0.551743 + -0.0508371*eta + 0.643217*eta*eta + -0.116764*eta*eta*eta;
       }
       else{
-	new_phi_neg = -0.00540441 + 0.908178*phi; 
-	new_eta_neg = -0.051715 + 1.06786*eta; 
+	new_phi_neg = phi - (0.0122706 + -0.00912465*eta); 
+	new_eta_neg =  0.284003 + 0.299047*eta + 0.507267*eta*eta + -0.100554*eta*eta*eta; 
       }
+
     }
     else if(charge>=0){
-      if(p<1.0){
-	new_phi_pos = -0.137888 + 0.991358*phi; 
-	new_eta_pos = 0.173009 + 0.945503*eta;
-     }
-      else if(p>=1.0 && p<2.0){
-	new_phi_pos = -0.076133 + 0.997761*phi; 
-	new_eta_pos = 0.0171041 + 0.996268*eta;
+
+      if(p<0.75){
+	new_phi_pos = phi - (0.0561723 + 0.0557544*eta); 
+	new_eta_pos =  3.26025 + -3.22304*eta + 1.80164*eta*eta + -0.247645*eta*eta*eta; 	
+	// phase2
+	new_phi_pos -= 2.01034e-02; 
+	new_eta_pos -= -2.54962e-03; 
       }
-      else if(p>=2.0 && p<5.0){
-	new_phi_pos = -0.0195723 + 0.945219*phi; 
-	new_eta_pos = -0.0424823 + 1.04634*eta;
+      else if(p>=0.75 && p<1.0){
+	new_phi_pos = phi - (0.0484116 +  0.0384422*eta); 
+	new_eta_pos = 1.40153 + -0.921705*eta + 0.881702*eta*eta + -0.130419*eta*eta*eta; 
+	// phase2
+	new_phi_pos -= -0.007605; 
+	new_eta_pos -= 2.09980e-02; 
+      }
+      else if(p>=1.0 && p<2.0){
+	new_phi_pos = phi - (0.05913 + 0.00231293*eta); 
+	new_eta_pos = 1.4977 + -1.205*eta + 1.04887*eta*eta + -0.157632*eta*eta*eta; 
+	// phase2
+	new_phi_pos -= 2.12404e-03; 
+	new_eta_pos -= 3.46216e-02; 
+      }
+      else if(p>=2.0 && p<3.0){
+	new_phi_pos = phi - (0.0373754 + 0.00455856*eta); 
+	new_eta_pos =  1.26274 + -0.86757*eta +  0.908855*eta*eta + -0.140645*eta*eta*eta;
+	// phase2
+	//new_phi_pos -= ; 
+	new_eta_pos -=  4.06292e-02; 
+      }
+      else if(p>=3.0 && p<4.0){
+	new_phi_pos = phi - (-0.000477254 + 0.0160119*eta);
+	new_eta_pos =  1.39004 +  -1.11899*eta +  1.06207*eta*eta + -0.167809*eta*eta*eta;
+	// phase2
+	//new_phi_pos -= ; 
+	new_eta_pos -= 6.12419e-02; 
+      }
+      else if(p>=4.0 && p<5.0){
+	new_phi_pos = phi - (-0.0152078 + 0.0176643*eta);
+	new_eta_pos = 1.91049 + -1.84218*eta + 1.37816*eta*eta + -0.211968*eta*eta*eta;
+	// phase2
+	//new_phi_pos -= ; 
+	new_eta_pos -= 3.99772e-02; 
+      }
+      else if(p>=5.0 && p<10.0){
+	new_phi_pos = phi - (0.0222429 + -0.00503467*eta);
+	new_eta_pos = 0.976475 + -0.611702*eta + 0.867474*eta*eta + -0.144315*eta*eta*eta;
+	// phase2
+	//new_phi_pos -= ; 
+	new_eta_pos -= 5.48821e-02; 
+      }
+      else if(p>=10.0 && p<15.0){
+	new_phi_pos = phi - (-0.00554241 + 0.00817091*eta);
+	new_eta_pos = 0.853172 + -0.506148*eta + 0.859377*eta*eta + -0.149469*eta*eta*eta;
+	// phase2
+	//new_phi_pos -= ; 
+	new_eta_pos -= 6.70955e-02; 
       }
       else{
-	new_phi_pos = -0.00559962 + 0.901618*phi; 
-	new_eta_pos = -0.0964234 + 1.0876*eta;
+	new_phi_pos = phi - (0.00130492 + 0.00452228*eta); 
+	new_eta_pos = 0.422698 + 0.166608*eta + 0.548957*eta*eta + -0.105019*eta*eta*eta; 
+	// phase2
+	//new_phi_pos -= ; 
+	new_eta_pos -= 7.76073e-02; 
       }
+
     }
 
   }
-  */
+
+  // set final values
   
   if(charge>0){
     phi = new_phi_pos; 
@@ -2373,6 +2714,18 @@ void CentauroJets::ApplyClusterOffsets( double &eta, double &phi, int charge, do
     else if(detName=="FEMC") {
       bins[0] = 0.6265; 
       bins[1] = 0.8475;
+    }
+    else if(detName=="HCALIN") {
+      bins[0] = 0.626; 
+      bins[1] = 0.8569;
+    }
+    else if(detName=="HCALOUT") {
+      //bins[0] = ; 
+      //bins[1] = ;
+    }
+    else if(detName=="LFHCAL") {
+      bins[0] = 0.6462; 
+      bins[1] = 0.8719;
     }
     
     double x_low = bins[0]; 
@@ -2488,32 +2841,32 @@ bool CentauroJets::VetoClusterWithTrack(double eta, double phi, double e, std::s
 
   if(detName=="EEMC") {
     _eval_tmatch_eemc->Fill(); 
-    cutDist = EEMC_CLUST_TRACKMATCH; 
+    cutDist = getMatchingCut(_tm_e, _tm_q, detName); 
   }
 
   if(detName=="BECAL") {
     _eval_tmatch_becal->Fill(); 
-    cutDist = BECAL_CLUST_TRACKMATCH; 
+    cutDist = getMatchingCut(_tm_e, _tm_q, detName); 
   }
 
   if(detName=="HCALIN") {
     _eval_tmatch_ihcal->Fill(); 
-    cutDist = IHCAL_CLUST_TRACKMATCH; 
+    cutDist = getMatchingCut(_tm_p, _tm_q, detName); 
   }
 
   if(detName=="HCALOUT") {
     _eval_tmatch_ohcal->Fill(); 
-    cutDist = OHCAL_CLUST_TRACKMATCH; 
+    cutDist = getMatchingCut(_tm_p, _tm_q, detName); 
   }
 
   if(detName=="FEMC") {
     _eval_tmatch_femc->Fill(); 
-    cutDist = FEMC_CLUST_TRACKMATCH; 
+    cutDist = getMatchingCut(_tm_e, _tm_q, detName); 
   }
 
   if(detName=="LFHCAL") {
     _eval_tmatch_lfhcal->Fill(); 
-    cutDist = LFHCAL_CLUST_TRACKMATCH; 
+    cutDist = getMatchingCut(_tm_p, _tm_q, detName); 
   }
 
   // Veto this cluster if a track points to it. 
@@ -3169,6 +3522,8 @@ SvtxTrack *CentauroJets::AttachClusterToTrack(double eta, double phi, double e, 
   // Does this cluster have a track pointing to it? 
       
   double minDist = 9999.0; 
+  double minEO = 9999.0;
+  int minQ = 9999; 
   SvtxTrack *closest = NULL; 
 
   for (SvtxTrackMap::ConstIter track_itr = _trackmap->begin();
@@ -3201,7 +3556,9 @@ SvtxTrack *CentauroJets::AttachClusterToTrack(double eta, double phi, double e, 
 	double dist = sqrt( pow(deta,2) + pow(dPhi,2) ); 
 	if(dist<minDist){
 	  minDist = dist;
-	  closest = temp; 
+	  closest = temp;
+	  minEO = e_o; 
+	  minQ = temp->get_charge();
 	}
 
       }
@@ -3210,31 +3567,7 @@ SvtxTrack *CentauroJets::AttachClusterToTrack(double eta, double phi, double e, 
 
   }
 
-  double cutDist = 0.15; 
-
-  if(detName=="EEMC") {
-    cutDist = EEMC_CLUST_TRACKMATCH; 
-  }
-
-  if(detName=="BECAL") {
-    cutDist = BECAL_CLUST_TRACKMATCH; 
-  }
-
-  if(detName=="HCALIN") {
-    cutDist = IHCAL_CLUST_TRACKMATCH; 
-  }
-
-  if(detName=="HCALOUT") {
-    cutDist = OHCAL_CLUST_TRACKMATCH; 
-  }
-
-  if(detName=="FEMC") {
-    cutDist = FEMC_CLUST_TRACKMATCH; 
-  }
-
-  if(detName=="LFHCAL") {
-    cutDist = LFHCAL_CLUST_TRACKMATCH; 
-  }
+  double cutDist = getMatchingCut(minEO, minQ, detName); 
 
   // Return the track the cluster is closest to 
   if(minDist<cutDist)
