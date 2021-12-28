@@ -23,6 +23,7 @@ class TLorentzVector;
 class RawCluster; 
 class TH1D; 
 class TH2D; 
+class TVector3; 
 
 namespace fastjet {
   class PseudoJet;
@@ -95,6 +96,8 @@ class CentauroJets: public SubsysReco
 		       std::vector<fastjet::PseudoJet> &pseudojets, 
 		       TLorentzRotation &breit, TRotation &breitRot, 
 		       std::string ecDet, int ecIdx );
+
+  void GetCaloTrackTruthInfo( TVector3 ctrack, std::string type, TLorentzRotation &breit, TRotation &breitRot); 
 
   void BuildChargedCaloTracks(PHCompositeNode *topNode, std::string type);
 
@@ -255,9 +258,6 @@ class CentauroJets: public SubsysReco
   double ct_e_lfhcal; 
   double ct_e_tot; 
  
-  TTree *_calo_tracks_cent; 
-  TTree *_calo_tracks_fwd; 
-  TTree *_calo_tracks_bkwd; 
   TTree *_eval_calo_tracks_cent; 
   TTree *_eval_calo_tracks_fwd; 
   TTree *_eval_calo_tracks_bkwd; 
@@ -267,6 +267,12 @@ class CentauroJets: public SubsysReco
   double cat_eta_true; 
   double cat_phi_meas; 
   double cat_phi_true; 
+  double cat_e_eemc; 
+  double cat_e_bemc; 
+  double cat_e_ihcal; 
+  double cat_e_ohcal; 
+  double cat_e_femc; 
+  double cat_e_lfhcal; 
   double cat_e_tot; 
   double cat_match;
   int cat_bf; 
