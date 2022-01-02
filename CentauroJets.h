@@ -97,7 +97,11 @@ class CentauroJets: public SubsysReco
 		       TLorentzRotation &breit, TRotation &breitRot, 
 		       std::string ecDet, int ecIdx );
 
-  void GetCaloTrackTruthInfo( TVector3 ctrack, std::string type, TLorentzRotation &breit, TRotation &breitRot); 
+  void BuildParametrizedHadCaloTracks(PHCompositeNode *topNode, std::string type, 
+		       std::vector<fastjet::PseudoJet> &pseudojets, 
+		       TLorentzRotation &breit, TRotation &breitRot);
+
+  void GetCaloTrackTruthInfo( TVector3 ctrack, std::string type ); 
 
   void BuildChargedCaloTracks(PHCompositeNode *topNode, std::string type);
 
@@ -139,8 +143,6 @@ class CentauroJets: public SubsysReco
   double electron_eta; 
   double electron_phi; 
   double electron_cluster_dR; 
-
-  bool electron_found; 
 
   double vtx_x; 
   double vtx_y; 
@@ -275,7 +277,6 @@ class CentauroJets: public SubsysReco
   double cat_e_lfhcal; 
   double cat_e_tot; 
   double cat_match;
-  int cat_bf; 
 
   double _tm_deta;
   double _tm_dphi;
