@@ -743,6 +743,9 @@ int CentauroJets::Init(PHCompositeNode *topNode) {
 	_eval_tree_event->Branch("pjet_neut_p",&pjet_neut_p); 
 	_eval_tree_event->Branch("pjet_chgd_p",&pjet_chgd_p); 
 	_eval_tree_event->Branch("pjet_em_p",&pjet_em_p); 
+	_eval_tree_event->Branch("pjet_lab_eta",&pjet_lab_eta); 
+	_eval_tree_event->Branch("pjet_lab_phi",&pjet_lab_phi); 
+	_eval_tree_event->Branch("pjet_lab_p",&pjet_lab_p); 
  
 	_eval_tree_event->Branch("tfpjet_pT",&tfpjet_pT); 
 	_eval_tree_event->Branch("tfpjet_p",&tfpjet_p); 
@@ -760,6 +763,9 @@ int CentauroJets::Init(PHCompositeNode *topNode) {
 	_eval_tree_event->Branch("tfpjet_neut_p",&tfpjet_neut_p); 
 	_eval_tree_event->Branch("tfpjet_chgd_p",&tfpjet_chgd_p); 
 	_eval_tree_event->Branch("tfpjet_em_p",&tfpjet_em_p); 
+	_eval_tree_event->Branch("tfpjet_lab_eta",&tfpjet_lab_eta); 
+	_eval_tree_event->Branch("tfpjet_lab_phi",&tfpjet_lab_phi); 
+	_eval_tree_event->Branch("tfpjet_lab_p",&tfpjet_lab_p); 
 
 	// cluster evaluation for charged tracks
 	_eval_charged_tracks_cent = new TTree("clusteval_cent", "Charged track clusters (central)");
@@ -1318,6 +1324,9 @@ void CentauroJets::fill_tree(PHCompositeNode *topNode) {
   pjet_neut_p.clear(); 
   pjet_chgd_p.clear(); 
   pjet_em_p.clear(); 
+  pjet_lab_eta.clear(); 
+  pjet_lab_phi.clear(); 
+  pjet_lab_p.clear(); 
   
   tfpjet_pT.clear(); 
   tfpjet_p.clear(); 
@@ -1335,6 +1344,9 @@ void CentauroJets::fill_tree(PHCompositeNode *topNode) {
   tfpjet_neut_p.clear(); 
   tfpjet_neut_p.clear(); 
   tfpjet_em_p.clear(); 
+  tfpjet_lab_eta.clear(); 
+  tfpjet_lab_phi.clear(); 
+  tfpjet_lab_p.clear(); 
 
   if(electron!=NULL) {
 
@@ -1684,14 +1696,6 @@ void CentauroJets::fill_tree(PHCompositeNode *topNode) {
 
       tcjet_qperp.push_back(tcfastjets[ijet].perp()/zjet);
 
-      // Transform back to lab frame
-      pjet.Transform(breitRot); 
-      pjet = (breitInv * pjet); 
-
-      tcjet_lab_eta.push_back(pjet.Eta());  
-      tcjet_lab_phi.push_back(pjet.Phi()); 
-      tcjet_lab_p.push_back(pjet.Vect().Mag()); 
-
       tcjet_nc.push_back(tcfastjets[ijet].constituents().size());
 	 
       // Jet Charge
@@ -1702,12 +1706,19 @@ void CentauroJets::fill_tree(PHCompositeNode *topNode) {
 			  pow(tcfastjets[ijet].pz(),2)); 
 
       tcjet_Q.push_back(JetCharge(&tconstit,jptot));
-
       tcjet_cf.push_back(JetChargedFraction(&tconstit,pjet.Vect()));
 
       tcjet_neut_p.push_back(JetNeutralMomentum(&tconstit).Dot(pjet.Vect())/pjet.Vect().Mag()); 
       tcjet_chgd_p.push_back(JetChargedMomentum(&tconstit).Dot(pjet.Vect())/pjet.Vect().Mag()); 
       tcjet_em_p.push_back(JetEMMomentum(&tconstit).Dot(pjet.Vect())/pjet.Vect().Mag()); 
+
+      // Transform back to lab frame
+      pjet.Transform(breitRot); 
+      pjet = (breitInv * pjet); 
+
+      tcjet_lab_eta.push_back(pjet.Eta());  
+      tcjet_lab_phi.push_back(pjet.Phi()); 
+      tcjet_lab_p.push_back(pjet.Vect().Mag()); 
 
     }
 
@@ -1717,7 +1728,7 @@ void CentauroJets::fill_tree(PHCompositeNode *topNode) {
     std::vector<fastjet::PseudoJet> tfpfastjets; 
 
     // Primary Jets (in the experiment Breit frame)
-    GetPrimaryJets(topNode, jetdef, &pfastjets, breit, breitRotInv, p_initial_breit, virtual_photon_breit, false); 
+    GetPrimaryJets(topNode, jetdef, &pfastjets, breit, breitRotInv, breitInv, breitRot, p_initial_breit, virtual_photon_breit, false); 
 
     // Primary Jets in "true" Breit frame
     // Set up the transformation (boost) from the lab to the "true" Breit frame
@@ -1743,6 +1754,7 @@ void CentauroJets::fill_tree(PHCompositeNode *topNode) {
     TVector3 q3t = true_virtual_photon.Vect(); 
     TVector3 boost_tf = -(2.0*_tf_x2*P3t + q3t)*(1.0/(2.0*_tf_x2*true_p_initial.E() + true_virtual_photon.E())); 
     TLorentzRotation breit_tf = TLorentzRotation().Boost(boost_tf); 
+    TLorentzRotation breitInv_tf = TLorentzRotation().Boost(-boost_tf); 
 
     TLorentzVector p_initial_breit_tf = (breit_tf * true_p_initial); 
     TLorentzVector e_initial_breit_tf = (breit_tf * true_e_initial); 
@@ -1788,7 +1800,8 @@ void CentauroJets::fill_tree(PHCompositeNode *topNode) {
     // p_initial_breit_tf.Print(); 
     // std::cout << std::endl;
 
-    GetPrimaryJets(topNode, jetdef, &tfpfastjets, breit_tf, breitRotInv_tf, p_initial_breit_tf, virtual_photon_breit_tf, true); 
+    GetPrimaryJets(topNode, jetdef, &tfpfastjets, breit_tf, breitRotInv_tf, breitInv_tf, breitRot_tf, 
+		   p_initial_breit_tf, virtual_photon_breit_tf, true); 
 
     delete jetdef;
 
@@ -4712,7 +4725,7 @@ int CentauroJets::GetNodes(PHCompositeNode * topNode) {
 }
 
 void CentauroJets::GetPrimaryJets(PHCompositeNode *topNode, fastjet::JetDefinition* jetdef, std::vector<fastjet::PseudoJet> *fastjets, 
-				  TLorentzRotation &breit, TRotation &breitRot, 
+				  TLorentzRotation &breit, TRotation &breitRot,TLorentzRotation &breitInv, TRotation &breitRotInv, 
 				  TLorentzVector p_initial_breit, TLorentzVector virtual_photon_breit, bool true_frame){
 
   std::vector<fastjet::PseudoJet> primary_jets;
@@ -4837,6 +4850,15 @@ void CentauroJets::GetPrimaryJets(PHCompositeNode *topNode, fastjet::JetDefiniti
 	tfpjet_chgd_p.push_back(JetChargedMomentum(&tconstit).Dot(pjet.Vect())/pjet.Vect().Mag()); 
 	tfpjet_em_p.push_back(JetEMMomentum(&tconstit).Dot(pjet.Vect())/pjet.Vect().Mag()); 
 
+
+	// Transform back to lab frame
+	pjet.Transform(breitRotInv); 
+	pjet = (breitInv * pjet); 
+
+        tfpjet_lab_eta.push_back(pjet.Eta());  
+	tfpjet_lab_phi.push_back(pjet.Phi()); 
+	tfpjet_lab_p.push_back(pjet.Vect().Mag()); 
+
       }
       else{
 
@@ -4876,6 +4898,14 @@ void CentauroJets::GetPrimaryJets(PHCompositeNode *topNode, fastjet::JetDefiniti
 	pjet_neut_p.push_back(JetNeutralMomentum(&tconstit).Dot(pjet.Vect())/pjet.Vect().Mag()); 
 	pjet_chgd_p.push_back(JetChargedMomentum(&tconstit).Dot(pjet.Vect())/pjet.Vect().Mag()); 
 	pjet_em_p.push_back(JetEMMomentum(&tconstit).Dot(pjet.Vect())/pjet.Vect().Mag()); 
+
+	// Transform back to lab frame
+	pjet.Transform(breitRotInv); 
+	pjet = (breitInv * pjet); 
+
+        pjet_lab_eta.push_back(pjet.Eta());  
+	pjet_lab_phi.push_back(pjet.Phi()); 
+	pjet_lab_p.push_back(pjet.Vect().Mag()); 
 
       }
 
