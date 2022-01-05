@@ -614,7 +614,7 @@ TVector3 JetEMMomentum( std::vector<fastjet::PseudoJet> *tconstit ){
   TVector3 ptot(0.0,0.0,0.0); 
 
   for(unsigned int i=0; i<tconstit->size(); i++){
-    if(isEMParticle(tconstit->at(i).user_index())) continue;
+    if(!isEMParticle(tconstit->at(i).user_index())) continue;
     TVector3 constit(tconstit->at(i).px(),tconstit->at(i).py(),tconstit->at(i).pz());
     ptot += constit; 
   }
