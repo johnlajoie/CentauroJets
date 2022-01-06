@@ -2248,7 +2248,7 @@ void CentauroJets::GetClusterOffsetFit( double &eta, double &phi, int charge, do
       }
 
     }
-    else if(charge>=0){
+    if(charge>=0){
 
       if(p<0.75){
 
@@ -2440,7 +2440,7 @@ void CentauroJets::GetClusterOffsetFit( double &eta, double &phi, int charge, do
       }
 
     }
-    else if(charge>=0){
+    if(charge>=0){
 
       if(p<0.75){
 	new_phi_pos = phi - (-9.70627 + -8.61072*eta + -2.43144*eta*eta + -0.224025*eta*eta*eta); 
@@ -2534,7 +2534,7 @@ void CentauroJets::GetClusterOffsetFit( double &eta, double &phi, int charge, do
       }
 
     }
-    else if(charge>=0){
+    if(charge>=0){
 
       if(p<0.75){
 	new_phi_pos = phi - (-0.0212205 + 0.157972*eta + -0.0268174*eta*eta); 
@@ -2648,7 +2648,7 @@ void CentauroJets::GetClusterOffsetFit( double &eta, double &phi, int charge, do
 
 
     }
-    else if(charge>=0){
+    if(charge>=0){
 
       if(p<0.75){
 	new_phi_pos = phi - (0.423163 +  0.00299655*eta); 
@@ -2788,7 +2788,7 @@ void CentauroJets::GetClusterOffsetFit( double &eta, double &phi, int charge, do
       }
 
     }
-    else if(charge>=0){
+    if(charge>=0){
 
       if(p<0.75){
 	new_phi_pos = phi - ( 0.269714 + 0.0150204*eta + 0.113267*eta*eta +  0.375956*eta*eta*eta); 
@@ -2928,7 +2928,7 @@ void CentauroJets::GetClusterOffsetFit( double &eta, double &phi, int charge, do
       }
 
     }
-    else if(charge>=0){
+    if(charge>=0){
 
       if(p<0.75){
 	new_phi_pos = phi - (0.0561723 + 0.0557544*eta); 
@@ -4773,9 +4773,17 @@ void CentauroJets::GetPrimaryJets(PHCompositeNode *topNode, fastjet::JetDefiniti
 
     TLorentzVector partMom(efp.px(), efp.py(), efp.pz(), efp.e()); 
 
-    // lab frame cuts
-    //if((partMom.Pt()<0.200)||(fabs(partMom.Eta())>4.0)) continue;
+    G4ParticleDefinition* particle = particleTable->FindParticle(g4particle->get_name());
+    int charge = -9999.0; 
+    if(particle) 
+      charge = particle->GetPDGCharge();
+    else
+      continue; 
 
+    // lab frame cuts
+    if(((charge!=0)&&(partMom.Pt()<0.200))||
+        (fabs(partMom.Eta())>3.5)) continue;
+   
     TLorentzVector partMom_breit = (breit*partMom); 
     partMom_breit.Transform(breitRot); 
 
@@ -4785,13 +4793,6 @@ void CentauroJets::GetPrimaryJets(PHCompositeNode *topNode, fastjet::JetDefiniti
 				  partMom_breit.Py(),
 				  partMom_breit.Pz(),
 				  partMom_breit.E());
-
-    G4ParticleDefinition* particle = particleTable->FindParticle(g4particle->get_name());
-    int charge = -9999.0; 
-    if(particle) 
-      charge = particle->GetPDGCharge();
-    else
-      continue; 
 
     // build the user index
 
