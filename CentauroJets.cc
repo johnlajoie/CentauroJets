@@ -2399,97 +2399,84 @@ void CentauroJets::GetClusterOffsetFit( double &eta, double &phi, int charge, do
     if(charge<=0){
 
       if(p<0.75){
-	new_phi_neg = phi - (-1.16179 + -0.259465*eta) - (0.414229 + 0.139939*eta); 
-	new_eta_neg =  0.62582 + 1.00921*eta; 	
-	//pass2
-	new_eta_neg = -0.0992593 + 0.978769*new_eta_neg; 
+	new_phi_neg = phi - ( -0.375567 + 0.000602845*eta); 
+	new_eta_neg = 0.00264235 + 0.994413*eta; 	
       }
       else if(p>=0.75 && p<1.0){
-	new_phi_neg = phi - ( -0.313656 + -0.0375806*eta) - (0.285341 + 0.19494*eta + 0.0309245*eta*eta); 
-	new_eta_neg = 0.649029 + 1.0014*eta; 
-	//pass2
-	new_eta_neg = -0.064377 + 0.980927*new_eta_neg; 
+	new_phi_neg = phi - ( -0.31117 +  -0.00976997*eta); 
+	new_eta_neg = 0.0230682 + 1.00216*eta; 
       }
       else if(p>=1.0 && p<2.0){
-	new_phi_neg = phi - ( 0.710866 + 0.532129*eta + 0.0832523*eta*eta); 
-	new_eta_neg = 0.636933 + 0.985618*eta; 
+	new_phi_neg = phi - ( -0.156496 + 0.00188529*eta ); 
+	new_eta_neg =  0.0318744 + 1.00521*eta; 
       }
       else if(p>=2.0 && p<3.0){
-	new_phi_neg = phi - ( 0.285694 + 0.236475*eta + 0.0377741*eta*eta); 
-	new_eta_neg =  0.671283 + 0.992211*eta;
+	new_phi_neg = phi - ( -0.0980362 + -0.000439882*eta ); 
+	new_eta_neg = 0.0323534 + 1.00485*eta;
       }
       else if(p>=3.0 && p<4.0){
-	new_phi_neg = phi - (0.170495 + 0.150894*eta + 0.0245132*eta*eta);
-	new_eta_neg = 0.671818 + 0.991587*eta;
+	new_phi_neg = phi - (-0.0707824 + -0.000495876*eta);
+	new_eta_neg = 0.0219295 + 1.00167*eta;
       }
       else if(p>=4.0 && p<5.0){
-	new_phi_neg = phi - (0.163727 +  0.13559*eta + 0.0215778*eta*eta);
-	new_eta_neg = 0.658744 + 0.986451*eta;
+	new_phi_neg = phi - (-0.0504497 + 0.0013824*eta );
+	new_eta_neg = 0.0208685 + 1.00119*eta;
       }
       else if(p>=5.0 && p<10.0){
-	new_phi_neg = phi - ( 0.0613308 + 0.0596665*eta +  0.0097991*eta*eta);
-	new_eta_neg = 0.670769 + 0.99088*eta;
+	new_phi_neg = phi - (-0.0346814 +  -0.000599061*eta);
+	new_eta_neg = 0.0206542 + 1.00283*eta;
       }
       else if(p>=10.0 && p<15.0){
-	new_phi_neg = phi - ( 0.0321589 + 0.0327477*eta + 0.00542826*eta*eta);
-	new_eta_neg = 0.669707 + 0.991005*eta;
+	new_phi_neg = phi - ( -0.0156642 + 0.00167558*eta);
+	new_eta_neg = 0.0239701 + 1.00501*eta;
       }
       else{
-	new_phi_neg = phi - (-0.0218494 + -0.00578351*eta + -0.000843055*eta*eta); 
-	new_eta_neg = 0.67257 + 0.992391*eta; 
+	new_phi_neg = phi - (-0.0137015 + 0.000308886*eta); 
+	new_eta_neg = 0.0178779 + 1.00294*eta; 
       }
 
     }
     if(charge>=0){
 
       if(p<0.75){
-	new_phi_pos = phi - (-9.70627 + -8.61072*eta + -2.43144*eta*eta + -0.224025*eta*eta*eta); 
-	new_eta_pos = 0.508898 + 0.986242*eta; 	
+	new_phi_pos = phi - (0.405946 + 0.00963873*eta); 
+	new_eta_pos = -0.000140854 + 0.993976*eta; 	
       }
       else if(p>=0.75 && p<1.0){
-	if(eta>-3.8)
-	  new_phi_pos = phi - (-1.33588 + -0.989257*eta + -0.156125*eta*eta);
-	else 
-	  new_phi_pos = phi - (-0.0996687 + -0.0608529*eta);
-	  
-	new_eta_pos =  0.614822 +  0.997376*eta; 
+	new_phi_pos = phi - ( 0.298192 + 0.00563709*eta );  
+	new_eta_pos = 0.00695631 + 0.99481*eta; 
       }
       else if(p>=1.0 && p<2.0){
-	if(eta>-4.0)
-	  new_phi_pos = phi - (-0.422022 + -0.350997*eta + -0.0554087*eta*eta);
-	else
-	  new_phi_pos = phi - (0.0972069);
-
-	new_eta_pos =  0.654154 + 0.992041*eta; 
+	new_phi_pos = phi - (0.149684 + -0.00442267*eta);
+	new_eta_pos = 0.0287754 + 1.00318*eta; 
       }
       else if(p>=2.0 && p<3.0){
-	new_phi_pos = phi - (-0.200488+  -0.179789*eta + -0.0284848*eta*eta); 
-	new_eta_pos = 0.670637 + 0.992128*eta;
+	new_phi_pos = phi - (0.097814 + 0.000770295*eta); 
+	new_eta_pos =  0.0311729 + 1.00486*eta;
       }
       else if(p>=3.0 && p<4.0){
-	new_phi_pos = phi - (-0.245038 + -0.196194*eta + -0.0312907*eta*eta);
-	new_eta_pos =  0.67352 + 0.991529*eta;
+	new_phi_pos = phi - (0.0705052 + 0.000872545*eta);
+	new_eta_pos =  0.0210661 + 1.00137*eta;
       }
       else if(p>=4.0 && p<5.0){
-	new_phi_pos = phi - (-0.207216 + -0.167319*eta + -0.0271406*eta*eta);
-	new_eta_pos = 0.675999 +  0.991738*eta;
+	new_phi_pos = phi - (0.0543699 + -0.00019804*eta);
+	new_eta_pos = 0.0217715 + 1.00208*eta;
       }
       else if(p>=5.0 && p<10.0){
-	new_phi_pos = phi - (-0.0147171 + -0.0318478*eta + -0.00567834*eta*eta);
-	new_eta_pos = 0.673918 + 0.991918*eta;
+	new_phi_pos = phi - (0.0326268 + -0.000204726*eta);
+	new_eta_pos =  0.0256571 +  1.00449*eta;
       }
       else if(p>=10.0 && p<15.0){
-	new_phi_pos = phi - (-0.000588034 + -0.0128759*eta + -0.00231411*eta*eta);
-	new_eta_pos = 0.674106 + 0.992373*eta;
+	new_phi_pos = phi - ( 0.0167583 + -0.00117102*eta);
+	new_eta_pos = 0.0203821 + 1.00359*eta;
       }
       else{
-	new_phi_pos = phi - ( 0.0234586 + 0.00525386*eta + 0.00048939*eta*eta ); 
-	new_eta_pos = 0.700449 + 1.0017*eta; 
+	new_phi_pos = phi - (0.0133368 + -0.000432056*eta); 
+	new_eta_pos = 0.0211667 + 1.00413*eta; 
       }
 
     }
-
-
+    
   }
 
   if(detName=="FEMC") {
