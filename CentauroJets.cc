@@ -132,8 +132,6 @@ double getMatchingCut(double p, int q, std::string detName){
     else{
 
 
-
-
     }
 
   }
@@ -142,6 +140,24 @@ double getMatchingCut(double p, int q, std::string detName){
 
     if(q<0){
 
+     if(p<=0.75)
+	retCut = 0.15; 
+      else if(p>0.75 && p<=1.0)
+	retCut = 0.125; 
+      else if(p>1.0 && p<=2.0)
+	retCut = 0.08; 
+      else if(p>2.0 && p<=3.0)
+	retCut = 0.06; 
+      else if(p>3.0 && p<=4.0)
+	retCut = 0.05; 
+      else if(p>4.0 && p<=5.0)
+	retCut = 0.05; 
+      else if(p>5.0 && p<=10.0)
+	retCut = 0.045; 
+      else if(p>10.0 && p<=15.0)
+	retCut = 0.04; 
+      else
+	retCut = 0.035;  
 
     }
     else if(q>0){
@@ -149,7 +165,7 @@ double getMatchingCut(double p, int q, std::string detName){
       if(p<=0.75)
 	retCut = 0.15; 
       else if(p>0.75 && p<=1.0)
-	retCut = 0.08; 
+	retCut = 0.125; 
       else if(p>1.0 && p<=2.0)
 	retCut = 0.08; 
       else if(p>2.0 && p<=3.0)
@@ -159,34 +175,15 @@ double getMatchingCut(double p, int q, std::string detName){
       else if(p>4.0 && p<=5.0)
 	retCut = 0.05; 
       else if(p>5.0 && p<=10.0)
-	retCut = 0.045; 
+	retCut = 0.04; 
       else if(p>10.0 && p<=15.0)
-	retCut = 0.045; 
+	retCut = 0.035; 
       else
-	retCut = 0.04;  
-
+	retCut = 0.035;  
 
     }
     else{
 
-      if(p<=0.75)
-	retCut = 0.15; 
-      else if(p>0.75 && p<=1.0)
-	retCut = 0.1; 
-      else if(p>1.0 && p<=2.0)
-	retCut = 0.08; 
-      else if(p>2.0 && p<=3.0)
-	retCut = 0.07; 
-      else if(p>3.0 && p<=4.0)
-	retCut = 0.06; 
-      else if(p>4.0 && p<=5.0)
-	retCut = 0.05; 
-      else if(p>5.0 && p<=10.0)
-	retCut = 0.045; 
-      else if(p>10.0 && p<=15.0)
-	retCut = 0.045; 
-      else
-	retCut = 0.04;  
 
     }
 
