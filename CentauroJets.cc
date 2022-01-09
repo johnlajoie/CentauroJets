@@ -560,21 +560,6 @@ double JetCharge( std::vector<fastjet::PseudoJet> *tconstit, double jetP ){
 
 }
 
-double JetChargedFraction( std::vector<fastjet::PseudoJet> *tconstit, TVector3 pjet ){
-
-  TVector3 cjet(0.0,0.0,0.0); 
-
-  for(unsigned int i=0; i<tconstit->size(); i++){
-    // eliminate neutrals
-    if(GetChargeFromUserIndex(tconstit->at(i).user_index())==0) continue;       
-    TVector3 ctemp(tconstit->at(i).px(),tconstit->at(i).py(),tconstit->at(i).pz()); 
-    cjet += ctemp; 
-   }
-
-  return cjet.Dot(pjet)/pjet.Mag(); 
-
-}
-
 TVector3 JetNeutralMomentum( std::vector<fastjet::PseudoJet> *tconstit ){
 
   TVector3 ptot(0.0,0.0,0.0); 
@@ -603,6 +588,20 @@ TVector3 JetChargedMomentum( std::vector<fastjet::PseudoJet> *tconstit ){
   }
 
   return ptot; 
+
+}
+
+double JetChargedFraction( std::vector<fastjet::PseudoJet> *tconstit, TVector3 pjet ){
+
+  TVector3 ptot(0.0,0.0,0.0); 
+
+  for(unsigned int i=0; i<tconstit->size(); i++){
+    if(GetChargeFromUserIndex(tconstit->at(i).user_index())==0) continue;
+    TVector3 constit(tconstit->at(i).px(),tconstit->at(i).py(),tconstit->at(i).pz());
+    ptot += constit; 
+  }
+
+  return ptot.Mag()/pjet.Mag(); 
 
 }
 
