@@ -88,7 +88,7 @@ class CentauroJets: public SubsysReco
 
   // Primary jets
   void GetPrimaryJets(PHCompositeNode *topNode,  fastjet::JetDefinition* jetdef,  std::vector<fastjet::PseudoJet> *fastjets,
-		      TLorentzRotation &breit, TRotation &breitRot, 
+		      TLorentzRotation &breit, TRotation &breitRot, TLorentzRotation &breitInv, TRotation &breitRotInv, 
 		      TLorentzVector p_initial_breit, TLorentzVector virtual_photon_breit, bool true_frame); 
 
   // Build Calo Tracks (combine clusters across calorimeters)
@@ -98,6 +98,10 @@ class CentauroJets: public SubsysReco
 		       std::string ecDet, int ecIdx );
 
   void BuildParametrizedHadCaloTracks(PHCompositeNode *topNode, std::string type, 
+		       std::vector<fastjet::PseudoJet> &pseudojets, 
+		       TLorentzRotation &breit, TRotation &breitRot);
+
+  void BuildParametrizedPhotonCaloTracks(PHCompositeNode *topNode, std::string type, 
 		       std::vector<fastjet::PseudoJet> &pseudojets, 
 		       TLorentzRotation &breit, TRotation &breitRot);
 
@@ -206,6 +210,9 @@ class CentauroJets: public SubsysReco
   std::vector<double> tcjet_neut_p; 
   std::vector<double> tcjet_chgd_p; 
   std::vector<double> tcjet_em_p; 
+  std::vector<double> tcjet_neut_pm; 
+  std::vector<double> tcjet_chgd_pm; 
+  std::vector<double> tcjet_em_pm; 
 
   std::vector<double> pjet_pT; 
   std::vector<double> pjet_p; 
@@ -223,6 +230,12 @@ class CentauroJets: public SubsysReco
   std::vector<double> pjet_neut_p; 
   std::vector<double> pjet_chgd_p; 
   std::vector<double> pjet_em_p; 
+  std::vector<double> pjet_neut_pm; 
+  std::vector<double> pjet_chgd_pm; 
+  std::vector<double> pjet_em_pm; 
+  std::vector<double> pjet_lab_eta; 
+  std::vector<double> pjet_lab_phi; 
+  std::vector<double> pjet_lab_p; 
 
   std::vector<double> tfpjet_pT; 
   std::vector<double> tfpjet_p; 
@@ -240,6 +253,12 @@ class CentauroJets: public SubsysReco
   std::vector<double> tfpjet_neut_p; 
   std::vector<double> tfpjet_chgd_p; 
   std::vector<double> tfpjet_em_p; 
+  std::vector<double> tfpjet_neut_pm; 
+  std::vector<double> tfpjet_chgd_pm; 
+  std::vector<double> tfpjet_em_pm; 
+  std::vector<double> tfpjet_lab_eta; 
+  std::vector<double> tfpjet_lab_phi; 
+  std::vector<double> tfpjet_lab_p; 
 
   TTree *_eval_charged_tracks_cent; 
   TTree *_eval_charged_tracks_fwd; 

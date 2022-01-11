@@ -75,7 +75,8 @@ using namespace fastjet;
 // Use PID?
 #define USE_PID 0
 
-// Use parametrized neutral hadron response?
+// Use parametrized photon/neutral hadron response?
+//#define PARAM_PHOTONS 1
 #define PARAM_HAD_NEUTRALS 1
 
 double getMatchingCut(double p, int q, std::string detName){
@@ -722,6 +723,9 @@ int CentauroJets::Init(PHCompositeNode *topNode) {
 	_eval_tree_event->Branch("tcjet_neut_p",&tcjet_neut_p); 
 	_eval_tree_event->Branch("tcjet_chgd_p",&tcjet_chgd_p); 
 	_eval_tree_event->Branch("tcjet_em_p",&tcjet_em_p); 
+	_eval_tree_event->Branch("tcjet_neut_pm",&tcjet_neut_pm); 
+	_eval_tree_event->Branch("tcjet_chgd_pm",&tcjet_chgd_pm); 
+	_eval_tree_event->Branch("tcjet_em_pm",&tcjet_em_pm); 
 
 	_eval_tree_event->Branch("pjet_pT",&pjet_pT); 
 	_eval_tree_event->Branch("pjet_p",&pjet_p); 
@@ -739,6 +743,9 @@ int CentauroJets::Init(PHCompositeNode *topNode) {
 	_eval_tree_event->Branch("pjet_neut_p",&pjet_neut_p); 
 	_eval_tree_event->Branch("pjet_chgd_p",&pjet_chgd_p); 
 	_eval_tree_event->Branch("pjet_em_p",&pjet_em_p); 
+	_eval_tree_event->Branch("pjet_neut_pm",&pjet_neut_pm); 
+	_eval_tree_event->Branch("pjet_chgd_pm",&pjet_chgd_pm); 
+	_eval_tree_event->Branch("pjet_em_pm",&pjet_em_pm); 
 	_eval_tree_event->Branch("pjet_lab_eta",&pjet_lab_eta); 
 	_eval_tree_event->Branch("pjet_lab_phi",&pjet_lab_phi); 
 	_eval_tree_event->Branch("pjet_lab_p",&pjet_lab_p); 
@@ -759,6 +766,9 @@ int CentauroJets::Init(PHCompositeNode *topNode) {
 	_eval_tree_event->Branch("tfpjet_neut_p",&tfpjet_neut_p); 
 	_eval_tree_event->Branch("tfpjet_chgd_p",&tfpjet_chgd_p); 
 	_eval_tree_event->Branch("tfpjet_em_p",&tfpjet_em_p); 
+	_eval_tree_event->Branch("tfpjet_neut_pm",&tfpjet_neut_pm); 
+	_eval_tree_event->Branch("tfpjet_chgd_pm",&tfpjet_chgd_pm); 
+	_eval_tree_event->Branch("tfpjet_em_pm",&tfpjet_em_pm); 
 	_eval_tree_event->Branch("tfpjet_lab_eta",&tfpjet_lab_eta); 
 	_eval_tree_event->Branch("tfpjet_lab_phi",&tfpjet_lab_phi); 
 	_eval_tree_event->Branch("tfpjet_lab_p",&tfpjet_lab_p); 
@@ -1303,6 +1313,9 @@ void CentauroJets::fill_tree(PHCompositeNode *topNode) {
   tcjet_neut_p.clear(); 
   tcjet_chgd_p.clear(); 
   tcjet_em_p.clear(); 
+  tcjet_neut_pm.clear(); 
+  tcjet_chgd_pm.clear(); 
+  tcjet_em_pm.clear(); 
 
   pjet_pT.clear(); 
   pjet_p.clear(); 
@@ -1320,6 +1333,9 @@ void CentauroJets::fill_tree(PHCompositeNode *topNode) {
   pjet_neut_p.clear(); 
   pjet_chgd_p.clear(); 
   pjet_em_p.clear(); 
+  pjet_neut_pm.clear(); 
+  pjet_chgd_pm.clear(); 
+  pjet_em_pm.clear(); 
   pjet_lab_eta.clear(); 
   pjet_lab_phi.clear(); 
   pjet_lab_p.clear(); 
@@ -1340,6 +1356,9 @@ void CentauroJets::fill_tree(PHCompositeNode *topNode) {
   tfpjet_neut_p.clear(); 
   tfpjet_neut_p.clear(); 
   tfpjet_em_p.clear(); 
+  tfpjet_neut_pm.clear(); 
+  tfpjet_neut_pm.clear(); 
+  tfpjet_em_pm.clear(); 
   tfpjet_lab_eta.clear(); 
   tfpjet_lab_phi.clear(); 
   tfpjet_lab_p.clear(); 
@@ -1656,9 +1675,16 @@ void CentauroJets::fill_tree(PHCompositeNode *topNode) {
 
     // Add Calo tracks to charged track constituents and find jets again
     
+#ifdef PARAM_PHOTONS
+    BuildParametrizedPhotonCaloTracks(topNode, "CENT", tcpseudojets, breit, breitRotInv); 
+    BuildParametrizedPhotonCaloTracks(topNode, "FWD", tcpseudojets, breit, breitRotInv); 
+    BuildParametrizedPhotonCaloTracks(topNode, "BKWD", tcpseudojets, breit, breitRotInv); 
+#else
     BuildCaloTracks(topNode, "CENT", tcpseudojets, breit, breitRotInv, ECDetName, ECIdx); 
     BuildCaloTracks(topNode, "FWD", tcpseudojets, breit, breitRotInv, ECDetName, ECIdx); 
     BuildCaloTracks(topNode, "BKWD", tcpseudojets, breit, breitRotInv, ECDetName, ECIdx); 
+#endif
+
 
 #ifdef PARAM_HAD_NEUTRALS
     BuildParametrizedHadCaloTracks(topNode, "CENT", tcpseudojets, breit, breitRotInv); 
@@ -1707,6 +1733,10 @@ void CentauroJets::fill_tree(PHCompositeNode *topNode) {
       tcjet_neut_p.push_back(JetNeutralMomentum(&tconstit).Dot(pjet.Vect())/pjet.Vect().Mag()); 
       tcjet_chgd_p.push_back(JetChargedMomentum(&tconstit).Dot(pjet.Vect())/pjet.Vect().Mag()); 
       tcjet_em_p.push_back(JetEMMomentum(&tconstit).Dot(pjet.Vect())/pjet.Vect().Mag()); 
+
+      tcjet_neut_pm.push_back(JetNeutralMomentum(&tconstit).Mag()); 
+      tcjet_chgd_pm.push_back(JetChargedMomentum(&tconstit).Mag()); 
+      tcjet_em_pm.push_back(JetEMMomentum(&tconstit).Mag()); 
 
       // Transform back to lab frame
       pjet.Transform(breitRot); 
@@ -3894,6 +3924,92 @@ void CentauroJets::GetCaloTrackTruthInfo( TVector3 ctrack, std::string type ){
 
 }
 
+void CentauroJets::BuildParametrizedPhotonCaloTracks(PHCompositeNode *topNode, std::string type, 
+				   std::vector<fastjet::PseudoJet> &pseudojets, 
+				   TLorentzRotation &breit, TRotation &breitRot){
+
+  // get the list of jets from the primary particles
+
+  if (!_truth_container) {
+    LogError("_truth_container not found!");
+    return;
+  }
+
+  // PRIMARIES ONLY
+  PHG4TruthInfoContainer::ConstRange range =
+   		_truth_container->GetPrimaryParticleRange();
+
+  for (PHG4TruthInfoContainer::ConstIterator truth_itr = range.first;
+       truth_itr != range.second; ++truth_itr) {
+
+    PHG4Particle* g4particle = truth_itr->second;
+    if(!g4particle) {
+      LogDebug("");
+      continue;
+    }
+
+    // All we do here is photons
+    if(g4particle->get_pid()!=22) continue; 
+    int charge = 0; 
+ 
+    // lab frame cuts
+    TLorentzVector partMom(g4particle->get_px(), g4particle->get_py(), g4particle->get_pz(), g4particle->get_e()); 
+
+    double res_a = 0.0; 
+    double res_b = 0.0; 
+
+    if(type=="CENT"){
+      if (fabs(partMom.Eta())>1.0) continue; 
+      res_a = 0.015; 
+      res_b = 0.019; 
+    }
+    else if(type=="FWD"){
+      if((partMom.Eta()<1.3) || (partMom.Eta()>3.5)) continue; 
+      res_a = 0.072; 
+      res_b = 0.00; 
+    }
+    else if(type=="BKWD"){
+      if((partMom.Eta()>-1.8) || (partMom.Eta()<-3.5)) continue; 
+      res_a = 0.016; 
+      res_b = 0.002; 
+    }
+    else{
+      return; 
+    }
+					      
+    // Parametrize the calorimeter response: 
+    
+    double c_energy = g4particle->get_e();
+    double res = sqrt( pow(res_a/sqrt(c_energy),2) + pow(res_b,2) ); 
+    c_energy = rand->Gaus(c_energy, res*c_energy); 
+    // minimal cluster energy
+    if(c_energy<0.200) continue;
+
+    double ratio = c_energy/partMom.P(); 
+
+    TLorentzVector partMomP(g4particle->get_px()*ratio,g4particle->get_py()*ratio,g4particle->get_pz()*ratio,c_energy); 
+
+    // add this track to the list of tracks for jets
+
+    TLorentzVector partMom_breit = (breit*partMomP); 
+    partMom_breit.Transform(breitRot); 
+
+    fastjet::PseudoJet pseudojet (partMom_breit.Px(),
+				  partMom_breit.Py(),
+				  partMom_breit.Pz(),
+				  partMom_breit.E());
+
+    // build the user index and add the particle
+    bool em_part = true; 
+    pseudojet.set_user_index(EncodeUserIndex(charge,em_part));
+    pseudojets.push_back(pseudojet);
+
+  }
+
+  return; 
+
+}
+
 void CentauroJets::BuildParametrizedHadCaloTracks(PHCompositeNode *topNode, std::string type, 
 				   std::vector<fastjet::PseudoJet> &pseudojets, 
 				   TLorentzRotation &breit, TRotation &breitRot){
@@ -3946,7 +4062,6 @@ void CentauroJets::BuildParametrizedHadCaloTracks(PHCompositeNode *topNode, std:
  
     // lab frame cuts
     TLorentzVector partMom(g4particle->get_px(), g4particle->get_py(), g4particle->get_pz(), g4particle->get_e()); 
-    if((partMom.Pt()<0.500)||(fabs(partMom.Eta())>4.0)) continue;
 
     double res_a = 0.0; 
     double res_b = 0.0; 
@@ -3957,7 +4072,7 @@ void CentauroJets::BuildParametrizedHadCaloTracks(PHCompositeNode *topNode, std:
       res_b = 0.16; 
     }
     else if(type=="FWD"){
-      if((partMom.Eta()<1.3) || (partMom.Eta()>3.3)) continue; 
+      if((partMom.Eta()<1.3) || (partMom.Eta()>3.5)) continue; 
       res_a = 0.31; 
       res_b = 0.028; 
     }
@@ -3971,7 +4086,8 @@ void CentauroJets::BuildParametrizedHadCaloTracks(PHCompositeNode *topNode, std:
     if(g4particle->get_pid()==2112){
       c_energy = partMom.E() - partMom.M(); // kinetic energy for neutrons
     }
-    if(c_energy<0.0) continue; 
+    // minimal cluster energy
+    if(c_energy<0.500) continue; 
 
     double res = sqrt( pow(res_a/sqrt(c_energy),2) + pow(res_b,2) ); 
     c_energy = rand->Gaus(c_energy, res*c_energy); 
@@ -4766,6 +4882,8 @@ void CentauroJets::GetPrimaryJets(PHCompositeNode *topNode, fastjet::JetDefiniti
     // lab frame cuts
     if(((charge!=0)&&(partMom.Pt()<0.200))||
         (fabs(partMom.Eta())>3.5)) continue;
+    //if(((charge!=0)&&(partMom.Pt()<0.100))||
+    //    (fabs(partMom.Eta())>3.5)) continue;
    
     TLorentzVector partMom_breit = (breit*partMom); 
     partMom_breit.Transform(breitRot); 
@@ -4834,6 +4952,9 @@ void CentauroJets::GetPrimaryJets(PHCompositeNode *topNode, fastjet::JetDefiniti
 	tfpjet_chgd_p.push_back(JetChargedMomentum(&tconstit).Dot(pjet.Vect())/pjet.Vect().Mag()); 
 	tfpjet_em_p.push_back(JetEMMomentum(&tconstit).Dot(pjet.Vect())/pjet.Vect().Mag()); 
 
+	tfpjet_neut_pm.push_back(JetNeutralMomentum(&tconstit).Mag()); 
+	tfpjet_chgd_pm.push_back(JetChargedMomentum(&tconstit).Mag()); 
+	tfpjet_em_pm.push_back(JetEMMomentum(&tconstit).Mag()); 
 
 	// Transform back to lab frame
 	pjet.Transform(breitRotInv); 
@@ -4882,6 +5003,10 @@ void CentauroJets::GetPrimaryJets(PHCompositeNode *topNode, fastjet::JetDefiniti
 	pjet_neut_p.push_back(JetNeutralMomentum(&tconstit).Dot(pjet.Vect())/pjet.Vect().Mag()); 
 	pjet_chgd_p.push_back(JetChargedMomentum(&tconstit).Dot(pjet.Vect())/pjet.Vect().Mag()); 
 	pjet_em_p.push_back(JetEMMomentum(&tconstit).Dot(pjet.Vect())/pjet.Vect().Mag()); 
+
+	pjet_neut_pm.push_back(JetNeutralMomentum(&tconstit).Mag()); 
+	pjet_chgd_pm.push_back(JetChargedMomentum(&tconstit).Mag()); 
+	pjet_em_pm.push_back(JetEMMomentum(&tconstit).Mag()); 
 
 	// Transform back to lab frame
 	pjet.Transform(breitRotInv); 
