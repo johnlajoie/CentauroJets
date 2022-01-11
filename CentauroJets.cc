@@ -563,6 +563,8 @@ double JetCharge( std::vector<fastjet::PseudoJet> *tconstit, double jetP ){
 
 TVector3 JetNeutralMomentum( std::vector<fastjet::PseudoJet> *tconstit ){
 
+  // neutral hadrons
+
   TVector3 ptot(0.0,0.0,0.0); 
 
   for(unsigned int i=0; i<tconstit->size(); i++){
@@ -580,10 +582,14 @@ TVector3 JetNeutralMomentum( std::vector<fastjet::PseudoJet> *tconstit ){
 
 TVector3 JetChargedMomentum( std::vector<fastjet::PseudoJet> *tconstit ){
 
+  // charged hadrons
+
   TVector3 ptot(0.0,0.0,0.0); 
 
   for(unsigned int i=0; i<tconstit->size(); i++){
     if(GetChargeFromUserIndex(tconstit->at(i).user_index())==0) continue;
+    // eliminate electrons/positrons
+    if( (tconstit->at(i).user_index()==11) || (tconstit->at(i).user_index()==12) ) continue;
     TVector3 constit(tconstit->at(i).px(),tconstit->at(i).py(),tconstit->at(i).pz());
     ptot += constit; 
   }
@@ -593,6 +599,8 @@ TVector3 JetChargedMomentum( std::vector<fastjet::PseudoJet> *tconstit ){
 }
 
 double JetChargedFraction( std::vector<fastjet::PseudoJet> *tconstit, TVector3 pjet ){
+
+  // photons. electrons, positrons
 
   TVector3 ptot(0.0,0.0,0.0); 
 
@@ -3588,27 +3596,7 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
       cluster = cluster*scale;
     }
     
-    // Finally - take the combined cluster and add it to the constituents
-    // Transform to Breit frame
-    TLorentzVector breit_cluster = (breit*cluster); 
-    breit_cluster.Transform(breitRot); 
-
-    if( PARAM_HAD_NEUTRALS ){ 
-    
-      if(photon_candidate){
-	fastjet::PseudoJet pseudojet (breit_cluster.Px(),breit_cluster.Py(),breit_cluster.Pz(),breit_cluster.E()); 
-	pseudojet.set_user_index(EncodeUserIndex(0,photon_candidate)); 
-	pseudojets.push_back(pseudojet);
-      }
-
-    }
-    else{
-
-      fastjet::PseudoJet pseudojet (breit_cluster.Px(),breit_cluster.Py(),breit_cluster.Pz(),breit_cluster.E()); 
-      pseudojet.set_user_index(EncodeUserIndex(0,photon_candidate)); 
-      pseudojets.push_back(pseudojet);
-
-    }
+    // Evaluation
 
     TVector3 ctrack = cluster.Vect();
 
@@ -3634,6 +3622,33 @@ void CentauroJets::BuildCaloTracks(PHCompositeNode *topNode, std::string type,
       _eval_calo_tracks_bkwd->Fill(); 
     }
       
+    // Finally - take the combined cluster and add it to the constituents
+    // Transform to Breit frame
+    TLorentzVector breit_cluster = (breit*cluster); 
+    breit_cluster.Transform(breitRot); 
+
+    if( PARAM_HAD_NEUTRALS ){ 
+    
+      if(photon_candidate){
+	
+	// require a loose match to the nearest primary photon
+	if((cat_match<0.1) && (cat_pid==22)){
+	  fastjet::PseudoJet pseudojet (breit_cluster.Px(),breit_cluster.Py(),breit_cluster.Pz(),breit_cluster.E()); 
+	  pseudojet.set_user_index(EncodeUserIndex(0,photon_candidate)); 
+	  pseudojets.push_back(pseudojet);
+	}
+	  
+      }
+
+    }
+    else{
+
+      fastjet::PseudoJet pseudojet (breit_cluster.Px(),breit_cluster.Py(),breit_cluster.Pz(),breit_cluster.E()); 
+      pseudojet.set_user_index(EncodeUserIndex(0,photon_candidate)); 
+      pseudojets.push_back(pseudojet);
+
+    }
+
   }
 
   // Next, seed with the HCAL and follow up with the second HCAL segment
